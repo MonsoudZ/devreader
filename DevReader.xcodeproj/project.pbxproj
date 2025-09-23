@@ -6,6 +6,39 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9932A8342E823CC2001C0FFE /* DevReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9932A8332E823CB4001C0FFE /* DevReader.swift */; };
+		A00100012F00000000000001 /* NoteItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100002F00000000000001 /* NoteItem.swift */; };
+		A00100032F00000000000001 /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100022F00000000000001 /* LibraryItem.swift */; };
+		A00100052F00000000000001 /* SessionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100042F00000000000001 /* SessionData.swift */; };
+		A00100072F00000000000001 /* PDFController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100062F00000000000001 /* PDFController.swift */; };
+		A00100092F00000000000001 /* NotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100082F00000000000001 /* NotesStore.swift */; };
+		A001000B2F00000000000001 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000A2F00000000000001 /* LibraryStore.swift */; };
+		A001000D2F00000000000001 /* NotesPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000C2F00000000000001 /* NotesPane.swift */; };
+		A001000F2F00000000000001 /* NoteRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000E2F00000000000001 /* NoteRow.swift */; };
+		A00100112F00000000000001 /* PDFViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100102F00000000000001 /* PDFViewRepresentable.swift */; };
+		A00100132F00000000000001 /* PDFPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100122F00000000000001 /* PDFPane.swift */; };
+		A00100152F00000000000001 /* LibraryPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100142F00000000000001 /* LibraryPane.swift */; };
+		A00100172F00000000000001 /* DevReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100162F00000000000001 /* DevReaderApp.swift */; };
+		A00100192F00000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100182F00000000000001 /* ContentView.swift */; };
+		A001001B2F00000000000001 /* WebPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001A2F00000000000001 /* WebPane.swift */; };
+		A001001D2F00000000000001 /* CodePane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001C2F00000000000001 /* CodePane.swift */; };
+		A001001F2F00000000000001 /* Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001E2F00000000000001 /* Sketch.swift */; };
+		A00100212F00000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100202F00000000000001 /* SettingsView.swift */; };
+		A00100232F00000000000001 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100222F00000000000001 /* OnboardingView.swift */; };
+		A00100252F00000000000001 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100242F00000000000001 /* Extensions.swift */; };
+		A00100272F00000000000001 /* Shell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100262F00000000000001 /* Shell.swift */; };
+		A001001A2F00000000000001 /* WebPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Web/WebPane.swift; sourceTree = "<group>"; };
+		A001001C2F00000000000001 /* CodePane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/CodePane.swift; sourceTree = "<group>"; };
+		A001001E2F00000000000001 /* Sketch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Sketch/Sketch.swift; sourceTree = "<group>"; };
+		A00100202F00000000000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		A00100222F00000000000001 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Onboarding/OnboardingView.swift; sourceTree = "<group>"; };
+		A00100242F00000000000001 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/Extensions.swift; sourceTree = "<group>"; };
+		A00100262F00000000000001 /* Shell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/Shell.swift; sourceTree = "<group>"; };
+		A00100162F00000000000001 /* DevReaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/DevReaderApp.swift; sourceTree = "<group>"; };
+		A00100182F00000000000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/ContentView.swift; sourceTree = "<group>"; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9932A8172E823C67001C0FFE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +60,18 @@
 		9932A8092E823C66001C0FFE /* DevReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DevReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9932A8162E823C67001C0FFE /* DevReaderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DevReaderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9932A8202E823C67001C0FFE /* DevReaderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DevReaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		9932A8332E823CB4001C0FFE /* DevReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevReader.swift; sourceTree = "<group>"; };
+		A00100002F00000000000001 /* NoteItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/NoteItem.swift; sourceTree = "<group>"; };
+		A00100022F00000000000001 /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/LibraryItem.swift; sourceTree = "<group>"; };
+		A00100042F00000000000001 /* SessionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/SessionData.swift; sourceTree = "<group>"; };
+		A00100062F00000000000001 /* PDFController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFController.swift; sourceTree = "<group>"; };
+		A00100082F00000000000001 /* NotesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/NotesStore.swift; sourceTree = "<group>"; };
+		A001000A2F00000000000001 /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/LibraryStore.swift; sourceTree = "<group>"; };
+		A001000C2F00000000000001 /* NotesPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/NotesPane.swift; sourceTree = "<group>"; };
+		A001000E2F00000000000001 /* NoteRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/NoteRow.swift; sourceTree = "<group>"; };
+		A00100102F00000000000001 /* PDFViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFViewRepresentable.swift; sourceTree = "<group>"; };
+		A00100122F00000000000001 /* PDFPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFPane.swift; sourceTree = "<group>"; };
+		A00100142F00000000000001 /* LibraryPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Library/LibraryPane.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +120,27 @@
 		9932A8002E823C66001C0FFE = {
 			isa = PBXGroup;
 			children = (
+				A00100162F00000000000001 /* DevReaderApp.swift */,
+				A00100182F00000000000001 /* ContentView.swift */,
+				9932A8332E823CB4001C0FFE /* DevReader.swift */,
+				A001001A2F00000000000001 /* WebPane.swift */,
+				A001001C2F00000000000001 /* CodePane.swift */,
+				A001001E2F00000000000001 /* Sketch.swift */,
+				A00100202F00000000000001 /* SettingsView.swift */,
+				A00100222F00000000000001 /* OnboardingView.swift */,
+				A00100242F00000000000001 /* Extensions.swift */,
+				A00100262F00000000000001 /* Shell.swift */,
+				A00100002F00000000000001 /* NoteItem.swift */,
+				A00100022F00000000000001 /* LibraryItem.swift */,
+				A00100042F00000000000001 /* SessionData.swift */,
+				A00100062F00000000000001 /* PDFController.swift */,
+				A00100082F00000000000001 /* NotesStore.swift */,
+				A001000A2F00000000000001 /* LibraryStore.swift */,
+				A001000C2F00000000000001 /* NotesPane.swift */,
+				A001000E2F00000000000001 /* NoteRow.swift */,
+				A00100102F00000000000001 /* PDFViewRepresentable.swift */,
+				A00100122F00000000000001 /* PDFPane.swift */,
+				A00100142F00000000000001 /* LibraryPane.swift */,
 				9932A80B2E823C66001C0FFE /* DevReader */,
 				9932A8192E823C67001C0FFE /* DevReaderTests */,
 				9932A8232E823C67001C0FFE /* DevReaderUITests */,
@@ -175,6 +241,7 @@
 				TargetAttributes = {
 					9932A8082E823C66001C0FFE = {
 						CreatedOnToolsVersion = 26.0.1;
+						LastSwiftMigration = 2600;
 					};
 					9932A8152E823C67001C0FFE = {
 						CreatedOnToolsVersion = 26.0.1;
@@ -236,6 +303,27 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9932A8342E823CC2001C0FFE /* DevReader.swift in Sources */,
+				A00100012F00000000000001 /* NoteItem.swift in Sources */,
+				A00100032F00000000000001 /* LibraryItem.swift in Sources */,
+				A00100052F00000000000001 /* SessionData.swift in Sources */,
+				A00100072F00000000000001 /* PDFController.swift in Sources */,
+				A00100092F00000000000001 /* NotesStore.swift in Sources */,
+				A001000B2F00000000000001 /* LibraryStore.swift in Sources */,
+				A001000D2F00000000000001 /* NotesPane.swift in Sources */,
+				A001000F2F00000000000001 /* NoteRow.swift in Sources */,
+				A00100112F00000000000001 /* PDFViewRepresentable.swift in Sources */,
+				A00100132F00000000000001 /* PDFPane.swift in Sources */,
+				A00100152F00000000000001 /* LibraryPane.swift in Sources */,
+				A00100172F00000000000001 /* DevReaderApp.swift in Sources */,
+				A00100192F00000000000001 /* ContentView.swift in Sources */,
+				A001001B2F00000000000001 /* WebPane.swift in Sources */,
+				A001001D2F00000000000001 /* CodePane.swift in Sources */,
+				A001001F2F00000000000001 /* Sketch.swift in Sources */,
+				A00100212F00000000000001 /* SettingsView.swift in Sources */,
+				A00100232F00000000000001 /* OnboardingView.swift in Sources */,
+				A00100252F00000000000001 /* Extensions.swift in Sources */,
+				A00100272F00000000000001 /* Shell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -392,6 +480,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -412,6 +501,7 @@
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -422,6 +512,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
