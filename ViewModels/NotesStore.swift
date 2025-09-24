@@ -22,6 +22,8 @@ final class NotesStore: ObservableObject {
 	
 	func add(_ note: NoteItem) { items.insert(note, at: 0) }
 	
+	func remove(_ note: NoteItem) { items.removeAll { $0.id == note.id } }
+	
 	func groupedByChapter() -> [(key: String, value: [NoteItem])] {
 		let groups = Dictionary(grouping: items) { $0.chapter.isEmpty ? "(No Chapter)" : $0.chapter }
 		return groups.sorted { $0.key < $1.key }
@@ -46,20 +48,20 @@ final class NotesStore: ObservableObject {
 	private func persist() { guard let url = currentPDFURL else { return }; persistForPDF(url) }
 	
 	private func persistForPDF(_ url: URL) {
-		let pdfKey = "\(notesKey).\(url.path.hashValue)"
-		let pageKey = "\(pageNotesKey).\(url.path.hashValue)"
-		let tagsKey = "\(self.tagsKey).\(url.path.hashValue)"
-		if let data = try? JSONEncoder().encode(items) { UserDefaults.standard.set(data, forKey: pdfKey) }
-		if let data = try? JSONEncoder().encode(pageNotes) { UserDefaults.standard.set(data, forKey: pageKey) }
-		if let data = try? JSONEncoder().encode(Array(availableTags)) { UserDefaults.standard.set(data, forKey: tagsKey) }
+        let pdfKey = PersistenceService.key(notesKey, for: url)
+        let pageKey = PersistenceService.key(pageNotesKey, for: url)
+        let tagsKey = PersistenceService.key(self.tagsKey, for: url)
+        PersistenceService.saveCodable(items, forKey: pdfKey)
+        PersistenceService.saveCodable(pageNotes, forKey: pageKey)
+        PersistenceService.saveCodable(Array(availableTags), forKey: tagsKey)
 	}
 	
 	private func loadForPDF(_ url: URL) {
-		let pdfKey = "\(notesKey).\(url.path.hashValue)"
-		let pageKey = "\(pageNotesKey).\(url.path.hashValue)"
-		let tagsKey = "\(self.tagsKey).\(url.path.hashValue)"
-		if let data = UserDefaults.standard.data(forKey: pdfKey), let decoded = try? JSONDecoder().decode([NoteItem].self, from: data) { items = decoded } else { items = [] }
-		if let data = UserDefaults.standard.data(forKey: pageKey), let decoded = try? JSONDecoder().decode([Int: String].self, from: data) { pageNotes = decoded } else { pageNotes = [:] }
-		if let data = UserDefaults.standard.data(forKey: tagsKey), let decoded = try? JSONDecoder().decode([String].self, from: data) { availableTags = Set(decoded) } else { availableTags = [] }
+        let pdfKey = PersistenceService.key(notesKey, for: url)
+        let pageKey = PersistenceService.key(pageNotesKey, for: url)
+        let tagsKey = PersistenceService.key(self.tagsKey, for: url)
+        if let decoded: [NoteItem] = PersistenceService.loadCodable([NoteItem].self, forKey: pdfKey) { items = decoded } else { items = [] }
+        if let decoded: [Int: String] = PersistenceService.loadCodable([Int: String].self, forKey: pageKey) { pageNotes = decoded } else { pageNotes = [:] }
+        if let decoded: [String] = PersistenceService.loadCodable([String].self, forKey: tagsKey) { availableTags = Set(decoded) } else { availableTags = [] }
 	}
 }

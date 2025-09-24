@@ -8,35 +8,33 @@
 
 /* Begin PBXBuildFile section */
 		9932A8342E823CC2001C0FFE /* DevReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9932A8332E823CB4001C0FFE /* DevReader.swift */; };
-		A00100012F00000000000001 /* NoteItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100002F00000000000001 /* NoteItem.swift */; };
-		A00100032F00000000000001 /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100022F00000000000001 /* LibraryItem.swift */; };
-		A00100052F00000000000001 /* SessionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100042F00000000000001 /* SessionData.swift */; };
-		A00100072F00000000000001 /* PDFController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100062F00000000000001 /* PDFController.swift */; };
-		A00100092F00000000000001 /* NotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100082F00000000000001 /* NotesStore.swift */; };
-		A001000B2F00000000000001 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000A2F00000000000001 /* LibraryStore.swift */; };
-		A001000D2F00000000000001 /* NotesPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000C2F00000000000001 /* NotesPane.swift */; };
-		A001000F2F00000000000001 /* NoteRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000E2F00000000000001 /* NoteRow.swift */; };
-		A00100112F00000000000001 /* PDFViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100102F00000000000001 /* PDFViewRepresentable.swift */; };
-		A00100132F00000000000001 /* PDFPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100122F00000000000001 /* PDFPane.swift */; };
-		A00100152F00000000000001 /* LibraryPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100142F00000000000001 /* LibraryPane.swift */; };
-		A00100172F00000000000001 /* DevReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100162F00000000000001 /* DevReaderApp.swift */; };
-		A00100192F00000000000001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100182F00000000000001 /* ContentView.swift */; };
-		A001001B2F00000000000001 /* WebPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001A2F00000000000001 /* WebPane.swift */; };
-		A001001D2F00000000000001 /* CodePane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001C2F00000000000001 /* CodePane.swift */; };
-		A001001F2F00000000000001 /* Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001E2F00000000000001 /* Sketch.swift */; };
-		A00100212F00000000000001 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100202F00000000000001 /* SettingsView.swift */; };
-		A00100232F00000000000001 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100222F00000000000001 /* OnboardingView.swift */; };
-		A00100252F00000000000001 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100242F00000000000001 /* Extensions.swift */; };
-		A00100272F00000000000001 /* Shell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100262F00000000000001 /* Shell.swift */; };
-		A001001A2F00000000000001 /* WebPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Web/WebPane.swift; sourceTree = "<group>"; };
-		A001001C2F00000000000001 /* CodePane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/CodePane.swift; sourceTree = "<group>"; };
-		A001001E2F00000000000001 /* Sketch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Sketch/Sketch.swift; sourceTree = "<group>"; };
-		A00100202F00000000000001 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/SettingsView.swift; sourceTree = "<group>"; };
-		A00100222F00000000000001 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Onboarding/OnboardingView.swift; sourceTree = "<group>"; };
-		A00100242F00000000000001 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/Extensions.swift; sourceTree = "<group>"; };
-		A00100262F00000000000001 /* Shell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/Shell.swift; sourceTree = "<group>"; };
-		A00100162F00000000000001 /* DevReaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/DevReaderApp.swift; sourceTree = "<group>"; };
-		A00100182F00000000000001 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/ContentView.swift; sourceTree = "<group>"; };
+		A00100012F00000000000001 /* Models/NoteItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100002F00000000000001 /* Models/NoteItem.swift */; };
+		A00100032F00000000000001 /* Models/LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100022F00000000000001 /* Models/LibraryItem.swift */; };
+		A00100052F00000000000001 /* Models/SessionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100042F00000000000001 /* Models/SessionData.swift */; };
+		A00100072F00000000000001 /* ViewModels/PDFController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100062F00000000000001 /* ViewModels/PDFController.swift */; };
+		A00100092F00000000000001 /* ViewModels/NotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100082F00000000000001 /* ViewModels/NotesStore.swift */; };
+		A001000B2F00000000000001 /* ViewModels/LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000A2F00000000000001 /* ViewModels/LibraryStore.swift */; };
+		A001000D2F00000000000001 /* Views/Notes/NotesPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000C2F00000000000001 /* Views/Notes/NotesPane.swift */; };
+		A001000F2F00000000000001 /* Views/Notes/NoteRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000E2F00000000000001 /* Views/Notes/NoteRow.swift */; };
+		A00100112F00000000000001 /* Views/PDF/PDFViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100102F00000000000001 /* Views/PDF/PDFViewRepresentable.swift */; };
+		A00100132F00000000000001 /* Views/PDF/PDFPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100122F00000000000001 /* Views/PDF/PDFPane.swift */; };
+		A00100152F00000000000001 /* Views/Library/LibraryPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100142F00000000000001 /* Views/Library/LibraryPane.swift */; };
+		A00100172F00000000000001 /* App/DevReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100162F00000000000001 /* App/DevReaderApp.swift */; };
+		A00100192F00000000000001 /* App/ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100182F00000000000001 /* App/ContentView.swift */; };
+		A001001B2F00000000000001 /* Views/Web/WebPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001A2F00000000000001 /* Views/Web/WebPane.swift */; };
+		A001001D2F00000000000001 /* Views/Code/CodePane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001C2F00000000000001 /* Views/Code/CodePane.swift */; };
+		A001001F2F00000000000001 /* Views/Sketch/Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001E2F00000000000001 /* Views/Sketch/Sketch.swift */; };
+		A00100212F00000000000001 /* Views/Settings/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100202F00000000000001 /* Views/Settings/SettingsView.swift */; };
+		A00100232F00000000000001 /* Views/Onboarding/OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100222F00000000000001 /* Views/Onboarding/OnboardingView.swift */; };
+		A00100252F00000000000001 /* Utils/Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100242F00000000000001 /* Utils/Extensions.swift */; };
+		A00100272F00000000000001 /* Utils/Shell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100262F00000000000001 /* Utils/Shell.swift */; };
+		A00100292F00000000000001 /* Services/PersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100282F00000000000001 /* Services/PersistenceService.swift */; };
+		A001002B2F00000000000001 /* Services/FileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001002A2F00000000000001 /* Services/FileService.swift */; };
+		A001002D2F00000000000001 /* Services/AnnotationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001002C2F00000000000001 /* Services/AnnotationService.swift */; };
+		A001002E2F00000000000001 /* Services/ErrorRecoveryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001002F2F00000000000001 /* Services/ErrorRecoveryService.swift */; };
+		A00100302F00000000000001 /* Views/PDF/OutlinePane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100312F00000000000001 /* Views/PDF/OutlinePane.swift */; };
+		A00100322F00000000000001 /* Views/UI/CompactLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100332F00000000000001 /* Views/UI/CompactLayoutView.swift */; };
+		A00100342F00000000000001 /* Views/UI/FullLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100352F00000000000001 /* Views/UI/FullLayoutView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,17 +59,34 @@
 		9932A8162E823C67001C0FFE /* DevReaderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DevReaderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9932A8202E823C67001C0FFE /* DevReaderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DevReaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9932A8332E823CB4001C0FFE /* DevReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevReader.swift; sourceTree = "<group>"; };
-		A00100002F00000000000001 /* NoteItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/NoteItem.swift; sourceTree = "<group>"; };
-		A00100022F00000000000001 /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/LibraryItem.swift; sourceTree = "<group>"; };
-		A00100042F00000000000001 /* SessionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/SessionData.swift; sourceTree = "<group>"; };
-		A00100062F00000000000001 /* PDFController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFController.swift; sourceTree = "<group>"; };
-		A00100082F00000000000001 /* NotesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/NotesStore.swift; sourceTree = "<group>"; };
-		A001000A2F00000000000001 /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/LibraryStore.swift; sourceTree = "<group>"; };
-		A001000C2F00000000000001 /* NotesPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/NotesPane.swift; sourceTree = "<group>"; };
-		A001000E2F00000000000001 /* NoteRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/NoteRow.swift; sourceTree = "<group>"; };
-		A00100102F00000000000001 /* PDFViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFViewRepresentable.swift; sourceTree = "<group>"; };
-		A00100122F00000000000001 /* PDFPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFPane.swift; sourceTree = "<group>"; };
-		A00100142F00000000000001 /* LibraryPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Library/LibraryPane.swift; sourceTree = "<group>"; };
+		A00100002F00000000000001 /* Models/NoteItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/NoteItem.swift; sourceTree = "<group>"; };
+		A00100022F00000000000001 /* Models/LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/LibraryItem.swift; sourceTree = "<group>"; };
+		A00100042F00000000000001 /* Models/SessionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/SessionData.swift; sourceTree = "<group>"; };
+		A00100062F00000000000001 /* ViewModels/PDFController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFController.swift; sourceTree = "<group>"; };
+		A00100082F00000000000001 /* ViewModels/NotesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/NotesStore.swift; sourceTree = "<group>"; };
+		A001000A2F00000000000001 /* ViewModels/LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/LibraryStore.swift; sourceTree = "<group>"; };
+		A001000C2F00000000000001 /* Views/Notes/NotesPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/NotesPane.swift; sourceTree = "<group>"; };
+		A001000E2F00000000000001 /* Views/Notes/NoteRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/NoteRow.swift; sourceTree = "<group>"; };
+		A00100102F00000000000001 /* Views/PDF/PDFViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFViewRepresentable.swift; sourceTree = "<group>"; };
+		A00100122F00000000000001 /* Views/PDF/PDFPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFPane.swift; sourceTree = "<group>"; };
+		A00100142F00000000000001 /* Views/Library/LibraryPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Library/LibraryPane.swift; sourceTree = "<group>"; };
+		A00100162F00000000000001 /* App/DevReaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/DevReaderApp.swift; sourceTree = "<group>"; };
+		A00100182F00000000000001 /* App/ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/ContentView.swift; sourceTree = "<group>"; };
+		A001001A2F00000000000001 /* Views/Web/WebPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Web/WebPane.swift; sourceTree = "<group>"; };
+		A001001C2F00000000000001 /* Views/Code/CodePane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/CodePane.swift; sourceTree = "<group>"; };
+		A001001E2F00000000000001 /* Views/Sketch/Sketch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Sketch/Sketch.swift; sourceTree = "<group>"; };
+		A00100202F00000000000001 /* Views/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/SettingsView.swift; sourceTree = "<group>"; };
+		A00100222F00000000000001 /* Views/Onboarding/OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Onboarding/OnboardingView.swift; sourceTree = "<group>"; };
+		A00100242F00000000000001 /* Utils/Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/Extensions.swift; sourceTree = "<group>"; };
+		A00100262F00000000000001 /* Utils/Shell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/Shell.swift; sourceTree = "<group>"; };
+		A00100282F00000000000001 /* Services/PersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/PersistenceService.swift; sourceTree = "<group>"; };
+		A001002A2F00000000000001 /* Services/FileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/FileService.swift; sourceTree = "<group>"; };
+		A001002C2F00000000000001 /* Services/AnnotationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnnotationService.swift; sourceTree = "<group>"; };
+		A001002F2F00000000000001 /* Services/ErrorRecoveryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/ErrorRecoveryService.swift; sourceTree = "<group>"; };
+		A00100312F00000000000001 /* Views/PDF/OutlinePane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/OutlinePane.swift; sourceTree = "<group>"; };
+		A00100332F00000000000001 /* Views/UI/CompactLayoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/UI/CompactLayoutView.swift; sourceTree = "<group>"; };
+		A00100352F00000000000001 /* Views/UI/FullLayoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/UI/FullLayoutView.swift; sourceTree = "<group>"; };
+		A00100362F00000000000001 /* DevReader.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DevReader.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -120,27 +135,35 @@
 		9932A8002E823C66001C0FFE = {
 			isa = PBXGroup;
 			children = (
-				A00100162F00000000000001 /* DevReaderApp.swift */,
-				A00100182F00000000000001 /* ContentView.swift */,
+				A00100282F00000000000001 /* Services/PersistenceService.swift */,
+				A001002A2F00000000000001 /* Services/FileService.swift */,
+				A001002C2F00000000000001 /* Services/AnnotationService.swift */,
+				A001002F2F00000000000001 /* Services/ErrorRecoveryService.swift */,
+				A00100162F00000000000001 /* App/DevReaderApp.swift */,
+				A00100182F00000000000001 /* App/ContentView.swift */,
 				9932A8332E823CB4001C0FFE /* DevReader.swift */,
-				A001001A2F00000000000001 /* WebPane.swift */,
-				A001001C2F00000000000001 /* CodePane.swift */,
-				A001001E2F00000000000001 /* Sketch.swift */,
-				A00100202F00000000000001 /* SettingsView.swift */,
-				A00100222F00000000000001 /* OnboardingView.swift */,
-				A00100242F00000000000001 /* Extensions.swift */,
-				A00100262F00000000000001 /* Shell.swift */,
-				A00100002F00000000000001 /* NoteItem.swift */,
-				A00100022F00000000000001 /* LibraryItem.swift */,
-				A00100042F00000000000001 /* SessionData.swift */,
-				A00100062F00000000000001 /* PDFController.swift */,
-				A00100082F00000000000001 /* NotesStore.swift */,
-				A001000A2F00000000000001 /* LibraryStore.swift */,
-				A001000C2F00000000000001 /* NotesPane.swift */,
-				A001000E2F00000000000001 /* NoteRow.swift */,
-				A00100102F00000000000001 /* PDFViewRepresentable.swift */,
-				A00100122F00000000000001 /* PDFPane.swift */,
-				A00100142F00000000000001 /* LibraryPane.swift */,
+				A001001A2F00000000000001 /* Views/Web/WebPane.swift */,
+				A001001C2F00000000000001 /* Views/Code/CodePane.swift */,
+				A001001E2F00000000000001 /* Views/Sketch/Sketch.swift */,
+				A00100202F00000000000001 /* Views/Settings/SettingsView.swift */,
+				A00100222F00000000000001 /* Views/Onboarding/OnboardingView.swift */,
+				A00100242F00000000000001 /* Utils/Extensions.swift */,
+				A00100262F00000000000001 /* Utils/Shell.swift */,
+				A00100002F00000000000001 /* Models/NoteItem.swift */,
+				A00100022F00000000000001 /* Models/LibraryItem.swift */,
+				A00100042F00000000000001 /* Models/SessionData.swift */,
+				A00100062F00000000000001 /* ViewModels/PDFController.swift */,
+				A00100082F00000000000001 /* ViewModels/NotesStore.swift */,
+				A001000A2F00000000000001 /* ViewModels/LibraryStore.swift */,
+				A001000C2F00000000000001 /* Views/Notes/NotesPane.swift */,
+				A001000E2F00000000000001 /* Views/Notes/NoteRow.swift */,
+				A00100102F00000000000001 /* Views/PDF/PDFViewRepresentable.swift */,
+				A00100122F00000000000001 /* Views/PDF/PDFPane.swift */,
+				A00100312F00000000000001 /* Views/PDF/OutlinePane.swift */,
+				A00100332F00000000000001 /* Views/UI/CompactLayoutView.swift */,
+				A00100352F00000000000001 /* Views/UI/FullLayoutView.swift */,
+				A00100142F00000000000001 /* Views/Library/LibraryPane.swift */,
+				A00100362F00000000000001 /* DevReader.entitlements */,
 				9932A80B2E823C66001C0FFE /* DevReader */,
 				9932A8192E823C67001C0FFE /* DevReaderTests */,
 				9932A8232E823C67001C0FFE /* DevReaderUITests */,
@@ -304,26 +327,33 @@
 			buildActionMask = 2147483647;
 			files = (
 				9932A8342E823CC2001C0FFE /* DevReader.swift in Sources */,
-				A00100012F00000000000001 /* NoteItem.swift in Sources */,
-				A00100032F00000000000001 /* LibraryItem.swift in Sources */,
-				A00100052F00000000000001 /* SessionData.swift in Sources */,
-				A00100072F00000000000001 /* PDFController.swift in Sources */,
-				A00100092F00000000000001 /* NotesStore.swift in Sources */,
-				A001000B2F00000000000001 /* LibraryStore.swift in Sources */,
-				A001000D2F00000000000001 /* NotesPane.swift in Sources */,
-				A001000F2F00000000000001 /* NoteRow.swift in Sources */,
-				A00100112F00000000000001 /* PDFViewRepresentable.swift in Sources */,
-				A00100132F00000000000001 /* PDFPane.swift in Sources */,
-				A00100152F00000000000001 /* LibraryPane.swift in Sources */,
-				A00100172F00000000000001 /* DevReaderApp.swift in Sources */,
-				A00100192F00000000000001 /* ContentView.swift in Sources */,
-				A001001B2F00000000000001 /* WebPane.swift in Sources */,
-				A001001D2F00000000000001 /* CodePane.swift in Sources */,
-				A001001F2F00000000000001 /* Sketch.swift in Sources */,
-				A00100212F00000000000001 /* SettingsView.swift in Sources */,
-				A00100232F00000000000001 /* OnboardingView.swift in Sources */,
-				A00100252F00000000000001 /* Extensions.swift in Sources */,
-				A00100272F00000000000001 /* Shell.swift in Sources */,
+				A00100012F00000000000001 /* Models/NoteItem.swift in Sources */,
+				A00100032F00000000000001 /* Models/LibraryItem.swift in Sources */,
+				A00100052F00000000000001 /* Models/SessionData.swift in Sources */,
+				A00100072F00000000000001 /* ViewModels/PDFController.swift in Sources */,
+				A00100092F00000000000001 /* ViewModels/NotesStore.swift in Sources */,
+				A001000B2F00000000000001 /* ViewModels/LibraryStore.swift in Sources */,
+				A001000D2F00000000000001 /* Views/Notes/NotesPane.swift in Sources */,
+				A001000F2F00000000000001 /* Views/Notes/NoteRow.swift in Sources */,
+				A00100112F00000000000001 /* Views/PDF/PDFViewRepresentable.swift in Sources */,
+				A00100132F00000000000001 /* Views/PDF/PDFPane.swift in Sources */,
+				A00100302F00000000000001 /* Views/PDF/OutlinePane.swift in Sources */,
+				A00100322F00000000000001 /* Views/UI/CompactLayoutView.swift in Sources */,
+				A00100342F00000000000001 /* Views/UI/FullLayoutView.swift in Sources */,
+				A00100152F00000000000001 /* Views/Library/LibraryPane.swift in Sources */,
+				A00100172F00000000000001 /* App/DevReaderApp.swift in Sources */,
+				A00100192F00000000000001 /* App/ContentView.swift in Sources */,
+				A001001B2F00000000000001 /* Views/Web/WebPane.swift in Sources */,
+				A001001D2F00000000000001 /* Views/Code/CodePane.swift in Sources */,
+				A001001F2F00000000000001 /* Views/Sketch/Sketch.swift in Sources */,
+				A00100212F00000000000001 /* Views/Settings/SettingsView.swift in Sources */,
+				A00100232F00000000000001 /* Views/Onboarding/OnboardingView.swift in Sources */,
+				A00100252F00000000000001 /* Utils/Extensions.swift in Sources */,
+				A00100272F00000000000001 /* Utils/Shell.swift in Sources */,
+				A00100292F00000000000001 /* Services/PersistenceService.swift in Sources */,
+				A001002B2F00000000000001 /* Services/FileService.swift in Sources */,
+				A001002D2F00000000000001 /* Services/AnnotationService.swift in Sources */,
+				A001002E2F00000000000001 /* Services/ErrorRecoveryService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -486,7 +516,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				CODE_SIGN_ENTITLEMENTS = DevReader.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -518,7 +549,8 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
+				ENABLE_USER_SELECTED_FILES = readwrite;
+				CODE_SIGN_ENTITLEMENTS = DevReader.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
