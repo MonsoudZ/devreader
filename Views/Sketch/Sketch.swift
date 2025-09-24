@@ -29,40 +29,68 @@ final class SketchWindow: NSObject, NSWindowDelegate {
 struct SketchView: View {
 	var size: CGSize
 	var onInsert: (NSImage) -> Void
-	@State private var paths: [Path] = []
-	@State private var current: Path = Path()
+    struct Stroke: Identifiable { let id = UUID(); var path: Path; var color: Color; var lineWidth: CGFloat }
+    @State private var strokes: [Stroke] = []
+    @State private var current: Stroke = Stroke(path: Path(), color: .black, lineWidth: 2)
+    @State private var penColor: Color = .black
+    @State private var penWidth: CGFloat = 2
+    @State private var canvasSize: CGSize = .zero
 	
 	var body: some View {
-		VStack(spacing: 0) {
-			HStack {
-				Text("Draw freehand. Click Insert when done.")
-				Spacer()
-				Button("Clear") { paths.removeAll() }
-				Button("Insert") { let img = render(); onInsert(img) }
-			}.padding(8)
-			Divider()
-			GeometryReader { _ in
-				ZStack {
-					Color.white
-					ForEach(paths.indices, id: \.self) { i in paths[i].stroke(lineWidth: 2) }
-					current.stroke(lineWidth: 2)
-				}
-				.gesture(DragGesture(minimumDistance: 0)
-					.onChanged { value in if current.isEmpty { current.move(to: value.location) } else { current.addLine(to: value.location) } }
-					.onEnded { _ in paths.append(current); current = Path() }
-				)
-			}
-		}
-		.frame(minWidth: size.width * 0.7, minHeight: size.height * 0.7)
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Text("Sketch")
+                Divider()
+                ColorPicker("Ink", selection: $penColor).labelsHidden()
+                HStack { Text("Width"); Slider(value: $penWidth, in: 1...16, step: 1).frame(width: 140); Text("\(Int(penWidth))") }
+                Divider()
+                Button("Undo") { if !strokes.isEmpty { _ = strokes.removeLast() } }
+                Button("Clear") { strokes.removeAll() }
+                Spacer()
+                Button("Insert") { let img = render(); onInsert(img) }
+            }.padding(8)
+            Divider()
+            GeometryReader { proxy in
+                let sz = proxy.size
+                ZStack(alignment: .topLeading) {
+                    Color.white
+                    ForEach(strokes) { s in s.path.stroke(s.color, lineWidth: s.lineWidth) }
+                    current.path.stroke(current.color, lineWidth: current.lineWidth)
+                }
+                .contentShape(Rectangle())
+                .gesture(DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        if current.path.isEmpty {
+                            current = Stroke(path: Path(), color: penColor, lineWidth: penWidth)
+                            current.path.move(to: value.location)
+                        } else {
+                            current.path.addLine(to: value.location)
+                        }
+                    }
+                    .onEnded { _ in
+                        strokes.append(current)
+                        current = Stroke(path: Path(), color: penColor, lineWidth: penWidth)
+                    }
+                )
+                .onAppear { canvasSize = sz }
+                .onChange(of: sz) { newSize in canvasSize = newSize }
+            }
+        }
+        .frame(minWidth: size.width * 0.7, minHeight: size.height * 0.7)
 	}
 	
 	func render() -> NSImage {
-		let rect = CGRect(origin: .zero, size: size)
-		let img = NSImage(size: size)
+        let targetSize = canvasSize == .zero ? size : canvasSize
+        let rect = CGRect(origin: .zero, size: targetSize)
+        let img = NSImage(size: targetSize)
 		img.lockFocus()
 		NSColor.white.setFill(); rect.fill()
-		let nsPath = NSBezierPath(); for p in paths { nsPath.append(p.nsBezierPath()) }
-		nsPath.lineWidth = 2; NSColor.black.setStroke(); nsPath.stroke()
+        for s in strokes {
+            let nsPath = s.path.nsBezierPath()
+            nsPath.lineWidth = s.lineWidth
+            NSColor(s.color).setStroke()
+            nsPath.stroke()
+        }
 		img.unlockFocus(); return img
 	}
 }

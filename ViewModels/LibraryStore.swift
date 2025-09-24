@@ -18,6 +18,8 @@ final class LibraryStore: ObservableObject {
 
 	func remove(_ item: LibraryItem) { items.removeAll { $0.id == item.id } }
 
+	func remove(ids: Set<LibraryItem.ID>) { items.removeAll { ids.contains($0.id) } }
+
 	private func persist() {
 		if let data = try? JSONEncoder().encode(items) { UserDefaults.standard.set(data, forKey: key) }
 	}

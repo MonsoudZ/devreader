@@ -1,11 +1,35 @@
 import SwiftUI
+import PDFKit
+import Combine
+
+final class AppDependencies: ObservableObject {
+    let objectWillChange = PassthroughSubject<Void, Never>()
+    let persistence = PersistenceService.self
+    let file = FileService.self
+    let annotation = AnnotationService.self
+}
+
+private struct DependenciesKey: EnvironmentKey {
+    static let defaultValue = AppDependencies()
+}
+
+extension EnvironmentValues {
+    var deps: AppDependencies {
+        get { self[DependenciesKey.self] }
+        set { self[DependenciesKey.self] = newValue }
+    }
+}
 
 @main
 struct DevReaderApp: App {
+    @StateObject private var deps = AppDependencies()
+    @StateObject private var toastCenter = ToastCenter()
 	var body: some Scene {
 		WindowGroup {
-			ContentView()
-				.frame(minWidth: 1200, minHeight: 800)
+            ContentView()
+                .environment(\.deps, deps)
+                .environmentObject(toastCenter)
+                .frame(minWidth: 700, minHeight: 600)
 		}
 		.windowStyle(.titleBar)
 		.commands {

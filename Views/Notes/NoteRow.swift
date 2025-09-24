@@ -8,52 +8,96 @@ struct NoteRow: View {
 	@State private var newTag = ""
 	@State private var isEditing = false
 	@State private var editingText = ""
+	@State private var editingTitle = ""
+	@State private var isNewNote = false
 	
 	var body: some View {
-		VStack(alignment: .leading, spacing: 4) {
+		VStack(alignment: .leading, spacing: 6) {
 			HStack(alignment: .top) {
-				VStack(alignment: .leading, spacing: 2) {
+				VStack(alignment: .leading, spacing: 4) {
 					if isEditing {
-						TextField("Edit note", text: $editingText)
-							.textFieldStyle(.roundedBorder)
-							.onSubmit { saveEdit() }
+						VStack(alignment: .leading, spacing: 4) {
+							TextField("Note title (optional)", text: $editingTitle)
+								.textFieldStyle(.roundedBorder)
+								.font(.headline)
+							TextEditor(text: $editingText)
+								.font(.body)
+								.frame(minHeight: 60)
+								.overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.quaternary))
+						}
 					} else {
-						Text(item.text).font(.body)
+						VStack(alignment: .leading, spacing: 2) {
+							if !item.text.isEmpty {
+								Text(item.text).font(.body)
+							} else {
+								Text("Empty note - click Edit to add content").font(.body).foregroundStyle(.secondary).italic()
+							}
+						}
 					}
 					Text("Page \(item.pageIndex + 1)").font(.caption).foregroundStyle(.secondary)
 				}
 				Spacer()
 				if isEditing {
-					Button("Save") { saveEdit() }.buttonStyle(.bordered).controlSize(.small)
-					Button("Cancel") { cancelEdit() }.buttonStyle(.bordered).controlSize(.small)
-				} else {
-					Button("Edit") { startEdit() }.buttonStyle(.bordered).controlSize(.small)
-					Button("Go") { jump() }
-				}
-			}
-			
-			if !item.tags.isEmpty {
-				HStack {
-					ForEach(item.tags, id: \.self) { tag in
-						HStack(spacing: 2) {
-							Text(tag)
-								.font(.caption)
-								.padding(.horizontal, 6)
-								.padding(.vertical, 2)
-								.background(Color.blue.opacity(0.2))
-								.cornerRadius(4)
-							Button("×") { notes.removeTag(tag, from: item) }
-								.font(.caption)
-								.foregroundStyle(.red)
-						}
+					VStack(spacing: 4) {
+						Button("Save") { saveEdit() }.buttonStyle(.bordered).controlSize(.small)
+						Button("Cancel") { cancelEdit() }.buttonStyle(.bordered).controlSize(.small)
 					}
-					Spacer()
+				} else {
+					VStack(spacing: 4) {
+						Button("Edit") { startEdit() }.buttonStyle(.bordered).controlSize(.small)
+						Button("Go") { jump() }
+					}
 				}
 			}
 			
-			HStack {
-				Button("+ Tag") { showingTagEditor = true }.font(.caption).buttonStyle(.bordered).controlSize(.small)
-				Spacer()
+			// Tags section
+			VStack(alignment: .leading, spacing: 4) {
+				if isEditing {
+					HStack {
+						TextField("Add tag...", text: $newTag)
+							.textFieldStyle(.roundedBorder)
+							.onSubmit { addTag() }
+						Button("Add") { addTag() }.buttonStyle(.bordered).controlSize(.small)
+					}
+				}
+				
+				if !item.tags.isEmpty {
+					HStack {
+						ForEach(item.tags, id: \.self) { tag in
+							HStack(spacing: 2) {
+								Text(tag)
+									.font(.caption)
+									.padding(.horizontal, 6)
+									.padding(.vertical, 2)
+									.background(Color.blue.opacity(0.2))
+									.cornerRadius(4)
+								if isEditing {
+									Button("×") { notes.removeTag(tag, from: item) }
+										.font(.caption)
+										.foregroundStyle(.red)
+								}
+							}
+						}
+						Spacer()
+					}
+				}
+				
+				if !isEditing && item.tags.isEmpty {
+					HStack {
+						Button("+ Add Tag") { showingTagEditor = true }.font(.caption).buttonStyle(.bordered).controlSize(.small)
+						Spacer()
+					}
+				}
+			}
+		}
+		.padding(8)
+		.background(isEditing ? Color.blue.opacity(0.05) : Color.clear)
+		.cornerRadius(8)
+		.onAppear {
+			// Auto-start editing if this is a new empty note
+			if item.text.isEmpty && item.tags.isEmpty {
+				isNewNote = true
+				startEdit()
 			}
 		}
 		.sheet(isPresented: $showingTagEditor) {
@@ -72,7 +116,34 @@ struct NoteRow: View {
 		}
 	}
 	
-	private func startEdit() { editingText = item.text; isEditing = true }
-	private func saveEdit() { if let idx = notes.items.firstIndex(where: { $0.id == item.id }) { notes.items[idx].text = editingText }; isEditing = false }
-	private func cancelEdit() { editingText = item.text; isEditing = false }
+	private func startEdit() { 
+		editingText = item.text
+		editingTitle = "" // We don't have a title field in NoteItem yet, but this is for future expansion
+		isEditing = true 
+	}
+	
+	private func saveEdit() { 
+		if let idx = notes.items.firstIndex(where: { $0.id == item.id }) { 
+			notes.items[idx].text = editingText
+		}
+		isEditing = false
+		isNewNote = false
+	}
+	
+	private func cancelEdit() { 
+		editingText = item.text
+		editingTitle = ""
+		isEditing = false
+		if isNewNote {
+			// If this was a new note and user cancels, remove it
+			notes.remove(item)
+		}
+	}
+	
+	private func addTag() {
+		if !newTag.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+			notes.addTag(newTag.trimmingCharacters(in: .whitespacesAndNewlines), to: item)
+			newTag = ""
+		}
+	}
 }
