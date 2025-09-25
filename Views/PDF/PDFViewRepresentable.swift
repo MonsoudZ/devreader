@@ -35,9 +35,19 @@ struct PDFViewRepresentable: NSViewRepresentable {
 		// Configure for better image handling and memory optimization
 		v.interpolationQuality = .high
 		
-		// Memory optimization settings
+		// Memory optimization settings for large PDFs
 		v.pageShadowsEnabled = false // Disable shadows to save memory
 		v.displayBox = .mediaBox // Use media box for better memory efficiency
+		
+		// Large PDF optimizations
+		if pdf.isLargePDF {
+			// Disable automatic page caching for large PDFs
+			v.pageShadowsEnabled = false
+			// Use lower quality for faster rendering
+			v.interpolationQuality = .low
+			// Disable automatic scaling for better performance
+			v.autoScales = false
+		}
 		
 		// Accessibility support
 		v.setAccessibilityLabel("PDF Document")

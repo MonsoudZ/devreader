@@ -24,6 +24,12 @@ extension EnvironmentValues {
 struct DevReaderApp: App {
     @StateObject private var deps = AppDependencies()
     @StateObject private var toastCenter = ToastCenter()
+    
+    init() {
+        // Initialize enhanced data management
+        PersistenceService.initialize()
+    }
+    
 	var body: some Scene {
 		WindowGroup {
             ContentView()

@@ -7,6 +7,9 @@ struct SettingsView: View {
 	@AppStorage("autoSave") private var autoSave = true
 	@AppStorage("autosaveIntervalSeconds") private var autosaveIntervalSeconds: Double = 30
 	@StateObject private var performanceMonitor = PerformanceMonitor.shared
+	@State private var alertMessage = ""
+	@State private var alertTitle = ""
+	@State private var showingAlert = false
 	
 	var body: some View {
 		NavigationView {
@@ -61,11 +64,68 @@ struct SettingsView: View {
 							.foregroundStyle(performanceMonitor.isMonitoring ? .green : .secondary)
 					}
 				}
+				Section("Data Management") {
+					Text("Data is stored in JSON files for better performance:")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+					Text("• Library & Settings: ~/Library/Application Support/DevReader/Data/")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+					Text("• Annotated PDFs: ~/Library/Application Support/DevReader/Annotations/")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+					Text("• Backups: ~/Library/Application Support/DevReader/Backups/")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+					
+					HStack(spacing: 12) {
+						Button("Create Backup") {
+							createBackup()
+						}
+						.buttonStyle(.bordered)
+						
+						Button("Validate Data") {
+							validateData()
+						}
+						.buttonStyle(.bordered)
+					}
+					.padding(.top, 4)
+				}
 				Section("Keyboard Shortcuts") { VStack(alignment: .leading, spacing: 4) { Text("⌘⇧H - Highlight → Note"); Text("⌘⇧S - Add Sticky Note"); Text("⌘⇧N - New Sketch Page") } .font(.caption).foregroundStyle(.secondary) }
 			}
 			.navigationTitle("Settings")
 			.frame(width: 400, height: 300)
 			.toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+			.alert(alertTitle, isPresented: $showingAlert) {
+				Button("OK") { }
+			} message: {
+				Text(alertMessage)
+			}
 		}
+	}
+	
+	private func createBackup() {
+		do {
+			let backupURL = try PersistenceService.createBackup()
+			alertTitle = "Backup Created"
+			alertMessage = "Backup saved to: \(backupURL.lastPathComponent)"
+			showingAlert = true
+		} catch {
+			alertTitle = "Backup Failed"
+			alertMessage = error.localizedDescription
+			showingAlert = true
+		}
+	}
+	
+	private func validateData() {
+		let issues = PersistenceService.validateDataIntegrity()
+		if issues.isEmpty {
+			alertTitle = "Data Validation"
+			alertMessage = "All data files are valid and intact."
+		} else {
+			alertTitle = "Data Issues Found"
+			alertMessage = issues.joined(separator: "\n")
+		}
+		showingAlert = true
 	}
 }

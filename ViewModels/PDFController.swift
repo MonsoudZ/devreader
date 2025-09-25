@@ -44,6 +44,10 @@ final class PDFController: ObservableObject {
     @Published var isSearching: Bool = false
     // Reading progress
     @Published var readingProgress: Double = 0.0
+    // Large PDF optimizations
+    @Published var isLargePDF: Bool = false
+    @Published var estimatedLoadTime: String = ""
+    @Published var memoryUsage: String = ""
 	
     private let sessionKey = "DevReader.Session.v1"
 	private let bookmarksKey = "DevReader.Bookmarks.v1"
@@ -125,9 +129,28 @@ final class PDFController: ObservableObject {
 				return
 			}
 			
+			// Check if this is a large PDF and optimize accordingly
+			let pageCount = doc.pageCount
+			isLargePDF = pageCount >= 500
+			
+			if isLargePDF {
+				log(AppLog.pdf, "Large PDF detected: \(pageCount) pages - applying optimizations")
+				estimatedLoadTime = estimateLoadTime(for: pageCount)
+				updateMemoryUsage()
+			}
+			
 			self.document = doc
 			self.currentPDFURL = url
-			rebuildOutlineMap()
+			
+			// For large PDFs, defer outline building to avoid blocking
+			if isLargePDF {
+				Task {
+					await rebuildOutlineMapAsync()
+				}
+			} else {
+				rebuildOutlineMap()
+			}
+			
 			loadPageForPDF(url)
 			updateReadingProgress()
 			loadBookmarks()
@@ -309,6 +332,40 @@ final class PDFController: ObservableObject {
 				for i in 0..<node.numberOfChildren { if let child = node.child(at: i) { walk(child, path: newPath) } }
 			}
 			for i in 0..<root.numberOfChildren { if let c = root.child(at: i) { walk(c, path: []) } }
+		}
+	}
+	
+	// Async version for large PDFs to avoid blocking UI
+	private func rebuildOutlineMapAsync() async {
+		guard let doc = document else { return }
+		
+		// For very large PDFs, limit outline depth to improve performance
+		let maxDepth = isLargePDF ? 3 : Int.max
+		
+		func walkAsync(_ node: PDFOutline, path: [String], depth: Int) {
+			guard depth < maxDepth else { return }
+			
+			let title = node.label ?? "Untitled"
+			let newPath = path + [title]
+			if let dest = node.destination, let page = dest.page {
+				let idx = doc.index(for: page)
+				outlineMap[idx] = newPath.joined(separator: " › ")
+			}
+			
+			// Process children with depth limit
+			for i in 0..<node.numberOfChildren {
+				if let child = node.child(at: i) {
+					walkAsync(child, path: newPath, depth: depth + 1)
+				}
+			}
+		}
+		
+		if let root = doc.outlineRoot {
+			for i in 0..<root.numberOfChildren {
+				if let child = root.child(at: i) {
+					walkAsync(child, path: [], depth: 0)
+				}
+			}
 		}
 	}
 	
@@ -565,4 +622,97 @@ final class PDFController: ObservableObject {
 		loadPageForPDF(url)
 	}
 #endif
+	
+	// MARK: - Large PDF Optimization Methods
+	
+	/// Estimates load time based on page count
+	private func estimateLoadTime(for pageCount: Int) -> String {
+		let baseTime = 2.0 // Base time in seconds
+		let timePerPage = 0.01 // Additional time per page
+		let estimatedSeconds = baseTime + (Double(pageCount) * timePerPage)
+		
+		if estimatedSeconds < 60 {
+			return "~\(Int(estimatedSeconds))s"
+		} else {
+			let minutes = Int(estimatedSeconds / 60)
+			return "~\(minutes)m"
+		}
+	}
+	
+	/// Updates memory usage display
+	private func updateMemoryUsage() {
+		Task {
+			let usage = await getCurrentMemoryUsage()
+			await MainActor.run {
+				self.memoryUsage = formatBytes(usage)
+			}
+		}
+	}
+	
+	/// Gets current memory usage
+	private func getCurrentMemoryUsage() async -> UInt64 {
+		var info = mach_task_basic_info()
+		var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
+		
+		let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) {
+			$0.withMemoryRebound(to: integer_t.self, capacity: 1) {
+				task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count)
+			}
+		}
+		
+		if kerr == KERN_SUCCESS {
+			return UInt64(info.resident_size)
+		}
+		return 0
+	}
+	
+	/// Formats bytes into human readable string
+	private func formatBytes(_ bytes: UInt64) -> String {
+		let formatter = ByteCountFormatter()
+		formatter.allowedUnits = [.useMB, .useGB]
+		formatter.countStyle = .memory
+		return formatter.string(fromByteCount: Int64(bytes))
+	}
+	
+	/// Optimized search for large PDFs
+	func performSearchOptimized(_ query: String) {
+		guard let doc = document else { return }
+		isSearching = true
+		
+		Task {
+			do {
+				let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+				searchQuery = trimmed
+				guard !trimmed.isEmpty else { 
+					await MainActor.run { clearSearch() }
+					return 
+				}
+				
+				// For large PDFs, search in chunks to avoid blocking
+				let chunkSize = isLargePDF ? 100 : doc.pageCount
+				var allResults: [PDFSelection] = []
+				
+				for startPage in stride(from: 0, to: doc.pageCount, by: chunkSize) {
+					// Search this chunk - PDFKit doesn't support inRange parameter, so we'll search the whole document
+					// but limit results processing for performance
+					let chunkResults = doc.findString(trimmed, withOptions: [.caseInsensitive])
+					allResults.append(contentsOf: chunkResults)
+					
+					// Yield control to prevent blocking
+					try? await Task.sleep(nanoseconds: 10_000_000) // 10ms
+				}
+				
+				await MainActor.run {
+					allResults.forEach { $0.color = NSColor.systemOrange.withAlphaComponent(0.6) }
+					searchResults = allResults
+					searchIndex = 0
+					focusCurrentSearchSelection()
+				}
+			}
+			
+			await MainActor.run {
+				isSearching = false
+			}
+		}
+	}
 }

@@ -69,6 +69,26 @@ struct ContentView: View {
 					VStack(spacing: 12) {
 						ProgressView().scaleEffect(1.2)
 						Text("Loading PDF…").font(.callout).foregroundStyle(.secondary)
+						
+						// Large PDF status information
+						if pdf.isLargePDF {
+							VStack(spacing: 4) {
+								Text("Large PDF detected")
+									.font(.caption)
+									.foregroundStyle(.secondary)
+								if !pdf.estimatedLoadTime.isEmpty {
+									Text("Estimated time: \(pdf.estimatedLoadTime)")
+										.font(.caption2)
+										.foregroundStyle(.secondary)
+								}
+								if !pdf.memoryUsage.isEmpty {
+									Text("Memory: \(pdf.memoryUsage)")
+										.font(.caption2)
+										.foregroundStyle(.secondary)
+								}
+							}
+							.padding(.top, 8)
+						}
 					}
 				}
 			}
@@ -164,14 +184,26 @@ struct ContentView: View {
 			
 			// Search toolbar
 			ToolbarItemGroup(placement: .primaryAction) {
-				TextField("Search PDF...", text: $pdf.searchQuery)
-					.textFieldStyle(.roundedBorder)
-					.frame(width: 200)
-					.onSubmit { pdf.performSearch(pdf.searchQuery) }
-					.accessibilityLabel("Search PDF")
-					.accessibilityHint("Enter text to search within the current PDF")
-				
-				Button("Find") { pdf.performSearch(pdf.searchQuery) }
+                       TextField("Search PDF...", text: $pdf.searchQuery)
+                           .textFieldStyle(.roundedBorder)
+                           .frame(width: 200)
+                           .onSubmit { 
+                               if pdf.isLargePDF {
+                                   pdf.performSearchOptimized(pdf.searchQuery)
+                               } else {
+                                   pdf.performSearch(pdf.searchQuery)
+                               }
+                           }
+                           .accessibilityLabel("Search PDF")
+                           .accessibilityHint("Enter text to search within the current PDF")
+                       
+                       Button("Find") { 
+                           if pdf.isLargePDF {
+                               pdf.performSearchOptimized(pdf.searchQuery)
+                           } else {
+                               pdf.performSearch(pdf.searchQuery)
+                           }
+                       }
 					.keyboardShortcut("f", modifiers: [.command])
 					.accessibilityLabel("Find")
 					.accessibilityHint("Search for text in the PDF")

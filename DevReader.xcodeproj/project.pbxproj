@@ -35,6 +35,7 @@
 		A00100302F00000000000001 /* Views/PDF/OutlinePane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100312F00000000000001 /* Views/PDF/OutlinePane.swift */; };
 		A00100322F00000000000001 /* Views/UI/CompactLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100332F00000000000001 /* Views/UI/CompactLayoutView.swift */; };
 		A00100342F00000000000001 /* Views/UI/FullLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100352F00000000000001 /* Views/UI/FullLayoutView.swift */; };
+		A00100392F00000000000001 /* Services/JSONStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003A2F00000000000001 /* Services/JSONStorageService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -86,6 +87,7 @@
 		A00100312F00000000000001 /* Views/PDF/OutlinePane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/OutlinePane.swift; sourceTree = "<group>"; };
 		A00100332F00000000000001 /* Views/UI/CompactLayoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/UI/CompactLayoutView.swift; sourceTree = "<group>"; };
 		A00100352F00000000000001 /* Views/UI/FullLayoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/UI/FullLayoutView.swift; sourceTree = "<group>"; };
+		A001003A2F00000000000001 /* Services/JSONStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/JSONStorageService.swift; sourceTree = "<group>"; };
 		A00100362F00000000000001 /* DevReader.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = DevReader.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -354,6 +356,7 @@
 				A001002B2F00000000000001 /* Services/FileService.swift in Sources */,
 				A001002D2F00000000000001 /* Services/AnnotationService.swift in Sources */,
 				A001002E2F00000000000001 /* Services/ErrorRecoveryService.swift in Sources */,
+				A00100392F00000000000001 /* Services/JSONStorageService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
