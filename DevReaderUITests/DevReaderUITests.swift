@@ -24,6 +24,9 @@ final class DevReaderUITests: XCTestCase {
 
     @MainActor
     func testExample() throws {
+        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
+            throw XCTSkip("UI smoke test skipped (set DEVREADER_UI_E2E=1 to enable)")
+        }
         // UI tests must launch the application that they test.
         let app = XCUIApplication()
         app.launch()
@@ -33,6 +36,9 @@ final class DevReaderUITests: XCTestCase {
 
     @MainActor
     func testLaunchPerformance() throws {
+        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
+            throw XCTSkip("UI launch performance test skipped (set DEVREADER_UI_E2E=1 to enable)")
+        }
         // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()

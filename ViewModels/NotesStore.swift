@@ -20,9 +20,17 @@ final class NotesStore: ObservableObject {
 		if let url = url { loadForPDF(url) } else { items = []; pageNotes = [:] }
 	}
 	
-	func add(_ note: NoteItem) { items.insert(note, at: 0) }
+	func add(_ note: NoteItem) { 
+		LoadingStateManager.shared.startLoading(.general, message: "Adding note...")
+		items.insert(note, at: 0)
+		LoadingStateManager.shared.stopLoading(.general)
+	}
 	
-	func remove(_ note: NoteItem) { items.removeAll { $0.id == note.id } }
+	func remove(_ note: NoteItem) { 
+		LoadingStateManager.shared.startLoading(.general, message: "Removing note...")
+		items.removeAll { $0.id == note.id }
+		LoadingStateManager.shared.stopLoading(.general)
+	}
 	
 	func groupedByChapter() -> [(key: String, value: [NoteItem])] {
 		let groups = Dictionary(grouping: items) { $0.chapter.isEmpty ? "(No Chapter)" : $0.chapter }

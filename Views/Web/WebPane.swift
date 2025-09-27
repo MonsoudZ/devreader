@@ -39,7 +39,12 @@ struct WebPane: View {
 	
 	private var canGoBack: Bool { historyIndex > 0 }
 	private var canGoForward: Bool { historyIndex >= 0 && historyIndex < history.count - 1 }
-	private func loadURL() { if let url = URL(string: urlString) { openURL(url, record: true) } }
+	private func loadURL() { 
+		if let url = URL(string: urlString) { 
+			LoadingStateManager.shared.startWebLoading("Loading webpage...")
+			openURL(url, record: true) 
+		} 
+	}
 	private func openURL(_ url: URL, record: Bool = false) {
 		currentURL = url
 		urlString = url.absoluteString
@@ -112,12 +117,15 @@ struct WebView: NSViewRepresentable {
         let onNavigated: (URL?) -> Void
         init(onNavigated: @escaping (URL?) -> Void) { self.onNavigated = onNavigated }
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { 
+            LoadingStateManager.shared.stopWebLoading()
             onNavigated(webView.url) 
         }
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            LoadingStateManager.shared.stopWebLoading()
             print("WebView navigation failed: \(error.localizedDescription)")
         }
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            LoadingStateManager.shared.stopWebLoading()
             print("WebView provisional navigation failed: \(error.localizedDescription)")
         }
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {

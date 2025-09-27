@@ -28,5 +28,17 @@
 		<string>/tmp/</string>
 		<string>/var/tmp/</string>
 	</array>
+	<key>com.apple.security.temporary-exception.files.absolute-path.read-write</key>
+	<array>
+		<string>/usr/bin/</string>
+		<string>/usr/local/bin/</string>
+		<string>/opt/homebrew/bin/</string>
+	</array>
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+	<key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+	<true/>
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
 </dict>
 </plist>

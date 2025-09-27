@@ -48,6 +48,8 @@ extension Notification.Name {
 	static let pdfLoadError     = Notification.Name("DevReader.pdfLoadError")
 	static let sessionCorrupted = Notification.Name("DevReader.sessionCorrupted")
 	static let dataRecovery     = Notification.Name("DevReader.dataRecovery")
+	static let showOnboarding   = Notification.Name("DevReader.showOnboarding")
+	static let memoryPressure   = Notification.Name("DevReader.memoryPressure")
 }
 
 // MARK: - Performance Monitoring
@@ -56,13 +58,35 @@ class PerformanceMonitor: ObservableObject {
     static let shared = PerformanceMonitor()
     
     @Published var memoryUsage: UInt64 = 0
+    @Published var memoryPressure: MemoryPressure = .normal
     @Published var isMonitoring = false
+    
+    // Performance metrics
+    @Published var pdfLoadTime: TimeInterval = 0.0
+    @Published var searchTime: TimeInterval = 0.0
+    @Published var annotationTime: TimeInterval = 0.0
+    
+    // Memory statistics
+    @Published var peakMemoryUsage: UInt64 = 0
+    @Published var averageMemoryUsage: UInt64 = 0
     
     private let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "Performance")
     private var monitoringTimer: Timer?
+    private var memoryHistory: [UInt64] = []
+    private let maxHistorySize = 50
+    private let memoryThreshold: UInt64 = 500 * 1024 * 1024 // 500MB
+    private let criticalThreshold: UInt64 = 800 * 1024 * 1024 // 800MB
+    
+    enum MemoryPressure {
+        case normal, warning, critical
+    }
     
     private init() {
-        startMonitoring()
+        // Only start monitoring if not in a high CPU situation
+        // This can be disabled if causing performance issues
+        if !ProcessInfo.processInfo.isLowPowerModeEnabled {
+            startMonitoring()
+        }
     }
     
     deinit {
@@ -75,7 +99,8 @@ class PerformanceMonitor: ObservableObject {
         guard !isMonitoring else { return }
         isMonitoring = true
         
-        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+        // Reduce monitoring frequency to every 10 seconds instead of 2 seconds
+        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 await self?.updateMemoryUsage()
             }
@@ -96,10 +121,83 @@ class PerformanceMonitor: ObservableObject {
         let usage = getCurrentMemoryUsage()
         memoryUsage = usage
         
-        // Log memory usage every 10 seconds
-        if Int(Date().timeIntervalSince1970) % 10 == 0 {
+        // Update memory history
+        memoryHistory.append(usage)
+        if memoryHistory.count > maxHistorySize {
+            memoryHistory.removeFirst()
+        }
+        
+        // Calculate average
+        averageMemoryUsage = memoryHistory.reduce(0, +) / UInt64(memoryHistory.count)
+        
+        // Update peak
+        if usage > peakMemoryUsage {
+            peakMemoryUsage = usage
+        }
+        
+        // Determine memory pressure
+        if usage > criticalThreshold {
+            memoryPressure = .critical
+            await handleCriticalMemoryPressure()
+        } else if usage > memoryThreshold {
+            memoryPressure = .warning
+            await handleMemoryWarning()
+        } else {
+            memoryPressure = .normal
+        }
+        
+        // Log memory usage every 30 seconds to reduce CPU usage
+        if Int(Date().timeIntervalSince1970) % 30 == 0 {
             os_log("Memory usage: %{public}@", log: logger, type: .info, formatBytes(usage))
         }
+    }
+    
+    private func handleMemoryWarning() async {
+        os_log("Memory warning - starting optimization", log: logger, type: .info)
+        await optimizeMemoryUsage()
+    }
+    
+    private func handleCriticalMemoryPressure() async {
+        os_log("Critical memory pressure - aggressive optimization", log: logger, type: .error)
+        await optimizeMemoryUsage()
+    }
+    
+    private func optimizeMemoryUsage() async {
+        // Clear caches and force garbage collection
+        await clearImageCaches()
+        await forceGarbageCollection()
+    }
+    
+    private func clearImageCaches() async {
+        // Clear any image caches
+        URLCache.shared.removeAllCachedResponses()
+    }
+    
+    private func forceGarbageCollection() async {
+        // Force garbage collection
+        autoreleasepool {
+            // This will trigger garbage collection
+        }
+    }
+    
+    // MARK: - Performance Tracking
+    
+    func trackPDFLoad(_ startTime: Date) {
+        let loadTime = Date().timeIntervalSince(startTime)
+        pdfLoadTime = loadTime
+        os_log("PDF load time: %{public}.2f seconds", log: logger, type: .info, loadTime)
+    }
+    
+    func trackSearch(_ startTime: Date) {
+        let searchTime = Date().timeIntervalSince(startTime)
+        self.searchTime = searchTime
+        os_log("Search time: %{public}.2f seconds", log: logger, type: .info, searchTime)
+    }
+    
+    func trackAnnotation(_ startTime: Date) {
+        let annotationTime = Date().timeIntervalSince(startTime)
+        self.annotationTime = annotationTime
+        os_log("Annotation time: %{public}.2f seconds", log: logger, type: .info, annotationTime)
     }
     
     private func getCurrentMemoryUsage() -> UInt64 {

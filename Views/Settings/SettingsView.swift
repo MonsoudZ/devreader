@@ -1,4 +1,6 @@
 import SwiftUI
+import AppKit
+import Foundation
 
 struct SettingsView: View {
 	@Environment(\.dismiss) private var dismiss
@@ -7,9 +9,11 @@ struct SettingsView: View {
 	@AppStorage("autoSave") private var autoSave = true
 	@AppStorage("autosaveIntervalSeconds") private var autosaveIntervalSeconds: Double = 30
 	@StateObject private var performanceMonitor = PerformanceMonitor.shared
+	// @StateObject private var largePDFMonitor = LargePDFPerformanceMonitor.shared
 	@State private var alertMessage = ""
 	@State private var alertTitle = ""
 	@State private var showingAlert = false
+	@State private var showingLargePDFTests = false
 	
 	var body: some View {
 		NavigationView {
@@ -64,6 +68,21 @@ struct SettingsView: View {
 							.foregroundStyle(performanceMonitor.isMonitoring ? .green : .secondary)
 					}
 				}
+				
+				Section("Large PDF Performance") {
+					Text("Large PDF performance monitoring will be available in a future update.")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+					Button("Run Large PDF Tests") {
+						showingLargePDFTests = true
+					}
+					.buttonStyle(.bordered)
+					Button("Export Performance Report") {
+						exportPerformanceReport()
+					}
+					.buttonStyle(.bordered)
+				}
+				
 				Section("Data Management") {
 					Text("Data is stored in JSON files for better performance:")
 						.font(.caption)
@@ -101,31 +120,57 @@ struct SettingsView: View {
 			} message: {
 				Text(alertMessage)
 			}
+			// .sheet(isPresented: $showingLargePDFTests) {
+			//	LargePDFTestView()
+			// }
 		}
 	}
 	
 	private func createBackup() {
-		do {
-			let backupURL = try PersistenceService.createBackup()
-			alertTitle = "Backup Created"
-			alertMessage = "Backup saved to: \(backupURL.lastPathComponent)"
-			showingAlert = true
-		} catch {
-			alertTitle = "Backup Failed"
-			alertMessage = error.localizedDescription
-			showingAlert = true
+		LoadingStateManager.shared.startBackup("Creating backup...")
+		
+		Task {
+			do {
+				let backupURL = try PersistenceService.createBackup()
+				await MainActor.run {
+					alertTitle = "Backup Created"
+					alertMessage = "Backup saved to: \(backupURL.lastPathComponent)"
+					showingAlert = true
+					LoadingStateManager.shared.stopBackup()
+				}
+			} catch {
+				await MainActor.run {
+					alertTitle = "Backup Failed"
+					alertMessage = error.localizedDescription
+					showingAlert = true
+					LoadingStateManager.shared.stopBackup()
+				}
+			}
 		}
 	}
 	
 	private func validateData() {
-		let issues = PersistenceService.validateDataIntegrity()
-		if issues.isEmpty {
-			alertTitle = "Data Validation"
-			alertMessage = "All data files are valid and intact."
-		} else {
-			alertTitle = "Data Issues Found"
-			alertMessage = issues.joined(separator: "\n")
+		LoadingStateManager.shared.startLoading(.general, message: "Validating data integrity...")
+		
+		Task {
+			let issues = PersistenceService.validateDataIntegrity()
+			await MainActor.run {
+				if issues.isEmpty {
+					alertTitle = "Data Validation"
+					alertMessage = "All data files are valid and intact."
+				} else {
+					alertTitle = "Data Issues Found"
+					alertMessage = issues.joined(separator: "\n")
+				}
+				showingAlert = true
+				LoadingStateManager.shared.stopLoading(.general)
+			}
 		}
+	}
+	
+	private func exportPerformanceReport() {
+		alertTitle = "Feature Coming Soon"
+		alertMessage = "Performance report export will be available in a future update."
 		showingAlert = true
 	}
 }

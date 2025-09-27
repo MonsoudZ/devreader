@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import UniformTypeIdentifiers
 
 struct CodePane: View {
 	@State private var mode: CodeMode = .scratch
@@ -81,16 +82,21 @@ struct ScratchRunner: View {
 				code = defaultCode
 			}
 		}
-		.onChange(of: language) { _ in
+		.onChange(of: language) {
 			code = defaultCode
 		}
 	}
 	
 	func run() {
 		isRunning = true; output = ""
+		LoadingStateManager.shared.startLoading(.general, message: "Running \(language.rawValue) code...")
 		DispatchQueue.global(qos: .userInitiated).async {
 			let result = Shell.runCode(language.rawValue, code: code)
-			DispatchQueue.main.async { self.output = result; self.isRunning = false }
+			DispatchQueue.main.async { 
+				self.output = result; 
+				self.isRunning = false
+				LoadingStateManager.shared.stopLoading(.general)
+			}
 		}
 	}
 }
@@ -263,10 +269,12 @@ struct MonacoWebEditor: View {
 							savedCode = newCode 
 						}
 						.onAppear {
+							LoadingStateManager.shared.startMonacoLoading("Initializing Monaco editor...")
 							// Set a timeout to fallback if WebView doesn't load
 							DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
 								if !useFallback {
 									useFallback = true
+									LoadingStateManager.shared.stopMonacoLoading()
 								}
 							}
 						}
@@ -313,7 +321,7 @@ struct MonacoWebEditor: View {
 				fileName: currentFileName
 			)
 		}
-		.onChange(of: selectedLanguage) { _ in
+		.onChange(of: selectedLanguage) {
 			// Update Monaco language when selection changes
 			updateMonacoLanguage()
 		}
@@ -321,20 +329,24 @@ struct MonacoWebEditor: View {
 	
 	// MARK: - Helper Functions
 	
-	private func executeCode() {
+	private 	func executeCode() {
 		isRunning = true
 		output = ""
+		LoadingStateManager.shared.startLoading(.general, message: "Running \(selectedLanguage.rawValue) code...")
 		
 		DispatchQueue.global(qos: .userInitiated).async {
 			let result = Shell.runCode(selectedLanguage.rawValue, code: savedCode)
 			DispatchQueue.main.async {
 				self.output = result
 				self.isRunning = false
+				LoadingStateManager.shared.stopLoading(.general)
 			}
 		}
 	}
 	
 	private func saveFile() {
+		LoadingStateManager.shared.startFileOperation("Saving file...")
+		
 		let panel = NSSavePanel()
 		panel.allowedContentTypes = [UTType(filenameExtension: selectedLanguage.fileExtension) ?? .plainText]
 		panel.nameFieldStringValue = currentFileName
@@ -344,9 +356,13 @@ struct MonacoWebEditor: View {
 				do {
 					try savedCode.write(to: url, atomically: true, encoding: .utf8)
 					currentFileName = url.lastPathComponent
+					LoadingStateManager.shared.stopFileOperation()
 				} catch {
 					output = "Error saving file: \(error.localizedDescription)"
+					LoadingStateManager.shared.stopFileOperation()
 				}
+			} else {
+				LoadingStateManager.shared.stopFileOperation()
 			}
 		}
 	}
@@ -561,7 +577,7 @@ struct ExportOptionsView: View {
 		\(code)
 		"""
 		
-		saveExportFile(vimConfig, extension: "vim")
+		saveExportFile(vimConfig, fileExtension: "vim")
 	}
 	
 	private func exportToEmacs() {
@@ -573,7 +589,7 @@ struct ExportOptionsView: View {
 		\(code)
 		"""
 		
-		saveExportFile(emacsConfig, extension: "el")
+		saveExportFile(emacsConfig, fileExtension: "el")
 	}
 	
 	private func exportToJetBrains() {
@@ -628,10 +644,10 @@ struct ExportOptionsView: View {
 		}
 	}
 	
-	private func saveExportFile(_ content: String, extension: String) {
+	private func saveExportFile(_ content: String, fileExtension: String) {
 		let panel = NSSavePanel()
-		panel.allowedContentTypes = [UTType(filenameExtension: extension) ?? .plainText]
-		panel.nameFieldStringValue = "\(fileName).\(extension)"
+		panel.allowedContentTypes = [UTType(filenameExtension: fileExtension) ?? .plainText]
+		panel.nameFieldStringValue = "\(fileName).\(fileExtension)"
 		
 		panel.begin { response in
 			if response == .OK, let url = panel.url {
@@ -717,7 +733,7 @@ struct WebViewHTML: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         
-        // Configure JavaScript settings
+        // Configure JavaScript settings with better error handling
         config.preferences.javaScriptEnabled = true
         config.preferences.javaScriptCanOpenWindowsAutomatically = false
         
@@ -730,8 +746,10 @@ struct WebViewHTML: NSViewRepresentable {
         // Set user agent
         config.applicationNameForUserAgent = "DevReader/1.0"
         
-        // Add message handler
+        // Add message handler with error handling
         config.userContentController.add(context.coordinator, name: "codeChanged")
+        config.userContentController.add(context.coordinator, name: "editorError")
+        config.userContentController.add(context.coordinator, name: "editorReady")
         
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = context.coordinator
@@ -740,6 +758,9 @@ struct WebViewHTML: NSViewRepresentable {
         // Set accessibility
         webView.setAccessibilityLabel("Code Editor")
         webView.setAccessibilityRole(.group)
+        
+        // Add error handling
+        webView.setValue(false, forKey: "drawsBackground")
         
         return webView
     }
@@ -756,8 +777,20 @@ struct WebViewHTML: NSViewRepresentable {
             self.savedCode = savedCode 
         }
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            if message.name == "codeChanged", let text = message.body as? String { 
-                onCodeChange(text) 
+            switch message.name {
+            case "codeChanged":
+                if let text = message.body as? String { 
+                    onCodeChange(text) 
+                }
+            case "editorError":
+                if let error = message.body as? String {
+                    print("Monaco Editor Error: \(error)")
+                }
+            case "editorReady":
+                print("Monaco Editor Ready")
+                LoadingStateManager.shared.stopMonacoLoading()
+            default:
+                break
             }
         }
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -777,9 +810,17 @@ struct WebViewHTML: NSViewRepresentable {
         }
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             print("Monaco WebView navigation failed: \(error.localizedDescription)")
+            // Try to reload with fallback content
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                webView.loadHTMLString("<html><body><h1>Editor Loading Failed</h1><p>Please try refreshing the editor.</p></body></html>", baseURL: nil)
+            }
         }
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
             print("Monaco WebView provisional navigation failed: \(error.localizedDescription)")
+            // Try to reload with fallback content
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                webView.loadHTMLString("<html><body><h1>Editor Loading Failed</h1><p>Please try refreshing the editor.</p></body></html>", baseURL: nil)
+            }
         }
     }
 }

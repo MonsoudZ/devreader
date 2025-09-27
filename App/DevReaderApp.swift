@@ -50,6 +50,8 @@ struct DevReaderApp: App {
 					.keyboardShortcut("s", modifiers: [.command, .shift])
 				Button("Close PDF") { NotificationCenter.default.post(name: .closePDF, object: nil) }
 					.keyboardShortcut("w", modifiers: [.command])
+				Button("Show Onboarding") { NotificationCenter.default.post(name: .showOnboarding, object: nil) }
+					.keyboardShortcut("o", modifiers: [.command, .shift])
 			}
 		}
 	}

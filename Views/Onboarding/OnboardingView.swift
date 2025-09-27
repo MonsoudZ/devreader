@@ -12,29 +12,90 @@ struct OnboardingView: View {
 	]
 	
 	var body: some View {
-		NavigationView {
-			VStack(spacing: 30) {
-				Image(systemName: steps[currentStep].icon).font(.system(size: 60)).foregroundStyle(.blue)
-				VStack(spacing: 12) {
-					Text(steps[currentStep].title).font(.largeTitle).fontWeight(.bold)
-					Text(steps[currentStep].subtitle).font(.title2).foregroundStyle(.secondary)
-					Text(steps[currentStep].description).font(.body).multilineTextAlignment(.center).padding(.horizontal, 40)
+		ZStack {
+			// Background
+			Color(.windowBackgroundColor)
+				.ignoresSafeArea()
+			
+			VStack(spacing: 40) {
+				Spacer()
+				
+				// Main content
+				VStack(spacing: 30) {
+					// Icon
+					Image(systemName: steps[currentStep].icon)
+						.font(.system(size: 80))
+						.foregroundStyle(.blue)
+						.symbolEffect(.bounce, value: currentStep)
+					
+					// Text content
+					VStack(spacing: 16) {
+						Text(steps[currentStep].title)
+							.font(.largeTitle)
+							.fontWeight(.bold)
+							.multilineTextAlignment(.center)
+						
+						Text(steps[currentStep].subtitle)
+							.font(.title2)
+							.foregroundStyle(.secondary)
+							.multilineTextAlignment(.center)
+						
+						Text(steps[currentStep].description)
+							.font(.body)
+							.multilineTextAlignment(.center)
+							.padding(.horizontal, 40)
+							.foregroundStyle(.secondary)
+					}
+					.animation(.easeInOut(duration: 0.3), value: currentStep)
 				}
-				HStack(spacing: 8) { ForEach(0..<steps.count, id: \.self) { index in Circle().fill(index == currentStep ? .blue : .gray.opacity(0.3)).frame(width: 8, height: 8) } }
+				
+				Spacer()
+				
+				// Progress indicators
+				HStack(spacing: 12) {
+					ForEach(0..<steps.count, id: \.self) { index in
+						Circle()
+							.fill(index == currentStep ? .blue : .gray.opacity(0.3))
+							.frame(width: 12, height: 12)
+							.animation(.easeInOut(duration: 0.2), value: currentStep)
+					}
+				}
+				
+				// Navigation buttons
 				HStack(spacing: 20) {
-					if currentStep > 0 { Button("Back") { withAnimation { currentStep -= 1 } } }
+					if currentStep > 0 {
+						Button("Back") {
+							withAnimation(.easeInOut(duration: 0.3)) {
+								currentStep -= 1
+							}
+						}
+						.buttonStyle(.bordered)
+						.controlSize(.large)
+					}
+					
 					Spacer()
+					
 					if currentStep < steps.count - 1 {
-						Button("Next") { withAnimation { currentStep += 1 } }.buttonStyle(.borderedProminent)
+						Button("Next") {
+							withAnimation(.easeInOut(duration: 0.3)) {
+								currentStep += 1
+							}
+						}
+						.buttonStyle(.borderedProminent)
+						.controlSize(.large)
 					} else {
-						Button("Get Started") { dismiss() }.buttonStyle(.borderedProminent)
+						Button("Get Started") {
+							dismiss()
+						}
+						.buttonStyle(.borderedProminent)
+						.controlSize(.large)
 					}
 				}
 				.padding(.horizontal, 40)
+				.padding(.bottom, 40)
 			}
-			.frame(width: 500, height: 400)
-			.navigationTitle("")
 		}
+		.frame(minWidth: 600, minHeight: 500)
 	}
 }
 

@@ -35,7 +35,7 @@ struct ContentView: View {
 	var body: some View {
 		GeometryReader { geometry in
 			if geometry.size.width < 820 {
-				CompactLayoutView(
+				ModernCompactLayoutView(
 					pdf: pdf,
 					notes: notes,
 					library: library,
@@ -46,10 +46,13 @@ struct ContentView: View {
 					rightTab: $rightTab,
 					rightTabRaw: $rightTabRaw,
 					showSearchPanel: $showSearchPanel,
-					onOpenFromLibrary: openFromLibrary
+					showingSettings: $showingSettings,
+					onOpenFromLibrary: openFromLibrary,
+					onImportPDFs: importPDFs,
+					onOpenPDF: openPDF
 				)
 			} else {
-				FullLayoutView(
+				ModernFullLayoutView(
 					pdf: pdf,
 					notes: notes,
 					library: library,
@@ -59,44 +62,20 @@ struct ContentView: View {
 					collapseAll: $collapseAll,
 					rightTab: $rightTab,
 					showSearchPanel: $showSearchPanel,
-					onOpenFromLibrary: openFromLibrary
+					showingSettings: $showingSettings,
+					onOpenFromLibrary: openFromLibrary,
+					onImportPDFs: importPDFs,
+					onOpenPDF: openPDF
 				)
 			}
-			// Full-screen loading overlay when a PDF is loading
-			if pdf.isLoadingPDF {
-				ZStack {
-					Color.black.opacity(0.2).ignoresSafeArea()
-					VStack(spacing: 12) {
-						ProgressView().scaleEffect(1.2)
-						Text("Loading PDF…").font(.callout).foregroundStyle(.secondary)
-						
-						// Large PDF status information
-						if pdf.isLargePDF {
-							VStack(spacing: 4) {
-								Text("Large PDF detected")
-									.font(.caption)
-									.foregroundStyle(.secondary)
-								if !pdf.estimatedLoadTime.isEmpty {
-									Text("Estimated time: \(pdf.estimatedLoadTime)")
-										.font(.caption2)
-										.foregroundStyle(.secondary)
-								}
-								if !pdf.memoryUsage.isEmpty {
-									Text("Memory: \(pdf.memoryUsage)")
-										.font(.caption2)
-										.foregroundStyle(.secondary)
-								}
-							}
-							.padding(.top, 8)
-						}
-					}
-				}
-			}
+			// Global loading overlay
+			LoadingOverlay()
 		}
 		.onReceive(NotificationCenter.default.publisher(for: .captureHighlight)) { _ in captureHighlightToNotes() }
 		.onReceive(NotificationCenter.default.publisher(for: .newSketchPage)) { _ in newSketchPage() }
 		.onReceive(NotificationCenter.default.publisher(for: .addStickyNote)) { _ in addStickyNote() }
 		.onReceive(NotificationCenter.default.publisher(for: .closePDF)) { _ in closePDF() }
+		.onReceive(NotificationCenter.default.publisher(for: .showOnboarding)) { _ in showingOnboarding = true }
 		.onReceive(NotificationCenter.default.publisher(for: .pdfLoadError)) { notification in
 			if let url = notification.object as? URL {
 				showErrorRecoveryDialog(for: url)
@@ -109,6 +88,7 @@ struct ContentView: View {
 		.toolbar {
 			ToolbarItemGroup {
 				Button("Import PDFs…") { importPDFs() }
+				Button("Show Onboarding") { showingOnboarding = true }
 					.accessibilityLabel("Import PDFs")
 					.accessibilityHint("Import multiple PDF files into your library")
 				Button("Open PDF…") { openPDF() }
@@ -240,8 +220,11 @@ struct ContentView: View {
 					.accessibilityHint("Clear search results")
 			}
 		}
-		.sheet(isPresented: $showingSettings) { SettingsView() }
-		.sheet(isPresented: $showingOnboarding) { OnboardingView() }
+		.sheet(isPresented: $showingSettings) { ModernSettingsView() }
+		.sheet(isPresented: $showingOnboarding) { 
+			OnboardingView()
+				.frame(minWidth: 600, minHeight: 500)
+		}
 		.onAppear {
 			checkFirstLaunch()
 			pdf.onPDFChanged = { url in notes.setCurrentPDF(url) }
@@ -270,11 +253,17 @@ struct ContentView: View {
 	// Actions previously inside ContentView
 	func importPDFs() {
 		let urls = FileService.openPDF(multiple: true)
-		if !urls.isEmpty { library.add(urls: urls) }
+		if !urls.isEmpty { 
+			library.add(urls: urls)
+			toastCenter.show("PDFs Added", "Added \(urls.count) PDF\(urls.count == 1 ? "" : "s") to library", style: .success)
+		}
 	}
 	func openPDF() {
 		let urls = FileService.openPDF(multiple: false)
-		if let url = urls.first { pdf.load(url: url) }
+		if let url = urls.first { 
+			pdf.load(url: url)
+			toastCenter.show("PDF Opened", "Loading \(url.lastPathComponent)", style: .info)
+		}
 	}
 	func captureHighlightToNotes() {
 		guard let selection = PDFSelectionBridge.shared.currentSelection,
@@ -386,7 +375,10 @@ struct ContentView: View {
 		
 		toastCenter.show("Sticky Note Added", "Note created on current page", style: .success)
 	}
-	func closePDF() { pdf.clearSession() }
+	func closePDF() { 
+		pdf.clearSession()
+		toastCenter.show("PDF Closed", "Document closed and session cleared", style: .info)
+	}
 	func showSettings() { showingSettings = true }
 	func checkFirstLaunch() { if !UserDefaults.standard.bool(forKey: "DevReader.HasLaunchedBefore") { showingOnboarding = true; UserDefaults.standard.set(true, forKey: "DevReader.HasLaunchedBefore") } }
 	func showAlert(_ title: String, _ message: String) { alertTitle = title; alertMessage = message; showingAlert = true }
