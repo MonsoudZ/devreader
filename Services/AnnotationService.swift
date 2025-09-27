@@ -21,6 +21,13 @@ enum AnnotationService {
         guard let doc = document, let src = originalURL, let dst = annotatedURL(for: src) else { return }
         if let data = doc.dataRepresentation() { try? data.write(to: dst) }
     }
+    
+    static func saveAnnotatedCopyAsync(document: PDFDocument?, originalURL: URL?) async {
+        await Task.detached {
+            guard let doc = document, let src = originalURL, let dst = annotatedURL(for: src) else { return }
+            if let data = doc.dataRepresentation() { try? data.write(to: dst) }
+        }.value
+    }
 }
 
 

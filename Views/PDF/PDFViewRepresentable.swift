@@ -89,15 +89,6 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			nsView.document = pdf.document 
 		}
 		
-		// Check if the PDF view's current page differs from our tracked page
-		if let doc = nsView.document, let currentPage = nsView.currentPage {
-			let actualPageIndex = doc.index(for: currentPage)
-			if actualPageIndex != pdf.currentPageIndex && actualPageIndex >= 0 && actualPageIndex < doc.pageCount {
-				pdf.currentPageIndex = actualPageIndex
-				pdf.updateReadingProgress()
-			}
-		}
-		
 		// Only navigate to page if it's different and valid (with safety checks)
 		if let doc = pdf.document, 
 		   pdf.currentPageIndex >= 0,
@@ -118,7 +109,38 @@ struct PDFViewRepresentable: NSViewRepresentable {
 	
 	final class Coord: NSObject, PDFViewDelegate {
 		let parent: PDFViewRepresentable
-		init(parent: PDFViewRepresentable) { self.parent = parent }
+		private var pageTrackingTimer: Timer?
+		
+		init(parent: PDFViewRepresentable) { 
+			self.parent = parent
+			super.init()
+			startPageTrackingTimer()
+		}
+		
+		deinit {
+			pageTrackingTimer?.invalidate()
+		}
+		
+		private func startPageTrackingTimer() {
+			pageTrackingTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+				guard let self = self else { return }
+				self.checkPageChange()
+			}
+		}
+		
+		private func checkPageChange() {
+			guard let doc = parent.pdf.document else { return }
+			
+			// Get the actual current page from the PDF view
+			if let pdfView = PDFSelectionBridge.shared.pdfView,
+			   let actualCurrentPage = pdfView.currentPage {
+				let actualPageIndex = doc.index(for: actualCurrentPage)
+				if actualPageIndex != parent.pdf.currentPageIndex && actualPageIndex >= 0 && actualPageIndex < doc.pageCount {
+					parent.pdf.currentPageIndex = actualPageIndex
+					parent.pdf.updateReadingProgress()
+				}
+			}
+		}
 		
 		func pdfViewPageChanged(_ sender: PDFView) {
 			guard let doc = sender.document, let page = sender.currentPage else { return }

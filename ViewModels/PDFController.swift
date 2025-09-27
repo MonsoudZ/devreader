@@ -540,6 +540,10 @@ final class PDFController: ObservableObject {
         AnnotationService.saveAnnotatedCopy(document: document, originalURL: currentPDFURL)
 	}
 	
+	func saveAnnotatedCopyAsync() async {
+		await AnnotationService.saveAnnotatedCopyAsync(document: document, originalURL: currentPDFURL)
+	}
+	
 	// MARK: - Error Recovery Methods
 	
 	/// Load PDF with retry mechanism for transient failures

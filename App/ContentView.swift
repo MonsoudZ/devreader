@@ -82,8 +82,20 @@ struct ContentView: View {
 			}
 		}
         .onChange(of: defaultZoom) { _, _ in applyZoomChange() }
-		.onReceive(autosaveTimer) { _ in if autoSave { pdf.saveAnnotatedCopy() } }
-		.onReceive(NotificationCenter.default.publisher(for: NSApplication.willResignActiveNotification)) { _ in if autoSave { pdf.saveAnnotatedCopy() } }
+		.onReceive(autosaveTimer) { _ in 
+			if autoSave { 
+				Task {
+					await pdf.saveAnnotatedCopyAsync()
+				}
+			}
+		}
+		.onReceive(NotificationCenter.default.publisher(for: NSApplication.willResignActiveNotification)) { _ in 
+			if autoSave { 
+				Task {
+					await pdf.saveAnnotatedCopyAsync()
+				}
+			}
+		}
         .onChange(of: autosaveIntervalSeconds) { _, _ in recreateAutosaveTimer() }
 		.toolbar {
 			ToolbarItemGroup {
@@ -293,8 +305,12 @@ struct ContentView: View {
 		annotation.color = highlightColor
 		page.addAnnotation(annotation)
 		
-		// Save annotated copy
-		if autoSave { pdf.saveAnnotatedCopy() }
+		// Save annotated copy asynchronously to prevent UI freeze
+		if autoSave { 
+			Task {
+				await pdf.saveAnnotatedCopyAsync()
+			}
+		}
 		
 		toastCenter.show("Highlight Added", "Text captured as note", style: .success)
 	}
@@ -339,8 +355,12 @@ struct ContentView: View {
 		
 		page.addAnnotation(annotation)
 		
-		// Save annotated copy
-		if autoSave { pdf.saveAnnotatedCopy() }
+		// Save annotated copy asynchronously to prevent UI freeze
+		if autoSave { 
+			Task {
+				await pdf.saveAnnotatedCopyAsync()
+			}
+		}
 		
 		toastCenter.show("Sketch Added", "Sketch annotation added to PDF", style: .success)
 	}
@@ -370,8 +390,12 @@ struct ContentView: View {
 		
 		notes.add(note)
 		
-		// Save annotated copy
-		if autoSave { pdf.saveAnnotatedCopy() }
+		// Save annotated copy asynchronously to prevent UI freeze
+		if autoSave { 
+			Task {
+				await pdf.saveAnnotatedCopyAsync()
+			}
+		}
 		
 		toastCenter.show("Sticky Note Added", "Note created on current page", style: .success)
 	}
