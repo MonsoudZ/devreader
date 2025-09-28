@@ -36,11 +36,15 @@
 		A00100322F00000000000001 /* Views/UI/CompactLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100332F00000000000001 /* Views/UI/CompactLayoutView.swift */; };
 		A00100342F00000000000001 /* Views/UI/FullLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100352F00000000000001 /* Views/UI/FullLayoutView.swift */; };
 		A00100392F00000000000001 /* Services/JSONStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003A2F00000000000001 /* Services/JSONStorageService.swift */; };
+		A00100472F00000000000001 /* Services/CrashReportingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100482F00000000000001 /* Services/CrashReportingService.swift */; };
+		A001004A2F00000000000001 /* Views/Help/HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100492F00000000000001 /* Views/Help/HelpView.swift */; };
 		A001003B2F00000000000001 /* Utils/LoadingStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003C2F00000000000001 /* Utils/LoadingStates.swift */; };
 		A001003D2F00000000000001 /* Views/UI/ModernHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003E2F00000000000001 /* Views/UI/ModernHeaderView.swift */; };
 		A001003F2F00000000000001 /* Views/Settings/ModernSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100402F00000000000001 /* Views/Settings/ModernSettingsView.swift */; };
 		A00100432F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100442F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift */; };
 		A00100452F00000000000001 /* Views/Settings/LargePDFTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100462F00000000000001 /* Views/Settings/LargePDFTestView.swift */; };
+		A001004B2F00000000000001 /* Utils/ErrorMessageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */; };
+		A001004D2F00000000000001 /* Utils/EnhancedToastCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -99,6 +103,10 @@
 		A00100402F00000000000001 /* Views/Settings/ModernSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/ModernSettingsView.swift; sourceTree = "<group>"; };
 		A00100442F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/LargePDFPerformanceMonitor.swift; sourceTree = "<group>"; };
 		A00100462F00000000000001 /* Views/Settings/LargePDFTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/LargePDFTestView.swift; sourceTree = "<group>"; };
+		A00100482F00000000000001 /* Services/CrashReportingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CrashReportingService.swift; sourceTree = "<group>"; };
+		A00100492F00000000000001 /* Views/Help/HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Help/HelpView.swift; sourceTree = "<group>"; };
+		A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/ErrorMessageManager.swift; sourceTree = "<group>"; };
+		A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/EnhancedToastCenter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -148,6 +156,8 @@
 			isa = PBXGroup;
 			children = (
 				A001003A2F00000000000001 /* Services/JSONStorageService.swift */,
+				A00100482F00000000000001 /* Services/CrashReportingService.swift */,
+				A00100492F00000000000001 /* Views/Help/HelpView.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -384,6 +394,10 @@
 				A001002D2F00000000000001 /* Services/AnnotationService.swift in Sources */,
 				A001002E2F00000000000001 /* Services/ErrorRecoveryService.swift in Sources */,
 				A00100392F00000000000001 /* Services/JSONStorageService.swift in Sources */,
+				A00100472F00000000000001 /* Services/CrashReportingService.swift in Sources */,
+				A001004A2F00000000000001 /* Views/Help/HelpView.swift in Sources */,
+				A001004B2F00000000000001 /* Utils/ErrorMessageManager.swift in Sources */,
+				A001004D2F00000000000001 /* Utils/EnhancedToastCenter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -546,6 +560,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -579,6 +594,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;

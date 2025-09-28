@@ -1,0 +1,822 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test -project DevReader.xcodeproj -scheme DevReader -destination platform=macOS,arch=arm64 -configuration Release "-only-testing:DevReaderTests/PerformanceTests/testUIResponsiveness" -resultBundlePath build/PerformanceTestResults/ui_test
+
+2025-09-28 01:27:44.197 xcodebuild[66351:29638881] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+Writing result bundle at path:
+	/Users/monsoudzanaty/Documents/DevReader/build/PerformanceTestResults/ui_test
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (3 targets)
+    Target 'DevReaderTests' in project 'DevReader'
+        ➜ Explicit dependency on target 'DevReader' in project 'DevReader'
+    Target 'DevReaderUITests' in project 'DevReader'
+        ➜ Explicit dependency on target 'DevReader' in project 'DevReader'
+    Target 'DevReader' in project 'DevReader' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/usr/bin/actool --version --output-format xml1
+
+ExecuteExternalTool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 051aced6f35d1085d726af7f6793fdad
+Build description path: /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/XCBuildData/051aced6f35d1085d726af7f6793fdad.xcbuilddata
+CreateBuildDirectory /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/EagerLinkingTBDs/Release
+    cd /Users/monsoudzanaty/Documents/DevReader/DevReader.xcodeproj
+    builtin-create-build-directory /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/EagerLinkingTBDs/Release
+
+CreateBuildDirectory /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release
+    cd /Users/monsoudzanaty/Documents/DevReader/DevReader.xcodeproj
+    builtin-create-build-directory /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release
+
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.0-25A352-28806144b0707e398aac92880fa50324.sdkstatcache
+    cd /Users/monsoudzanaty/Documents/DevReader/DevReader.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk -o /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.0-25A352-28806144b0707e398aac92880fa50324.sdkstatcache
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader-bfe808b72387db13256977456618ac19-VFS/all-product-headers.yaml
+    cd /Users/monsoudzanaty/Documents/DevReader/DevReader.xcodeproj
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader-bfe808b72387db13256977456618ac19-VFS/all-product-headers.yaml
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests.hmap (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-all-target-headers.hmap (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-generated-files.hmap (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-generated-files.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/empty-DevReaderTests.plist (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/empty-DevReaderTests.plist
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-all-non-framework-target-headers.hmap (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-own-target-headers.hmap (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-project-headers.hmap (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-project-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests_const_extract_protocols.json (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests.SwiftFileList (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests.SwiftFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/empty-DevReaderUITests.plist (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/empty-DevReaderUITests.plist
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/ProductTypeInfoPlistAdditions.plist (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/ProductTypeInfoPlistAdditions.plist
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.hmap (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests.LinkFileList (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests.LinkFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests.SwiftConstValuesFileList (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests_const_extract_protocols.json (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests.SwiftFileList (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests.SwiftFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests-OutputFileMap.json (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.DependencyStaticMetadataFileList (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.DependencyMetadataFileList (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-project-headers.hmap (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-project-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-own-target-headers.hmap (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-generated-files.hmap (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-generated-files.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-all-target-headers.hmap (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-all-non-framework-target-headers.hmap (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests.SwiftConstValuesFileList (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DerivedSources/Entitlements.plist (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DerivedSources/Entitlements.plist
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests.LinkFileList (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests.LinkFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests-OutputFileMap.json (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests.DependencyStaticMetadataFileList (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests.DependencyMetadataFileList (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/empty-DevReader.plist (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/empty-DevReader.plist
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader_const_extract_protocols.json (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader_const_extract_protocols.json
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.SwiftFileList (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.SwiftFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.SwiftConstValuesFileList (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.LinkFileList (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.LinkFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-OutputFileMap.json (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-OutputFileMap.json
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.hmap (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.DependencyStaticMetadataFileList (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-project-headers.hmap (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-project-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.DependencyMetadataFileList (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.DependencyMetadataFileList
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-own-target-headers.hmap (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-own-target-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-generated-files.hmap (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-generated-files.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-all-target-headers.hmap (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-all-target-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-all-non-framework-target-headers.hmap (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-all-non-framework-target-headers.hmap
+
+WriteAuxiliaryFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/Entitlements.plist (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    write-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/Entitlements.plist
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReaderUITests-Runner.app/Contents/PlugIns/DevReaderUITests.xctest (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReaderUITests-Runner.app/Contents/PlugIns/DevReaderUITests.xctest
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReaderUITests-Runner.app/Contents/PlugIns/DevReaderUITests.xctest/Contents (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReaderUITests-Runner.app/Contents/PlugIns/DevReaderUITests.xctest/Contents
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReaderUITests-Runner.app/Contents/PlugIns/DevReaderUITests.xctest/Contents/MacOS (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReaderUITests-Runner.app/Contents/PlugIns/DevReaderUITests.xctest/Contents/MacOS
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PlugIns/DevReaderTests.xctest/Contents (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PlugIns/DevReaderTests.xctest/Contents
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PlugIns/DevReaderTests.xctest/Contents/MacOS (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PlugIns/DevReaderTests.xctest/Contents/MacOS
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PlugIns/DevReaderTests.xctest (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PlugIns/DevReaderTests.xctest
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PlugIns (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PlugIns
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Resources (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Resources
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/MacOS (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/MacOS
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app
+
+ProcessProductPackaging /Users/monsoudzanaty/Documents/DevReader/DevReader.entitlements /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.app.xcent (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Entitlements:
+    
+    {
+    "com.apple.security.app-sandbox" = 1;
+    "com.apple.security.cs.allow-jit" = 1;
+    "com.apple.security.cs.allow-unsigned-executable-memory" = 1;
+    "com.apple.security.cs.disable-library-validation" = 1;
+    "com.apple.security.device.audio-input" = 0;
+    "com.apple.security.device.camera" = 0;
+    "com.apple.security.device.microphone" = 0;
+    "com.apple.security.device.usb" = 0;
+    "com.apple.security.files.downloads.read-write" = 1;
+    "com.apple.security.files.user-selected.read-write" = 1;
+    "com.apple.security.get-task-allow" = 1;
+    "com.apple.security.network.client" = 1;
+    "com.apple.security.network.server" = 0;
+    "com.apple.security.print" = 0;
+    "com.apple.security.temporary-exception.files.absolute-path.read-write" =     (
+        "/usr/bin/",
+        "/usr/local/bin/",
+        "/opt/homebrew/bin/"
+    );
+}
+    
+    builtin-productPackagingUtility /Users/monsoudzanaty/Documents/DevReader/DevReader.entitlements -entitlements -format xml -o /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.app.xcent
+
+ProcessProductPackagingDER /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.app.xcent /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.app.xcent.der (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /usr/bin/derq query -f xml -i /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.app.xcent -o /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.app.xcent.der --raw
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/libXCTestSwiftSupport.dylib /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_output/thinned (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_output/thinned
+
+MkDir /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_output/unthinned (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /bin/mkdir -p /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_output/unthinned
+
+GenerateAssetSymbols /Users/monsoudzanaty/Documents/DevReader/DevReader/Assets.xcassets (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/monsoudzanaty/Documents/DevReader/DevReader/Assets.xcassets --compile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Resources --output-format human-readable-text --notices --warnings --export-dependency-info /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_dependencies --output-partial-info-plist /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_generated_info.plist --app-icon AppIcon --accent-color AccentColor --enable-on-demand-resources NO --development-region en --target-device mac --minimum-deployment-target 15.6 --platform macosx --bundle-identifier dev.local.chace.DevReader --generate-swift-asset-symbols /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/GeneratedAssetSymbols.swift --generate-objc-asset-symbols /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/GeneratedAssetSymbols.h --generate-asset-symbol-index /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/* com.apple.actool.compilation-results */
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/GeneratedAssetSymbols-Index.plist
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/GeneratedAssetSymbols.h
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/GeneratedAssetSymbols.swift
+
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/libXCTestBundleInject.dylib /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestBundleInject.dylib (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestBundleInject.dylib /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCUnit.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCUnit.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCUnit.framework /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCUIAutomation.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCUIAutomation.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCUIAutomation.framework /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTestSupport.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestSupport.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestSupport.framework /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTestCore.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestCore.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestCore.framework /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTest.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTAutomationSupport.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/Testing.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks
+
+CompileAssetCatalogVariant thinned /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Resources /Users/monsoudzanaty/Documents/DevReader/DevReader/Assets.xcassets (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /Applications/Xcode.app/Contents/Developer/usr/bin/actool /Users/monsoudzanaty/Documents/DevReader/DevReader/Assets.xcassets --compile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_output/thinned --output-format human-readable-text --notices --warnings --export-dependency-info /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_dependencies_thinned --output-partial-info-plist /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_generated_info.plist_thinned --app-icon AppIcon --accent-color AccentColor --enable-on-demand-resources NO --development-region en --target-device mac --minimum-deployment-target 15.6 --platform macosx
+/* com.apple.actool.compilation-results */
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_generated_info.plist_thinned
+
+
+CodeSign /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/libXCTestBundleInject.dylib (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - -o runtime --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/libXCTestBundleInject.dylib
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/libXCTestBundleInject.dylib: replacing existing signature
+
+CodeSign /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCUnit.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - -o runtime --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCUnit.framework
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCUnit.framework: replacing existing signature
+
+CodeSign /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTestSupport.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - -o runtime --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTestSupport.framework
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTestSupport.framework: replacing existing signature
+
+CodeSign /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/libXCTestSwiftSupport.dylib (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - -o runtime --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/libXCTestSwiftSupport.dylib
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/libXCTestSwiftSupport.dylib: replacing existing signature
+
+CodeSign /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTest.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - -o runtime --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTest.framework
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTest.framework: replacing existing signature
+
+CodeSign /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTAutomationSupport.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - -o runtime --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTAutomationSupport.framework
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTAutomationSupport.framework: replacing existing signature
+
+CodeSign /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTestCore.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - -o runtime --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTestCore.framework
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCTestCore.framework: replacing existing signature
+
+CodeSign /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCUIAutomation.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - -o runtime --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCUIAutomation.framework
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/XCUIAutomation.framework: replacing existing signature
+
+CodeSign /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/Testing.framework (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - -o runtime --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/Testing.framework
+/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks/Testing.framework: replacing existing signature
+
+SwiftDriver DevReader normal arm64 com.apple.xcode.tools.swift.compiler (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name DevReader -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.SwiftFileList -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk -target arm64-apple-macos15.6 -g -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -swift-version 5 -I /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -F /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -emit-localized-strings -emit-localized-strings-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64 -c -num-threads 10 -Xcc -ivfsstatcache -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.0-25A352-28806144b0707e398aac92880fa50324.sdkstatcache -output-file-map /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader_const_extract_protocols.json -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-generated-files.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-own-target-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-all-target-headers.hmap -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-project-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/include -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources-normal/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-Swift.h -working-directory /Users/monsoudzanaty/Documents/DevReader -no-emit-module-separately-wmo
+
+LinkAssetCatalog /Users/monsoudzanaty/Documents/DevReader/DevReader/Assets.xcassets (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-linkAssetCatalog --thinned /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_output/thinned --thinned-dependencies /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_dependencies_thinned --thinned-info-plist-content /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_generated_info.plist_thinned --unthinned /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_output/unthinned --unthinned-dependencies /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_dependencies_unthinned --unthinned-info-plist-content /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_generated_info.plist_unthinned --output /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Resources --plist-output /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_generated_info.plist
+
+ProcessInfoPlistFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Info.plist /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/empty-DevReader.plist (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-infoPlistUtility /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/empty-DevReader.plist -producttype com.apple.product-type.application -genpkginfo /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PkgInfo -expandbuildsettings -platform macosx -additionalcontentfile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/assetcatalog_generated_info.plist -o /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Info.plist
+
+SwiftDriver\ Compilation DevReader normal arm64 com.apple.xcode.tools.swift.compiler (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name DevReader -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.SwiftFileList -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk -target arm64-apple-macos15.6 -g -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -swift-version 5 -I /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -F /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -emit-localized-strings -emit-localized-strings-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64 -c -num-threads 10 -Xcc -ivfsstatcache -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.0-25A352-28806144b0707e398aac92880fa50324.sdkstatcache -output-file-map /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader_const_extract_protocols.json -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-generated-files.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-own-target-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-all-target-headers.hmap -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-project-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/include -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources-normal/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-Swift.h -working-directory /Users/monsoudzanaty/Documents/DevReader -no-emit-module-separately-wmo
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ptrauth-4MEYRDGIYNQKGHV12LZFGS6U3.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_AvailabilityInternal-9T6K4HY97GAICX2OI5YT0M5QE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stddef-1RLOXH2ML2SY7UVJAJMAH1VMH.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdbool-CZ90QCX4X95BROYKDDXG6BNBQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ptrcheck-4NA6NAQMZPG0HYQEHLKG0A2US.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_float-1FJ5Z51MKG5LAMGB8JAUOLKGR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftShims-3OJCD7A99W5TOJXNTXOK3CH8U.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdarg-5ZLXAM9VLJ7GUSCMDGIWHR7MG.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_SwiftConcurrencyShims-B3V0Y20IA21NQ7KYG1GASZ7R6.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/DeveloperToolsSupport-EA496G1QPHVUZJHATP8JMNC97.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_DarwinFoundation1-DGTD8DQ671DU24QATB86BEMMS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_limits-AF9YTOEBCM2FIGRLYYSZKC1UJ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_DarwinFoundation2-29IENHDU53Q06AEWUJAJD3D3T.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_tgmath-3RHGZM98AEASUZEXV25HY64P0.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/sys_types-11Q7SIIB8C7N2ZCCLUIRWML2A.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdint-ARHDXXPY7IEAREV241VJD6WP4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/OpenGL-95NCIIJJMLWQMM4DDQJGNM8G4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_intrinsics-3CZDMEOS65SPKTWH8V6QHNWTC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/libDER-6B9F91MC3K9K21B5S3PJYD1KR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_DarwinFoundation3-4TW5R7FCASHNY3S1WKUKX1YU9.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdatomic-2TY3MBZYZI0J967H808O5LWWB.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_inttypes-5PZN4ZA6RRZG8XF6WWWEG6RSE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Darwin-NLMW0185XYUEOK6FK56RNBAR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/simd-4YAD4340Y3GZL5X1ZVA18ZA8J.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/libkern-2F3ZULBV7EQQJL37D6T0R8J0X.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/launch-9TS4FB8WWEEB2VWEHC4GJGUTH.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CUPS-DECMJ5B7SI1577VSPK4CLOGP0.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/MachO-8NL9YP4L4H1622GC5OPPLOLR5.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Spatial-5XSCGR1OQ1IEB2LWL1EURYJTX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ObjectiveC-3G2NQ8GVJVUVV8Z21HB5PWN7M.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/os_object-EYXTKF4TP79NCC15UIMM8I6WI.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/os_workgroup-A1E0RFJKNZ04Z2RDOZLPO6667.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Dispatch-CKRIZS27BS513N6D8R4FZHKO4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/dnssd-BF4M7K2B5N7OA7BJ8XBES1DR3.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/XPC-94CBICC23TMFP253W21YUIU7J.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreFoundation-BF1RW34DDUALM7EFXBOWUAR1N.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/os-CMG0UARMK4QJY0JGJFGP38SCP.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CFNetwork-797QWAEGX6DWRXX2BW1IX5TU.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/IOKit-6P11H222DNE09GR8SHU2PW0HE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ColorSync-39EAQEVLBWIJJ07H8KQGDAX3J.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Security-9RYB8GURTNVXKVOS38HN9SCNG.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreGraphics-6T5JMGK3B8GKEAMLUQD5CRV64.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/DiskArbitration-BNST1483X49JX9146JC2VI48M.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreServices-3RKEPG3LD3IOTLM1KDXAYX2SH.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ImageIO-AQNCQVM04ZL2JUNDARB9B58U8.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreText-3QFXZTOI5KOGUE8FTTZFUW56U.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Foundation-AOV9FFEXT46Y2PQF6E48CDASI.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/IOSurface-DOT3C2A115WHOOCKF58868OLA.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Network-CUF76X7IIRS6VJB05HRHI48DX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreData-25GWCLTNCR8039O39DHBWT9AR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/UniformTypeIdentifiers-90MPX5ZX3JVAPZKK19AGT2T2Z.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Symbols-1QUEG5IJECFC2QT5Q6GK8760M.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/JavaScriptCore-1SPBIWTF9R1WGMJ9U4H0EB3D4.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreTransferable-F5KOLKJ876KKY96EIY261CPNV.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ApplicationServices-CALVQ8U4YUFUUT9S3Z9DXAGCI.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/DataDetection-6JHOG65RDAWVTN8NLBU2ZGI3N.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/OSLog-2WING7IZJXQ5SW8YPKDRQL7NC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Accessibility-3ECACQFQ34KGPP0GDLS87CW5S.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Metal-3JGTXDRP7Y4F2DD95FCN55SRX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreVideo-2ZCTSDVNU7ZI82PB3FUEBCOTH.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/QuartzCore-AH17AGR6SUTHU5SBXGG7MY6TM.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreImage-BFPLEXO4Y54ETNCWI79VNXAZP.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftUICore-EECFFVEI53JPAIMXE0IHPQ5XC.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/AppKit-BV8FRBUWZVCQMCOKI8B07FY3.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Cocoa-8P7QCJO5DGR1IDQ2ZIES9SC8L.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftUI-BFU8MW103PIO11KSBC8YBTWLE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/WebKit-4VGDXSBR2TGKXH404U05A8O74.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/PDFKit-4SCXF1DF4F27LD3WDK844L2YF.pcm
+
+SwiftCompile normal arm64 Compiling\ DevReader.swift,\ NoteItem.swift,\ LibraryItem.swift,\ SessionData.swift,\ PDFController.swift,\ NotesStore.swift,\ LibraryStore.swift,\ NotesPane.swift,\ NoteRow.swift,\ PDFViewRepresentable.swift,\ PDFPane.swift,\ OutlinePane.swift,\ CompactLayoutView.swift,\ FullLayoutView.swift,\ LibraryPane.swift,\ DevReaderApp.swift,\ ContentView.swift,\ WebPane.swift,\ CodePane.swift,\ Sketch.swift,\ SettingsView.swift,\ OnboardingView.swift,\ Extensions.swift,\ Shell.swift,\ LoadingStates.swift,\ ModernHeaderView.swift,\ ModernSettingsView.swift,\ LargePDFPerformanceMonitor.swift,\ LargePDFTestView.swift,\ PersistenceService.swift,\ FileService.swift,\ AnnotationService.swift,\ ErrorRecoveryService.swift,\ JSONStorageService.swift,\ CrashReportingService.swift,\ HelpView.swift,\ GeneratedAssetSymbols.swift /Users/monsoudzanaty/Documents/DevReader/DevReader.swift /Users/monsoudzanaty/Documents/DevReader/Models/NoteItem.swift /Users/monsoudzanaty/Documents/DevReader/Models/LibraryItem.swift /Users/monsoudzanaty/Documents/DevReader/Models/SessionData.swift /Users/monsoudzanaty/Documents/DevReader/ViewModels/PDFController.swift /Users/monsoudzanaty/Documents/DevReader/ViewModels/NotesStore.swift /Users/monsoudzanaty/Documents/DevReader/ViewModels/LibraryStore.swift /Users/monsoudzanaty/Documents/DevReader/Views/Notes/NotesPane.swift /Users/monsoudzanaty/Documents/DevReader/Views/Notes/NoteRow.swift /Users/monsoudzanaty/Documents/DevReader/Views/PDF/PDFViewRepresentable.swift /Users/monsoudzanaty/Documents/DevReader/Views/PDF/PDFPane.swift /Users/monsoudzanaty/Documents/DevReader/Views/PDF/OutlinePane.swift /Users/monsoudzanaty/Documents/DevReader/Views/UI/CompactLayoutView.swift /Users/monsoudzanaty/Documents/DevReader/Views/UI/FullLayoutView.swift /Users/monsoudzanaty/Documents/DevReader/Views/Library/LibraryPane.swift /Users/monsoudzanaty/Documents/DevReader/App/DevReaderApp.swift /Users/monsoudzanaty/Documents/DevReader/App/ContentView.swift /Users/monsoudzanaty/Documents/DevReader/Views/Web/WebPane.swift /Users/monsoudzanaty/Documents/DevReader/Views/Code/CodePane.swift /Users/monsoudzanaty/Documents/DevReader/Views/Sketch/Sketch.swift /Users/monsoudzanaty/Documents/DevReader/Views/Settings/SettingsView.swift /Users/monsoudzanaty/Documents/DevReader/Views/Onboarding/OnboardingView.swift /Users/monsoudzanaty/Documents/DevReader/Utils/Extensions.swift /Users/monsoudzanaty/Documents/DevReader/Utils/Shell.swift /Users/monsoudzanaty/Documents/DevReader/Utils/LoadingStates.swift /Users/monsoudzanaty/Documents/DevReader/Views/UI/ModernHeaderView.swift /Users/monsoudzanaty/Documents/DevReader/Views/Settings/ModernSettingsView.swift /Users/monsoudzanaty/Documents/DevReader/Utils/LargePDFPerformanceMonitor.swift /Users/monsoudzanaty/Documents/DevReader/Views/Settings/LargePDFTestView.swift /Users/monsoudzanaty/Documents/DevReader/Services/PersistenceService.swift /Users/monsoudzanaty/Documents/DevReader/Services/FileService.swift /Users/monsoudzanaty/Documents/DevReader/Services/AnnotationService.swift /Users/monsoudzanaty/Documents/DevReader/Services/ErrorRecoveryService.swift /Users/monsoudzanaty/Documents/DevReader/Services/JSONStorageService.swift /Users/monsoudzanaty/Documents/DevReader/Services/CrashReportingService.swift /Users/monsoudzanaty/Documents/DevReader/Views/Help/HelpView.swift /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/GeneratedAssetSymbols.swift /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/QuartzCore.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/_Concurrency.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Foundation.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Metal.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Combine.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Darwin.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/DeveloperToolsSupport.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/CoreImage.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/OSLog.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Symbols.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/AppKit.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/System.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Observation.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/DataDetection.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/UniformTypeIdentifiers.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/CoreFoundation.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/SwiftUICore.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/CoreTransferable.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Spatial.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/PDFKit.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/WebKit.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/_StringProcessing.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/CoreData.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/CoreText.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/SwiftUI.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/_WebKit_SwiftUI.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Accessibility.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/simd.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/IOKit.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/os.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/XPC.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Distributed.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/_DarwinFoundation3.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/CoreVideo.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/_DarwinFoundation1.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/ObjectiveC.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Dispatch.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Network.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/Swift.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/_DarwinFoundation2.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/CoreGraphics.swiftmodule/arm64e-apple-macos.swiftmodule /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx/prebuilt-modules/26.0/_Builtin_float.swiftmodule/arm64e-apple-macos.swiftmodule /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreServices-3RKEPG3LD3IOTLM1KDXAYX2SH.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/simd-4YAD4340Y3GZL5X1ZVA18ZA8J.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_AvailabilityInternal-9T6K4HY97GAICX2OI5YT0M5QE.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreGraphics-6T5JMGK3B8GKEAMLUQD5CRV64.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_inttypes-5PZN4ZA6RRZG8XF6WWWEG6RSE.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/os_object-EYXTKF4TP79NCC15UIMM8I6WI.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/os-CMG0UARMK4QJY0JGJFGP38SCP.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/DeveloperToolsSupport-EA496G1QPHVUZJHATP8JMNC97.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ImageIO-AQNCQVM04ZL2JUNDARB9B58U8.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CUPS-DECMJ5B7SI1577VSPK4CLOGP0.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/os_workgroup-A1E0RFJKNZ04Z2RDOZLPO6667.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/PDFKit-4SCXF1DF4F27LD3WDK844L2YF.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/libkern-2F3ZULBV7EQQJL37D6T0R8J0X.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftUI-BFU8MW103PIO11KSBC8YBTWLE.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/OpenGL-95NCIIJJMLWQMM4DDQJGNM8G4.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/launch-9TS4FB8WWEEB2VWEHC4GJGUTH.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdatomic-2TY3MBZYZI0J967H808O5LWWB.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/AppKit-BV8FRBUWZVCQMCOKI8B07FY3.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_SwiftConcurrencyShims-B3V0Y20IA21NQ7KYG1GASZ7R6.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Network-CUF76X7IIRS6VJB05HRHI48DX.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/DiskArbitration-BNST1483X49JX9146JC2VI48M.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ptrauth-4MEYRDGIYNQKGHV12LZFGS6U3.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_tgmath-3RHGZM98AEASUZEXV25HY64P0.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/DataDetection-6JHOG65RDAWVTN8NLBU2ZGI3N.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Metal-3JGTXDRP7Y4F2DD95FCN55SRX.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreVideo-2ZCTSDVNU7ZI82PB3FUEBCOTH.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_float-1FJ5Z51MKG5LAMGB8JAUOLKGR.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Dispatch-CKRIZS27BS513N6D8R4FZHKO4.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/dnssd-BF4M7K2B5N7OA7BJ8XBES1DR3.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Spatial-5XSCGR1OQ1IEB2LWL1EURYJTX.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreTransferable-F5KOLKJ876KKY96EIY261CPNV.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Accessibility-3ECACQFQ34KGPP0GDLS87CW5S.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/MachO-8NL9YP4L4H1622GC5OPPLOLR5.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/IOKit-6P11H222DNE09GR8SHU2PW0HE.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdint-ARHDXXPY7IEAREV241VJD6WP4.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/WebKit-4VGDXSBR2TGKXH404U05A8O74.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreFoundation-BF1RW34DDUALM7EFXBOWUAR1N.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_limits-AF9YTOEBCM2FIGRLYYSZKC1UJ.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ptrcheck-4NA6NAQMZPG0HYQEHLKG0A2US.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ApplicationServices-CALVQ8U4YUFUUT9S3Z9DXAGCI.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/OSLog-2WING7IZJXQ5SW8YPKDRQL7NC.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Cocoa-8P7QCJO5DGR1IDQ2ZIES9SC8L.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftShims-3OJCD7A99W5TOJXNTXOK3CH8U.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/SwiftUICore-EECFFVEI53JPAIMXE0IHPQ5XC.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreData-25GWCLTNCR8039O39DHBWT9AR.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/IOSurface-DOT3C2A115WHOOCKF58868OLA.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_DarwinFoundation2-29IENHDU53Q06AEWUJAJD3D3T.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stddef-1RLOXH2ML2SY7UVJAJMAH1VMH.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ColorSync-39EAQEVLBWIJJ07H8KQGDAX3J.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/UniformTypeIdentifiers-90MPX5ZX3JVAPZKK19AGT2T2Z.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_intrinsics-3CZDMEOS65SPKTWH8V6QHNWTC.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/JavaScriptCore-1SPBIWTF9R1WGMJ9U4H0EB3D4.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/XPC-94CBICC23TMFP253W21YUIU7J.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdarg-5ZLXAM9VLJ7GUSCMDGIWHR7MG.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Symbols-1QUEG5IJECFC2QT5Q6GK8760M.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Foundation-AOV9FFEXT46Y2PQF6E48CDASI.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_DarwinFoundation3-4TW5R7FCASHNY3S1WKUKX1YU9.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreImage-BFPLEXO4Y54ETNCWI79VNXAZP.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/ObjectiveC-3G2NQ8GVJVUVV8Z21HB5PWN7M.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CFNetwork-797QWAEGX6DWRXX2BW1IX5TU.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/QuartzCore-AH17AGR6SUTHU5SBXGG7MY6TM.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Security-9RYB8GURTNVXKVOS38HN9SCNG.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/sys_types-11Q7SIIB8C7N2ZCCLUIRWML2A.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_DarwinFoundation1-DGTD8DQ671DU24QATB86BEMMS.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Darwin-NLMW0185XYUEOK6FK56RNBAR.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/_Builtin_stdbool-CZ90QCX4X95BROYKDDXG6BNBQ.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/libDER-6B9F91MC3K9K21B5S3PJYD1KR.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/CoreText-3QFXZTOI5KOGUE8FTTZFUW56U.pcm /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-dependencies-1.json (in target 'DevReader' from project 'DevReader')
+
+CompileSwift normal arm64 (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+/Users/monsoudzanaty/Documents/DevReader/Views/PDF/PDFPane.swift:13:12: warning: value 'doc' was defined but never used; consider replacing with boolean test
+                                if let doc = pdf.document {
+                                   ~~~~^~~~~~
+                                                          != nil
+/Users/monsoudzanaty/Documents/DevReader/Views/Sketch/Sketch.swift:76:18: warning: 'onChange(of:perform:)' was deprecated in macOS 14.0: Use `onChange` with a two or zero parameter action closure instead.
+                .onChange(of: sz) { newSize in canvasSize = newSize }
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/Utils/LargePDFPerformanceMonitor.swift:35:60: warning: left side of nil coalescing operator '??' has non-optional type 'Double', so the right side is never used
+            return (loadScore + memoryScore + (searchScore ?? 50) + (navScore ?? 50)) / 4
+                                               ~~~~~~~~~~~~^~~~~
+                                                          
+/Users/monsoudzanaty/Documents/DevReader/Utils/LargePDFPerformanceMonitor.swift:35:79: warning: left side of nil coalescing operator '??' has non-optional type 'Double', so the right side is never used
+            return (loadScore + memoryScore + (searchScore ?? 50) + (navScore ?? 50)) / 4
+                                                                     ~~~~~~~~~^~~~~
+                                                                             
+/Users/monsoudzanaty/Documents/DevReader/Utils/LargePDFPerformanceMonitor.swift:18:13: warning: immutable property will not be decoded because it is declared with an initial value which cannot be overwritten
+        let id = UUID()
+            ^
+/Users/monsoudzanaty/Documents/DevReader/Utils/LargePDFPerformanceMonitor.swift:18:13: note: set the initial value via the initializer or explicitly define a CodingKeys enum including a 'id' case to silence this warning
+        let id = UUID()
+            ^
+/Users/monsoudzanaty/Documents/DevReader/Utils/LargePDFPerformanceMonitor.swift:18:13: note: make the property mutable instead
+        let id = UUID()
+        ~~~ ^
+        var
+/Users/monsoudzanaty/Documents/DevReader/Utils/LargePDFPerformanceMonitor.swift:49:17: warning: no 'async' operations occur within 'await' expression
+                await self?.logCurrentStatus()
+                ^
+/Users/monsoudzanaty/Documents/DevReader/Services/AnnotationService.swift:27:72: warning: main actor-isolated static method 'annotatedURL(for:)' cannot be called from outside of the actor; this is an error in the Swift 6 language mode
+            guard let doc = document, let src = originalURL, let dst = annotatedURL(for: src) else { return }
+                                                                       ^~~~~~~~~~~~~~~~~~~~~~
+                                                                       await 
+/Users/monsoudzanaty/Documents/DevReader/Services/ErrorRecoveryService.swift:168:17: warning: variable 'box' was never mutated; consider changing to 'let' constant
+            var box = bounds
+            ~~~ ^
+            let
+
+SwiftDriverJobDiscovery normal arm64 Compiling DevReader.swift, NoteItem.swift, LibraryItem.swift, SessionData.swift, PDFController.swift, NotesStore.swift, LibraryStore.swift, NotesPane.swift, NoteRow.swift, PDFViewRepresentable.swift, PDFPane.swift, OutlinePane.swift, CompactLayoutView.swift, FullLayoutView.swift, LibraryPane.swift, DevReaderApp.swift, ContentView.swift, WebPane.swift, CodePane.swift, Sketch.swift, SettingsView.swift, OnboardingView.swift, Extensions.swift, Shell.swift, LoadingStates.swift, ModernHeaderView.swift, ModernSettingsView.swift, LargePDFPerformanceMonitor.swift, LargePDFTestView.swift, PersistenceService.swift, FileService.swift, AnnotationService.swift, ErrorRecoveryService.swift, JSONStorageService.swift, CrashReportingService.swift, HelpView.swift, GeneratedAssetSymbols.swift (in target 'DevReader' from project 'DevReader')
+
+SwiftDriver\ Compilation\ Requirements DevReader normal arm64 com.apple.xcode.tools.swift.compiler (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name DevReader -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.SwiftFileList -default-isolation\=MainActor -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk -target arm64-apple-macos15.6 -g -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -swift-version 5 -I /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -F /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -emit-localized-strings -emit-localized-strings-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64 -c -num-threads 10 -Xcc -ivfsstatcache -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.0-25A352-28806144b0707e398aac92880fa50324.sdkstatcache -output-file-map /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader_const_extract_protocols.json -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-generated-files.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-own-target-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-all-target-headers.hmap -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader-project-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/include -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources-normal/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-Swift.h -working-directory /Users/monsoudzanaty/Documents/DevReader -no-emit-module-separately-wmo
+
+SwiftMergeGeneratedHeaders /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/DevReader-Swift.h /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-Swift.h (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-swiftHeaderTool -arch arm64 /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-Swift.h -o /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DerivedSources/DevReader-Swift.h
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/arm64-apple-macos.abi.json /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.abi.json (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.abi.json /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/arm64-apple-macos.abi.json
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/arm64-apple-macos.swiftdoc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftdoc (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftdoc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/arm64-apple-macos.swiftdoc
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/arm64-apple-macos.swiftmodule /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftmodule (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftmodule /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/arm64-apple-macos.swiftmodule
+
+Copy /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/Project/arm64-apple-macos.swiftsourceinfo /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftsourceinfo (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftsourceinfo /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/Project/arm64-apple-macos.swiftsourceinfo
+
+Ld /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/MacOS/DevReader normal (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-macos15.6 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk -Os -L/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/EagerLinkingTBDs/Release -L/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -F/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/EagerLinkingTBDs/Release -F/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -filelist /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.LinkFileList -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @executable_path/../Frameworks -Xlinker -object_path_lto -Xlinker /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader_lto.o -Xlinker -debug_variant -Xlinker -dependency_info -Xlinker /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader_dependency_info.dat -fobjc-link-runtime -fprofile-instr-generate -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.swiftmodule @/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader-linker-args.resp -Xlinker -no_adhoc_codesign -o /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/MacOS/DevReader
+
+ProcessProductPackaging "" /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.xctest.xcent (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    
+    Entitlements:
+    
+    {
+    "com.apple.application-identifier" = "dev.local.chace.DevReaderUITests.xctrunner";
+    "com.apple.security.app-sandbox" = 1;
+    "com.apple.security.get-task-allow" = 1;
+    "com.apple.security.network.client" = 1;
+    "com.apple.security.temporary-exception.files.absolute-path.read-only" =     (
+        "/"
+    );
+    "com.apple.security.temporary-exception.mach-lookup.global-name" =     (
+        "com.apple.testmanagerd",
+        "com.apple.dt.testmanagerd.runner",
+        "com.apple.coresymbolicationd",
+        "com.apple.coredevice.version",
+        "com.apple.coredevice.service",
+        "com.apple.remoted"
+    );
+    "com.apple.security.temporary-exception.mach-lookup.local-name" =     (
+        "com.apple.axserver"
+    );
+    "com.apple.security.temporary-exception.sbpl" =     (
+        "(allow hid-control)",
+        "(allow signal)"
+    );
+}
+    
+    builtin-productPackagingUtility -entitlements -format xml -o /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.xctest.xcent
+
+SwiftDriver DevReaderTests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'DevReaderTests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name DevReaderTests -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests.SwiftFileList -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk -target arm64-apple-macos15.6 -g -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -swift-version 5 -I /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -c -num-threads 10 -Xcc -ivfsstatcache -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.0-25A352-28806144b0707e398aac92880fa50324.sdkstatcache -output-file-map /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests_const_extract_protocols.json -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-generated-files.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-own-target-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-all-target-headers.hmap -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DevReaderTests-project-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/include -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DerivedSources-normal/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DerivedSources/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderTests.build/Objects-normal/arm64/DevReaderTests-Swift.h -working-directory /Users/monsoudzanaty/Documents/DevReader -no-emit-module-separately-wmo
+warning: ignore swiftmodule built without '-enable-testing': /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/arm64-apple-macos.swiftmodule
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/AccessibilityTests.swift:2:18: error: Unable to find module dependency: 'DevReader'
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/AccessibilityTests.swift:2:18: note: a dependency of main module 'DevReaderTests'
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/CodeExecutionTests.swift:2:18: note: also imported here
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/DevReaderTests.swift:9:18: note: also imported here
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/ErrorRecoveryTests.swift:2:18: note: also imported here
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/FileManagementTests.swift:2:18: note: also imported here
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/JSONStorageTests.swift:2:18: note: also imported here
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/LargePDFTests.swift:3:18: note: also imported here
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/NotesStoreTests.swift:2:18: note: also imported here
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/PDFControllerTests.swift:3:18: note: also imported here
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/PerformanceTests.swift:2:18: note: also imported here
+@testable import DevReader
+                 ^
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/PersistenceServiceTests.swift:2:18: note: also imported here
+@testable import DevReader
+                 ^
+warning: Ignore swiftmodule built without '-enable-testing': /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.swiftmodule/arm64-apple-macos.swiftmodule (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/AccessibilityTests.swift:2:18: error: Unable to find module dependency: 'DevReader'
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/AccessibilityTests.swift:2:18: note: A dependency of main module 'DevReaderTests'
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/CodeExecutionTests.swift:2:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/DevReaderTests.swift:9:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/ErrorRecoveryTests.swift:2:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/FileManagementTests.swift:2:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/JSONStorageTests.swift:2:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/LargePDFTests.swift:3:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/NotesStoreTests.swift:2:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/PDFControllerTests.swift:3:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/PerformanceTests.swift:2:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+/Users/monsoudzanaty/Documents/DevReader/DevReaderTests/PersistenceServiceTests.swift:2:18: note: Also imported here
+@testable import DevReader
+                 ^ (in target 'DevReaderTests' from project 'DevReader')
+
+ProcessProductPackagingDER /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.xctest.xcent /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.xctest.xcent.der (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /usr/bin/derq query -f xml -i /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.xctest.xcent -o /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests.xctest.xcent.der --raw
+
+SwiftDriver DevReaderUITests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'DevReaderUITests' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name DevReaderUITests -O -whole-module-optimization -enforce-exclusivity\=checked @/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests.SwiftFileList -module-alias Testing\=_Testing_Unavailable -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-bare-slash-regex -enable-upcoming-feature DisableOutwardActorInference -enable-upcoming-feature InferSendableFromCaptures -enable-upcoming-feature GlobalActorIsolatedTypesUsability -enable-upcoming-feature MemberImportVisibility -enable-upcoming-feature InferIsolatedConformances -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk -target arm64-apple-macos15.6 -g -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -swift-version 5 -I /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -c -num-threads 10 -Xcc -ivfsstatcache -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.0-25A352-28806144b0707e398aac92880fa50324.sdkstatcache -output-file-map /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests_const_extract_protocols.json -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-generated-files.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-own-target-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-all-target-headers.hmap -Xcc -iquote -Xcc /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DevReaderUITests-project-headers.hmap -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/include -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DerivedSources-normal/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DerivedSources/arm64 -Xcc -I/Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/DerivedSources -emit-objc-header -emit-objc-header-path /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReaderUITests.build/Objects-normal/arm64/DevReaderUITests-Swift.h -working-directory /Users/monsoudzanaty/Documents/DevReader -no-emit-module-separately-wmo
+
+GenerateDSYMFile /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app.dSYM /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/MacOS/DevReader (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/dsymutil /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/MacOS/DevReader -o /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app.dSYM
+
+ExtractAppIntentsMetadata (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name DevReader --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk --xcode-version 17A400 --platform-family macOS --deployment-target 15.6 --bundle-identifier dev.local.chace.DevReader --output /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Resources --target-triple arm64-apple-macos15.6 --binary-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/MacOS/DevReader --dependency-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader_dependency_info.dat --stringsdata-file /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.SwiftFileList --metadata-file-list /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.DependencyMetadataFileList --static-metadata-file-list /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/DevReader.DependencyStaticMetadataFileList --swift-const-vals-list /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/Objects-normal/arm64/DevReader.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2025-09-28 01:27:58.980 appintentsmetadataprocessor[66541:29639974] Starting appintentsmetadataprocessor export
+2025-09-28 01:27:58.983 appintentsmetadataprocessor[66541:29639974] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+CopySwiftLibs /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app (in target 'DevReader' from project 'DevReader')
+    cd /Users/monsoudzanaty/Documents/DevReader
+    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/MacOS/DevReader --scan-folder /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks --scan-folder /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/PlugIns --scan-folder /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Library/SystemExtensions --scan-folder /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Extensions --platform macosx --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Products/Release/DevReader.app/Contents/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/monsoudzanaty/Library/Developer/Xcode/DerivedData/DevReader-eujjfiipdakxzecnojbaidfuzdkq/Build/Intermediates.noindex/DevReader.build/Release/DevReader.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os --back-deploy-swift-span
+
+
+Test session results, code coverage, and logs:
+	/Users/monsoudzanaty/Documents/DevReader/build/PerformanceTestResults/ui_test
+
+Testing failed:
+	Unable to find module dependency: 'DevReader'
+@testable import DevReader
+                 ^
+	Testing cancelled because the build failed.
+
+** TEST FAILED **
+
+
+The following build commands failed:
+	SwiftDriver DevReaderTests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'DevReaderTests' from project 'DevReader')
+	Testing project DevReader with scheme DevReader
+(2 failures)
