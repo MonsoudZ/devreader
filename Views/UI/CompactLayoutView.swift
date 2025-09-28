@@ -70,8 +70,9 @@ struct CompactLayoutView: View {
                             Divider()
                             DisclosureGroup(isExpanded: $showSearchPanel) {
                                 ScrollView {
-                                    VStack(alignment: .leading, spacing: 6) {
-                                        ForEach(Array(pdf.searchResults.enumerated()), id: \.offset) { idx, sel in
+                                    LazyVStack(alignment: .leading, spacing: 6) {
+                                        ForEach(pdf.searchResults.indices, id: \.self) { idx in
+                                            let sel = pdf.searchResults[idx]
                                             let text = (sel.string ?? "Match \(idx+1)").trimmingCharacters(in: .whitespacesAndNewlines)
                                             let pageIdx: Int = {
                                                 if let p = sel.pages.first, let d = pdf.document { return d.index(for: p) + 1 } else { return idx + 1 }
@@ -85,6 +86,8 @@ struct CompactLayoutView: View {
                                                 }
                                             }
                                             .buttonStyle(.plain)
+                                            .accessibilityLabel("Search result \(idx+1), page \(pageIdx)")
+                                            .accessibilityValue(text)
                                         }
                                     }
                                     .padding(6)

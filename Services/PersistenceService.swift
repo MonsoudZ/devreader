@@ -6,10 +6,38 @@ enum PersistenceService {
     private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "Persistence")
     private static var hasMigrated = false
     
-    // Builds a namespaced key. Optionally includes a per-file hash to scope data to a document.
+    // Builds a namespaced key with proper PDF scoping to prevent collisions
     static func key(_ base: String, for url: URL?) -> String {
         guard let u = url else { return base }
-        return base + "." + String(u.path.hashValue)
+        
+        // Use a more robust hash that includes file attributes to prevent collisions
+        let fileAttributes = (try? FileManager.default.attributesOfItem(atPath: u.path)) ?? [:]
+        let fileSize = fileAttributes[.size] as? Int ?? 0
+        let modificationDate = fileAttributes[.modificationDate] as? Date ?? Date()
+        
+        // Create a composite hash that includes path, size, and modification date
+        let compositeString = "\(u.path)\(fileSize)\(modificationDate.timeIntervalSince1970)"
+        let hash = String(compositeString.hashValue)
+        
+        return base + "." + hash
+    }
+    
+    // Enhanced key generation for production safety
+    static func key(_ base: String, for url: URL?, withScope scope: String? = nil) -> String {
+        guard let u = url else { return base }
+        
+        let fileAttributes = (try? FileManager.default.attributesOfItem(atPath: u.path)) ?? [:]
+        let fileSize = fileAttributes[.size] as? Int ?? 0
+        let modificationDate = fileAttributes[.modificationDate] as? Date ?? Date()
+        
+        let compositeString = "\(u.path)\(fileSize)\(modificationDate.timeIntervalSince1970)"
+        let hash = String(compositeString.hashValue)
+        
+        if let scope = scope {
+            return base + "." + scope + "." + hash
+        }
+        
+        return base + "." + hash
     }
     
     // Initialize JSON-based persistence

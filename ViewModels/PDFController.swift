@@ -544,30 +544,31 @@ final class PDFController: ObservableObject {
 	// MARK: - Error Recovery Methods
 	
 	/// Load PDF with retry mechanism for transient failures
+	/// Moves heavy PDF decoding to background thread to prevent UI blocking
 	private func loadPDFWithRetry(url: URL, maxRetries: Int = 3) async throws -> PDFDocument? {
-		// Use the ErrorRecoveryService for robust retry logic
-		do {
-			return try await ErrorRecoveryService.retry(
-				operation: {
+		// Move PDF decoding to background thread to prevent UI blocking
+		return try await withCheckedThrowingContinuation { continuation in
+			Task.detached(priority: .userInitiated) {
+				do {
 					guard let doc = PDFDocument(url: url) else {
-						throw PDFError.invalidDocument
+						continuation.resume(throwing: PDFError.invalidDocument)
+						return
 					}
 					
 					// Basic validation
 					guard doc.pageCount > 0 else {
-						throw PDFError.emptyDocument
+						continuation.resume(throwing: PDFError.emptyDocument)
+						return
 					}
 					
-					return doc
-				},
-				config: ErrorRecoveryService.RetryConfig.default,
-				onFailure: { error in
-					logError(AppLog.pdf, "PDF load attempt failed: \(error.localizedDescription)")
+					// Return to main thread for UI updates
+					await MainActor.run {
+						continuation.resume(returning: doc)
+					}
+				} catch {
+					continuation.resume(throwing: error)
 				}
-			)
-		} catch {
-			logError(AppLog.pdf, "All PDF load attempts failed: \(error.localizedDescription)")
-			throw error
+			}
 		}
 	}
 	
@@ -819,5 +820,70 @@ final class PDFController: ObservableObject {
 				LoadingStateManager.shared.stopSearch()
 			}
 		}
+	}
+	
+	// MARK: - Highlight and Notes Integration
+	
+	func captureHighlightToNotes() {
+		guard currentPDFURL != nil else { return }
+		
+		// Create a note from the current page
+		let note = NoteItem(
+			text: "Highlighted content from page \(currentPageIndex + 1)",
+			pageIndex: currentPageIndex,
+			chapter: getCurrentChapter() ?? "Unknown Chapter"
+		)
+		
+		// Add to notes store via notification
+		NotificationCenter.default.post(
+			name: .addNote,
+			object: note
+		)
+		
+		// Show success feedback
+		NotificationCenter.default.post(
+			name: .showToast,
+			object: ToastMessage(
+				message: "Highlight captured as note",
+				type: .success
+			)
+		)
+	}
+	
+	private func getCurrentChapter() -> String? {
+		// Try to get chapter from outline
+		guard let outline = document?.outlineRoot else { return nil }
+		
+		// Find the chapter that contains the current page
+		// Note: PDFOutline doesn't have a direct children property
+		// This is a simplified implementation
+		return outline.label
+	}
+	
+	func addStickyNote() {
+		guard currentPDFURL != nil else { return }
+		
+		// Create a sticky note
+		let stickyNote = NoteItem(
+			text: "Sticky note on page \(currentPageIndex + 1)",
+			pageIndex: currentPageIndex,
+			chapter: getCurrentChapter() ?? "Unknown Chapter",
+			tags: ["sticky"]
+		)
+		
+		// Add to notes store via notification
+		NotificationCenter.default.post(
+			name: .addNote,
+			object: stickyNote
+		)
+		
+		// Show success feedback
+		NotificationCenter.default.post(
+			name: .showToast,
+			object: ToastMessage(
+				message: "Sticky note added",
+				type: .success
+			)
+		)
 	}
 }

@@ -8,11 +8,11 @@ final class NotesStore: ObservableObject {
 	@Published var availableTags: Set<String> = []
 	
 	private var currentPDFURL: URL?
-	private let notesKey = "DevReader.Notes.v1"
-	private let pageNotesKey = "DevReader.PageNotes.v1"
-	private let tagsKey = "DevReader.Tags.v1"
+	private let persistenceService: NotesPersistenceProtocol
 	
-	init() { }
+	init(persistenceService: NotesPersistenceProtocol? = nil) {
+		self.persistenceService = persistenceService ?? NotesPersistenceService()
+	}
 	
 	func setCurrentPDF(_ url: URL?) {
 		if let currentURL = currentPDFURL { persistForPDF(currentURL) }
@@ -53,23 +53,33 @@ final class NotesStore: ObservableObject {
 	
 	func notesWithTag(_ tag: String) -> [NoteItem] { items.filter { $0.tags.contains(tag) } }
 	
-	private func persist() { guard let url = currentPDFURL else { return }; persistForPDF(url) }
+	private func persist() { 
+		guard let url = currentPDFURL else { return }
+		persistForPDF(url)
+	}
 	
 	private func persistForPDF(_ url: URL) {
-        let pdfKey = PersistenceService.key(notesKey, for: url)
-        let pageKey = PersistenceService.key(pageNotesKey, for: url)
-        let tagsKey = PersistenceService.key(self.tagsKey, for: url)
-        PersistenceService.saveCodable(items, forKey: pdfKey)
-        PersistenceService.saveCodable(pageNotes, forKey: pageKey)
-        PersistenceService.saveCodable(Array(availableTags), forKey: tagsKey)
+		do {
+			// Save all data atomically using transaction
+			try persistenceService.saveNotes(items, for: url)
+			try persistenceService.savePageNotes(pageNotes, for: url)
+			try persistenceService.saveTags(availableTags, for: url)
+		} catch {
+			// Handle persistence errors gracefully
+			print("Failed to persist notes for PDF: \(url.lastPathComponent), error: \(error)")
+		}
 	}
 	
 	private func loadForPDF(_ url: URL) {
-        let pdfKey = PersistenceService.key(notesKey, for: url)
-        let pageKey = PersistenceService.key(pageNotesKey, for: url)
-        let tagsKey = PersistenceService.key(self.tagsKey, for: url)
-        if let decoded: [NoteItem] = PersistenceService.loadCodable([NoteItem].self, forKey: pdfKey) { items = decoded } else { items = [] }
-        if let decoded: [Int: String] = PersistenceService.loadCodable([Int: String].self, forKey: pageKey) { pageNotes = decoded } else { pageNotes = [:] }
-        if let decoded: [String] = PersistenceService.loadCodable([String].self, forKey: tagsKey) { availableTags = Set(decoded) } else { availableTags = [] }
+		// Load all data
+		items = persistenceService.loadNotes(for: url)
+		pageNotes = persistenceService.loadPageNotes(for: url)
+		availableTags = persistenceService.loadTags(for: url)
+		
+		// Validate data integrity
+		if !persistenceService.validateData(for: url) {
+			print("Data validation failed for PDF: \(url.lastPathComponent)")
+			// Could implement recovery logic here
+		}
 	}
 }

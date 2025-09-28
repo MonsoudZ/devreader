@@ -7,22 +7,15 @@ import AppKit
 enum RightTab { case notes, code, web }
 
 struct ContentView: View {
-	@StateObject private var pdf = PDFController()
-	@StateObject private var notes = NotesStore()
-	@StateObject private var library = LibraryStore()
+	@EnvironmentObject private var appEnvironment: AppEnvironment
     @EnvironmentObject private var toastCenter: ToastCenter
-    @StateObject private var enhancedToastCenter = EnhancedToastCenter()
-    @StateObject private var errorMessageManager = ErrorMessageManager.shared
 	@AppStorage("defaultZoom") private var defaultZoom: Double = 1.0
 	@AppStorage("highlightColor") private var highlightColor: String = "yellow"
 	@AppStorage("autoSave") private var autoSave: Bool = true
 	@AppStorage("autosaveIntervalSeconds") private var autosaveIntervalSeconds: Double = 30
 	@State private var autosaveTimer = Timer.publish(every: 30, on: .main, in: .common).autoconnect()
 
-    @State private var rightTab: RightTab = .notes
-	@State private var showingSettings = false
-	@State private var showingOnboarding = false
-	@State private var showingHelp = false
+	@State private var rightTab: RightTab = .notes
 	@State private var alertMessage = ""
 	@State private var alertTitle = ""
 	@State private var showingAlert = false
@@ -38,8 +31,8 @@ struct ContentView: View {
 	var body: some View {
 		mainContent
 			.modifier(ContentViewModifiers())
-			.enhancedToastOverlay(enhancedToastCenter)
-			.errorOverlay(errorMessageManager)
+			.enhancedToastOverlay(appEnvironment.enhancedToastCenter)
+			.errorOverlay(appEnvironment.errorMessageManager)
 	}
 	
 	@ViewBuilder
@@ -63,9 +56,9 @@ struct ContentView: View {
 	@ViewBuilder
 	private var compactLayout: some View {
 		ModernCompactLayoutView(
-			pdf: pdf,
-			notes: notes,
-			library: library,
+			pdf: appEnvironment.pdfController,
+			notes: appEnvironment.notesStore,
+			library: appEnvironment.libraryStore,
 			showingLibrary: $showingLibrary,
 			showingRightPanel: $showingRightPanel,
 			showingOutline: $showingOutline,
@@ -73,7 +66,7 @@ struct ContentView: View {
 			rightTab: $rightTab,
 			rightTabRaw: $rightTabRaw,
 			showSearchPanel: $showSearchPanel,
-			showingSettings: $showingSettings,
+			showingSettings: $appEnvironment.isShowingSettings,
 			onOpenFromLibrary: openFromLibrary,
 			onImportPDFs: importPDFs,
 			onOpenPDF: openPDF
@@ -83,16 +76,16 @@ struct ContentView: View {
 	@ViewBuilder
 	private var fullLayout: some View {
 		ModernFullLayoutView(
-			pdf: pdf,
-			notes: notes,
-			library: library,
+			pdf: appEnvironment.pdfController,
+			notes: appEnvironment.notesStore,
+			library: appEnvironment.libraryStore,
 			showingLibrary: $showingLibrary,
 			showingRightPanel: $showingRightPanel,
 			showingOutline: $showingOutline,
 			collapseAll: $collapseAll,
 			rightTab: $rightTab,
 			showSearchPanel: $showSearchPanel,
-			showingSettings: $showingSettings,
+			showingSettings: $appEnvironment.isShowingSettings,
 			onOpenFromLibrary: openFromLibrary,
 			onImportPDFs: importPDFs,
 			onOpenPDF: openPDF
@@ -112,50 +105,50 @@ struct ContentView: View {
 	func importPDFs() {
 		let urls = FileService.openPDF(multiple: true)
 		if !urls.isEmpty {
-			library.add(urls: urls)
-			enhancedToastCenter.showSuccess("PDFs Added", "Added \(urls.count) PDF\(urls.count == 1 ? "" : "s") to library", category: .fileOperation)
+			appEnvironment.libraryStore.add(urls: urls)
+			appEnvironment.enhancedToastCenter.showSuccess("PDFs Added", "Added \(urls.count) PDF\(urls.count == 1 ? "" : "s") to library", category: .fileOperation)
 		} else {
-			enhancedToastCenter.showInfo("No PDFs Selected", "Please select one or more PDF files to import", category: .userAction)
+			appEnvironment.enhancedToastCenter.showInfo("No PDFs Selected", "Please select one or more PDF files to import", category: .userAction)
 		}
 	}
 	func openPDF() {
 		let urls = FileService.openPDF(multiple: false)
 		if let url = urls.first { 
-			pdf.load(url: url)
-			enhancedToastCenter.showInfo("PDF Opened", "Loading \(url.lastPathComponent)", category: .fileOperation)
+			appEnvironment.pdfController.load(url: url)
+			appEnvironment.enhancedToastCenter.showInfo("PDF Opened", "Loading \(url.lastPathComponent)", category: .fileOperation)
 		} else {
-			enhancedToastCenter.showInfo("No PDF Selected", "Please select a PDF file to open", category: .userAction)
+			appEnvironment.enhancedToastCenter.showInfo("No PDF Selected", "Please select a PDF file to open", category: .userAction)
 		}
 	}
 	func openFromLibrary(_ item: LibraryItem) {
-		pdf.load(url: item.url)
-		enhancedToastCenter.showInfo("PDF Opened", "Loading \(item.url.lastPathComponent)", category: .fileOperation)
+		appEnvironment.pdfController.load(url: item.url)
+		appEnvironment.enhancedToastCenter.showInfo("PDF Opened", "Loading \(item.url.lastPathComponent)", category: .fileOperation)
 	}
 	func closePDF() {
-		pdf.document = nil
-		enhancedToastCenter.showInfo("PDF Closed", "Document closed", category: .userAction)
+		appEnvironment.pdfController.document = nil
+		appEnvironment.enhancedToastCenter.showInfo("PDF Closed", "Document closed", category: .userAction)
 	}
 	func captureHighlightToNotes() {
 		// Implementation for capturing highlights to notes
-		enhancedToastCenter.showSuccess("Highlight Captured", "Added to notes", category: .userAction)
+		appEnvironment.pdfController.captureHighlightToNotes()
 	}
 	func newSketchPage() {
 		// Implementation for creating new sketch page
-		enhancedToastCenter.showInfo("New Sketch", "Sketch page created", category: .userAction)
+		appEnvironment.enhancedToastCenter.showInfo("New Sketch", "Sketch page created", category: .userAction)
 	}
 	func addStickyNote() {
 		// Implementation for adding sticky note
-		enhancedToastCenter.showSuccess("Sticky Note", "Note added", category: .userAction)
+		appEnvironment.pdfController.addStickyNote()
 	}
 	func showErrorRecoveryDialog(for url: URL) {
 		// Use enhanced error handling
-		enhancedToastCenter.showPDFLoadingError(for: url, error: NSError(domain: "DevReader", code: -1, userInfo: [NSLocalizedDescriptionKey: "PDF loading failed"]))
+		appEnvironment.enhancedToastCenter.showPDFLoadingError(for: url, error: NSError(domain: "DevReader", code: -1, userInfo: [NSLocalizedDescriptionKey: "PDF loading failed"]))
 	}
 	func checkFirstLaunch() {
 		// Check if this is the first launch and show onboarding
 		let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
 		if !hasLaunchedBefore {
-			showingOnboarding = true
+			appEnvironment.isShowingOnboarding = true
 			UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
 		}
 	}

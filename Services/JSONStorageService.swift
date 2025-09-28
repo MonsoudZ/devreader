@@ -64,8 +64,39 @@ enum JSONStorageService {
     static func save<T: Codable>(_ data: T, to url: URL) throws {
         ensureDirectories()
         let jsonData = try JSONEncoder().encode(data)
-        try jsonData.write(to: url)
-        os_log("Saved data to: %{public}@", log: logger, type: .debug, url.path)
+        
+        // Atomic write to prevent corruption
+        let tempURL = url.appendingPathExtension("tmp")
+        let backupURL = url.appendingPathExtension("bak")
+        
+        do {
+            // Write to temporary file first
+            try jsonData.write(to: tempURL)
+            
+            // Create backup of existing file if it exists
+            if FileManager.default.fileExists(atPath: url.path) {
+                try FileManager.default.copyItem(at: url, to: backupURL)
+            }
+            
+            // Atomic move to final location
+            _ = try FileManager.default.replaceItem(at: url, withItemAt: tempURL, backupItemName: nil, options: [], resultingItemURL: nil)
+            
+            // Clean up backup file
+            try? FileManager.default.removeItem(at: backupURL)
+            
+            os_log("Saved data atomically to: %{public}@", log: logger, type: .debug, url.path)
+        } catch {
+            // Restore from backup if atomic write failed
+            if FileManager.default.fileExists(atPath: backupURL.path) {
+                try? FileManager.default.replaceItem(at: url, withItemAt: backupURL, backupItemName: nil, options: [], resultingItemURL: nil)
+            }
+            
+            // Clean up temporary file
+            try? FileManager.default.removeItem(at: tempURL)
+            
+            os_log("Failed to save data atomically: %{public}@", log: logger, type: .error, error.localizedDescription)
+            throw error
+        }
     }
     
     static func load<T: Codable>(_ type: T.Type, from url: URL) throws -> T {

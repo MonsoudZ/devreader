@@ -36,15 +36,27 @@
 		A00100322F00000000000001 /* Views/UI/CompactLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100332F00000000000001 /* Views/UI/CompactLayoutView.swift */; };
 		A00100342F00000000000001 /* Views/UI/FullLayoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100352F00000000000001 /* Views/UI/FullLayoutView.swift */; };
 		A00100392F00000000000001 /* Services/JSONStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003A2F00000000000001 /* Services/JSONStorageService.swift */; };
-		A00100472F00000000000001 /* Services/CrashReportingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100482F00000000000001 /* Services/CrashReportingService.swift */; };
-		A001004A2F00000000000001 /* Views/Help/HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100492F00000000000001 /* Views/Help/HelpView.swift */; };
 		A001003B2F00000000000001 /* Utils/LoadingStates.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003C2F00000000000001 /* Utils/LoadingStates.swift */; };
 		A001003D2F00000000000001 /* Views/UI/ModernHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001003E2F00000000000001 /* Views/UI/ModernHeaderView.swift */; };
 		A001003F2F00000000000001 /* Views/Settings/ModernSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100402F00000000000001 /* Views/Settings/ModernSettingsView.swift */; };
 		A00100432F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100442F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift */; };
 		A00100452F00000000000001 /* Views/Settings/LargePDFTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100462F00000000000001 /* Views/Settings/LargePDFTestView.swift */; };
+		A00100472F00000000000001 /* Services/CrashReportingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100482F00000000000001 /* Services/CrashReportingService.swift */; };
+		A001004A2F00000000000001 /* Views/Help/HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100492F00000000000001 /* Views/Help/HelpView.swift */; };
 		A001004B2F00000000000001 /* Utils/ErrorMessageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */; };
 		A001004D2F00000000000001 /* Utils/EnhancedToastCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */; };
+		A00100502F00000000000001 /* Services/SimpleBackgroundPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100512F00000000000002 /* Services/SimpleBackgroundPersistenceService.swift */; };
+		A00100522F00000000000003 /* Models/LibraryEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100532F00000000000004 /* Models/LibraryEnvelope.swift */; };
+		A00100542F00000000000005 /* Utils/SearchIndexManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100552F00000000000006 /* Utils/SearchIndexManager.swift */; };
+		A00100562F00000000000007 /* Views/Error/ErrorDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100572F00000000000008 /* Views/Error/ErrorDisplayView.swift */; };
+		A00100582F00000000000009 /* Services/EnhancedPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100592F00000000000010 /* Services/EnhancedPersistenceService.swift */; };
+		A00100602F00000000000011 /* Services/NotesPersistenceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100612F00000000000012 /* Services/NotesPersistenceProtocol.swift */; };
+		A00100622F00000000000013 /* DevReaderTests/EnhancedPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100632F00000000000014 /* DevReaderTests/EnhancedPersistenceTests.swift */; };
+		A00100642F00000000000015 /* App/AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100652F00000000000016 /* App/AppEnvironment.swift */; };
+		A00100662F00000000000017 /* ViewModels/SketchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100672F00000000000018 /* ViewModels/SketchStore.swift */; };
+		A00100682F00000000000019 /* ViewModels/CodeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100692F00000000000020 /* ViewModels/CodeStore.swift */; };
+		A00100702F00000000000021 /* ViewModels/WebStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100712F00000000000022 /* ViewModels/WebStore.swift */; };
+		A00100722F00000000000023 /* Views/UI/ResizableSearchPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100732F00000000000024 /* Views/UI/ResizableSearchPanel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -107,6 +119,18 @@
 		A00100492F00000000000001 /* Views/Help/HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Help/HelpView.swift; sourceTree = "<group>"; };
 		A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/ErrorMessageManager.swift; sourceTree = "<group>"; };
 		A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/EnhancedToastCenter.swift; sourceTree = "<group>"; };
+		A00100512F00000000000002 /* Services/SimpleBackgroundPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SimpleBackgroundPersistenceService.swift; sourceTree = "<group>"; };
+		A00100532F00000000000004 /* Models/LibraryEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/LibraryEnvelope.swift; sourceTree = "<group>"; };
+		A00100552F00000000000006 /* Utils/SearchIndexManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/SearchIndexManager.swift; sourceTree = "<group>"; };
+		A00100572F00000000000008 /* Views/Error/ErrorDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Error/ErrorDisplayView.swift; sourceTree = "<group>"; };
+		A00100592F00000000000010 /* Services/EnhancedPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EnhancedPersistenceService.swift; sourceTree = "<group>"; };
+		A00100612F00000000000012 /* Services/NotesPersistenceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/NotesPersistenceProtocol.swift; sourceTree = "<group>"; };
+		A00100632F00000000000014 /* DevReaderTests/EnhancedPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevReaderTests/EnhancedPersistenceTests.swift; sourceTree = "<group>"; };
+		A00100652F00000000000016 /* App/AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppEnvironment.swift; sourceTree = "<group>"; };
+		A00100672F00000000000018 /* ViewModels/SketchStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SketchStore.swift; sourceTree = "<group>"; };
+		A00100692F00000000000020 /* ViewModels/CodeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/CodeStore.swift; sourceTree = "<group>"; };
+		A00100712F00000000000022 /* ViewModels/WebStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/WebStore.swift; sourceTree = "<group>"; };
+		A00100732F00000000000024 /* Views/UI/ResizableSearchPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/UI/ResizableSearchPanel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -158,6 +182,23 @@
 				A001003A2F00000000000001 /* Services/JSONStorageService.swift */,
 				A00100482F00000000000001 /* Services/CrashReportingService.swift */,
 				A00100492F00000000000001 /* Views/Help/HelpView.swift */,
+				A001003E2F00000000000001 /* Views/UI/ModernHeaderView.swift */,
+				A00100442F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift */,
+				A00100462F00000000000001 /* Views/Settings/LargePDFTestView.swift */,
+				A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */,
+				A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */,
+				A00100512F00000000000002 /* Services/SimpleBackgroundPersistenceService.swift */,
+				A00100532F00000000000004 /* Models/LibraryEnvelope.swift */,
+				A00100552F00000000000006 /* Utils/SearchIndexManager.swift */,
+				A00100572F00000000000008 /* Views/Error/ErrorDisplayView.swift */,
+				A00100592F00000000000010 /* Services/EnhancedPersistenceService.swift */,
+				A00100612F00000000000012 /* Services/NotesPersistenceProtocol.swift */,
+				A00100652F00000000000016 /* App/AppEnvironment.swift */,
+				A00100672F00000000000018 /* ViewModels/SketchStore.swift */,
+				A00100692F00000000000020 /* ViewModels/CodeStore.swift */,
+				A00100712F00000000000022 /* ViewModels/WebStore.swift */,
+				A00100732F00000000000024 /* Views/UI/ResizableSearchPanel.swift */,
+				A00100632F00000000000014 /* DevReaderTests/EnhancedPersistenceTests.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -176,12 +217,11 @@
 				A001001C2F00000000000001 /* Views/Code/CodePane.swift */,
 				A001001E2F00000000000001 /* Views/Sketch/Sketch.swift */,
 				A00100202F00000000000001 /* Views/Settings/SettingsView.swift */,
-				A00100422F00000000000001 /* Views/Settings/LargePDFTestView.swift */,
 				A00100222F00000000000001 /* Views/Onboarding/OnboardingView.swift */,
 				A00100242F00000000000001 /* Utils/Extensions.swift */,
 				A00100262F00000000000001 /* Utils/Shell.swift */,
 				A001003C2F00000000000001 /* Utils/LoadingStates.swift */,
-				A00100402F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift */,
+				A00100402F00000000000001 /* Views/Settings/ModernSettingsView.swift */,
 				A00100002F00000000000001 /* Models/NoteItem.swift */,
 				A00100022F00000000000001 /* Models/LibraryItem.swift */,
 				A00100042F00000000000001 /* Models/SessionData.swift */,
@@ -398,6 +438,17 @@
 				A001004A2F00000000000001 /* Views/Help/HelpView.swift in Sources */,
 				A001004B2F00000000000001 /* Utils/ErrorMessageManager.swift in Sources */,
 				A001004D2F00000000000001 /* Utils/EnhancedToastCenter.swift in Sources */,
+				A00100502F00000000000001 /* Services/SimpleBackgroundPersistenceService.swift in Sources */,
+				A00100522F00000000000003 /* Models/LibraryEnvelope.swift in Sources */,
+				A00100542F00000000000005 /* Utils/SearchIndexManager.swift in Sources */,
+				A00100562F00000000000007 /* Views/Error/ErrorDisplayView.swift in Sources */,
+				A00100582F00000000000009 /* Services/EnhancedPersistenceService.swift in Sources */,
+				A00100602F00000000000011 /* Services/NotesPersistenceProtocol.swift in Sources */,
+				A00100642F00000000000015 /* App/AppEnvironment.swift in Sources */,
+				A00100662F00000000000017 /* ViewModels/SketchStore.swift in Sources */,
+				A00100682F00000000000019 /* ViewModels/CodeStore.swift in Sources */,
+				A00100702F00000000000021 /* ViewModels/WebStore.swift in Sources */,
+				A00100722F00000000000023 /* Views/UI/ResizableSearchPanel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -405,6 +456,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A00100622F00000000000013 /* DevReaderTests/EnhancedPersistenceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

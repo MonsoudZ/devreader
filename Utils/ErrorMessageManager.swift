@@ -323,108 +323,48 @@ extension ErrorMessageManager {
     }
 }
 
-// MARK: - Error Display View
-
-struct ErrorDisplayView: View {
-    @ObservedObject var errorManager: ErrorMessageManager
-    @State private var showingTechnicalDetails = false
-    
-    var body: some View {
-        if let error = errorManager.currentError {
-            VStack(spacing: 16) {
-                // Header
-                HStack {
-                    Image(systemName: error.severity.icon)
-                        .foregroundStyle(error.severity.color)
-                        .font(.title2)
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(error.title)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                        
-                        Text(error.category.rawValue)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    Button("Dismiss") {
-                        errorManager.dismissError()
-                    }
-                    .buttonStyle(.plain)
-                }
-                
-                // Message
-                Text(error.message)
-                    .font(.body)
-                    .multilineTextAlignment(.leading)
-                
-                // Recovery Actions
-                if !error.recoveryActions.isEmpty {
-                    VStack(spacing: 8) {
-                        Text("What would you like to do?")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        
-                        LazyVGrid(columns: [
-                            GridItem(.flexible()),
-                            GridItem(.flexible())
-                        ], spacing: 8) {
-                            ForEach(error.recoveryActions) { action in
-                                Button(action.title) {
-                                    action.action()
-                                }
-                                .foregroundStyle(action.style.color)
-                            }
-                        }
-                    }
-                }
-                
-                // Technical Details
-                if let technicalDetails = error.technicalDetails {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Button("Show Technical Details") {
-                            showingTechnicalDetails.toggle()
-                        }
-                        .buttonStyle(.plain)
-                        .font(.caption)
-                        
-                        if showingTechnicalDetails {
-                            Text(technicalDetails)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .padding()
-                                .background(Color.secondary.opacity(0.1))
-                                .cornerRadius(8)
-                        }
-                    }
-                }
-            }
-            .padding()
-            .background(.ultraThinMaterial)
-            .cornerRadius(12)
-            .shadow(radius: 8)
-            .padding()
-        }
-    }
-}
-
-// MARK: - Extensions
-
-extension View {
-    func errorOverlay(_ errorManager: ErrorMessageManager) -> some View {
-        self.overlay(
-            ErrorDisplayView(errorManager: errorManager)
-                .animation(.easeInOut, value: errorManager.isShowingError)
-        )
-    }
-}
+// MARK: - Extensions (errorOverlay moved to ErrorDisplayView.swift)
 
 // MARK: - Notification Names
 
 extension Notification.Name {
     static let openPDF = Notification.Name("openPDF")
     static let showHelp = Notification.Name("showHelp")
+    static let addNote = Notification.Name("addNote")
+    static let showToast = Notification.Name("showToast")
+    static let importPDFs = Notification.Name("importPDFs")
+    static let toggleSearch = Notification.Name("toggleSearch")
+}
+
+// MARK: - Toast Message Model
+
+struct ToastMessage: Identifiable {
+    let id = UUID()
+    let message: String
+    let type: ToastType
+    
+    enum ToastType {
+        case success
+        case error
+        case warning
+        case info
+        
+        var color: Color {
+            switch self {
+            case .success: return .green
+            case .error: return .red
+            case .warning: return .orange
+            case .info: return .blue
+            }
+        }
+        
+        var icon: String {
+            switch self {
+            case .success: return "checkmark.circle"
+            case .error: return "xmark.circle"
+            case .warning: return "exclamationmark.triangle"
+            case .info: return "info.circle"
+            }
+        }
+    }
 }

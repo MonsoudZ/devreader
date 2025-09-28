@@ -11,6 +11,7 @@ struct FullLayoutView: View {
     @Binding var collapseAll: Bool
     @Binding var rightTab: RightTab
     @Binding var showSearchPanel: Bool
+    @State private var searchPanelHeight: CGFloat = 220
     
     let onOpenFromLibrary: (LibraryItem) -> Void
     
@@ -27,40 +28,22 @@ struct FullLayoutView: View {
             PDFPane(pdf: pdf, notes: notes).frame(minWidth: 360)
             if showingRightPanel && !collapseAll {
                 VStack(spacing: 0) {
-                    Picker("", selection: $rightTab) {
+                    Picker("Right panel mode", selection: $rightTab) {
                         Text("Notes").tag(RightTab.notes)
                         Text("Code").tag(RightTab.code)
                         Text("Web").tag(RightTab.web)
                     }
                     .pickerStyle(.segmented)
+                    .accessibilityLabel("Right panel mode")
+                    .accessibilityValue("Currently showing \(rightTab == .notes ? "Notes" : rightTab == .code ? "Code" : "Web")")
                     .padding(8)
                     if !pdf.searchResults.isEmpty {
-                        DisclosureGroup(isExpanded: $showSearchPanel) {
-                            ScrollView {
-                                VStack(alignment: .leading, spacing: 6) {
-                                    ForEach(Array(pdf.searchResults.enumerated()), id: \.offset) { idx, sel in
-                                        let text = (sel.string ?? "Match \(idx+1)").trimmingCharacters(in: .whitespacesAndNewlines)
-                                        let pageIdx: Int = {
-                                            if let p = sel.pages.first, let d = pdf.document { return d.index(for: p) + 1 } else { return idx + 1 }
-                                        }()
-                                        Button(action: { pdf.jumpToSearchResult(idx) }) {
-                                            HStack(alignment: .top, spacing: 8) {
-                                                Text("p.\(pageIdx)").font(.caption).foregroundColor(.secondary)
-                                                Text(text.count > 80 ? String(text.prefix(80)) + "…" : text)
-                                                    .font(.caption)
-                                                    .lineLimit(2)
-                                            }
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                                .padding(6)
-                            }
-                            .frame(maxHeight: 220)
-                        } label: {
-                            Text("Search Results (\(pdf.searchResults.count))").font(.subheadline)
-                        }
-                        .padding(.horizontal, 8)
+                        ResizableSearchPanel(
+                            isExpanded: $showSearchPanel,
+                            panelHeight: $searchPanelHeight,
+                            searchResults: pdf.searchResults,
+                            onJumpToResult: { idx in pdf.jumpToSearchResult(idx) }
+                        )
                     }
                     Divider()
                     switch rightTab {
