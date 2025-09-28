@@ -1,0 +1,73 @@
+// DevReader Beta Configuration
+// This file contains beta/staging-specific build settings
+
+// Environment Configuration
+APP_ENV = beta
+LOG_LEVEL = info
+DEBUG_MODE = NO
+
+// Bundle Configuration
+PRODUCT_BUNDLE_IDENTIFIER = com.monsoud.devreader.beta
+PRODUCT_NAME = DevReader Beta
+MARKETING_VERSION = 1.0.0
+CURRENT_PROJECT_VERSION = 1
+
+// App Display Configuration
+CFBundleDisplayName = DevReader Beta
+CFBundleName = DevReader Beta
+CFBundleShortVersionString = 1.0.0-beta
+CFBundleVersion = 1
+
+// Icon Configuration
+ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon-Beta
+
+// Build Configuration
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) DEV_READER_BETA=1
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEV_READER_BETA
+
+// Crash Reporting & Analytics
+CRASH_REPORTING_DSN = https://beta-crashes.yourdomain.com/api/v1/crashes
+ANALYTICS_API_KEY = beta-analytics-key-67890
+TELEMETRY_ENABLED = YES
+DEBUG_TELEMETRY = NO
+
+// Update Configuration
+SPARKLE_FEED_URL = https://updates.yourdomain.com/beta/appcast.xml
+AUTO_UPDATE_ENABLED = YES
+UPDATE_CHECK_INTERVAL = 604800
+
+// Feature Flags
+FEATURE_FLAGS_ENABLED = YES
+FEATURE_EXPERIMENTAL_UI = NO
+FEATURE_BETA_FEATURES = YES
+FEATURE_DEBUG_MENU = NO
+FEATURE_PERFORMANCE_MONITORING = YES
+
+// Logging Configuration
+LOG_LEVEL_DEV = debug
+LOG_LEVEL_BETA = info
+LOG_LEVEL_PROD = error
+
+// API Endpoints
+API_BASE_URL = https://api-beta.yourdomain.com
+API_VERSION = v1
+API_TIMEOUT = 30
+
+// Database Configuration
+DATABASE_NAME = DevReaderBeta.sqlite
+DATABASE_MIGRATION_DEBUG = NO
+
+// Performance Configuration
+MEMORY_WARNING_THRESHOLD = 200
+PERFORMANCE_MONITORING = YES
+DEBUG_MEMORY_USAGE = NO
+
+// Security Configuration
+KEYCHAIN_ACCESS_GROUP = $(PRODUCT_BUNDLE_IDENTIFIER)
+HARDENED_RUNTIME = YES
+ENABLE_APP_SANDBOX = YES
+
+// Code Signing
+CODE_SIGN_IDENTITY = Developer ID Application
+CODE_SIGN_STYLE = Automatic
+DEVELOPMENT_TEAM = $(DEVELOPMENT_TEAM)

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>APP_ENV</key>
+    <string>prod</string>
+    <key>LOG_LEVEL</key>
+    <string>error</string>
+    <key>DEBUG_MODE</key>
+    <string>NO</string>
+    <key>CRASH_REPORTING_DSN</key>
+    <string>https://crashes.yourdomain.com/api/v1/crashes</string>
+    <key>ANALYTICS_API_KEY</key>
+    <string>prod-analytics-key-abcdef</string>
+    <key>TELEMETRY_ENABLED</key>
+    <string>YES</string>
+    <key>DEBUG_TELEMETRY</key>
+    <string>NO</string>
+    <key>SPARKLE_FEED_URL</key>
+    <string>https://updates.yourdomain.com/stable/appcast.xml</string>
+    <key>AUTO_UPDATE_ENABLED</key>
+    <string>YES</string>
+    <key>UPDATE_CHECK_INTERVAL</key>
+    <string>86400</string>
+    <key>FEATURE_FLAGS_ENABLED</key>
+    <string>YES</string>
+    <key>FEATURE_EXPERIMENTAL_UI</key>
+    <string>NO</string>
+    <key>FEATURE_BETA_FEATURES</key>
+    <string>NO</string>
+    <key>FEATURE_DEBUG_MENU</key>
+    <string>NO</string>
+    <key>FEATURE_PERFORMANCE_MONITORING</key>
+    <string>NO</string>
+    <key>API_BASE_URL</key>
+    <string>https://api.yourdomain.com</string>
+    <key>API_VERSION</key>
+    <string>v1</string>
+    <key>API_TIMEOUT</key>
+    <string>30</string>
+    <key>DATABASE_NAME</key>
+    <string>DevReader.sqlite</string>
+    <key>DATABASE_MIGRATION_DEBUG</key>
+    <string>NO</string>
+    <key>MEMORY_WARNING_THRESHOLD</key>
+    <string>300</string>
+    <key>PERFORMANCE_MONITORING</key>
+    <string>NO</string>
+    <key>DEBUG_MEMORY_USAGE</key>
+    <string>NO</string>
+</dict>
+</plist>
