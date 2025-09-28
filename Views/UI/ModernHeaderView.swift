@@ -19,6 +19,7 @@ struct ModernHeaderView: View {
     
     @State private var searchText = ""
     @State private var showingSearch = false
+    @State private var showingAbout = false
     
     var body: some View {
         VStack(spacing: 0) {
@@ -34,7 +35,7 @@ struct ModernHeaderView: View {
                         .fontWeight(.semibold)
                 }
                 
-                Spacer()
+                Spacer(minLength: 20)
                 
                 // Search bar
                 HStack {
@@ -42,6 +43,8 @@ struct ModernHeaderView: View {
                         .foregroundStyle(.secondary)
                     TextField("Search in PDF...", text: $searchText)
                         .textFieldStyle(.plain)
+                        .accessibilityLabel("Search within current PDF")
+                        .accessibilityHint("Enter text to search within the current PDF document")
                         .onSubmit {
                             if !searchText.isEmpty {
                                 if pdf.isLargePDF {
@@ -57,6 +60,16 @@ struct ModernHeaderView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Clear search")
+                        .accessibilityHint("Clear the search text and results")
+                    }
+                    
+                    // Search results count
+                    if !pdf.searchResults.isEmpty {
+                        Text("\(pdf.searchResults.count) matches")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .accessibilityLabel("\(pdf.searchResults.count) search results found")
                     }
                 }
                 .padding(.horizontal, 12)
@@ -65,7 +78,7 @@ struct ModernHeaderView: View {
                 .cornerRadius(8)
                 .frame(maxWidth: 300)
                 
-                Spacer()
+                Spacer(minLength: 20)
                 
                 // Action buttons
                 HStack(spacing: 8) {
@@ -90,8 +103,10 @@ struct ModernHeaderView: View {
                         }
                         Divider()
                         Button("About DevReader") {
-                            // Show about dialog
+                            showingAbout = true
                         }
+                        .accessibilityLabel("About DevReader")
+                        .accessibilityHint("Show information about the application")
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
@@ -108,9 +123,11 @@ struct ModernHeaderView: View {
                 // Panel toggles
                 HStack(spacing: 4) {
                     Button(action: { showingLibrary.toggle() }) {
-                        Image(systemName: showingLibrary ? "sidebar.left" : "sidebar.left")
+                        Image(systemName: "sidebar.left")
                         Text("Library")
                     }
+                    .accessibilityLabel(showingLibrary ? "Hide Library Panel" : "Show Library Panel")
+                    .accessibilityHint("Toggle the library sidebar")
                     .buttonStyle(.bordered)
                     .controlSize(.small)
                     .foregroundStyle(showingLibrary ? .blue : .secondary)
@@ -170,6 +187,9 @@ struct ModernHeaderView: View {
             .background(.thinMaterial)
             
             Divider()
+        }
+        .sheet(isPresented: $showingAbout) {
+            AboutView(isPresented: $showingAbout)
         }
     }
 }
@@ -302,7 +322,6 @@ struct ModernCompactLayoutView: View {
     @Binding var showingOutline: Bool
     @Binding var collapseAll: Bool
     @Binding var rightTab: RightTab
-    @Binding var rightTabRaw: String
     @Binding var showSearchPanel: Bool
     @Binding var showingSettings: Bool
     

@@ -52,7 +52,8 @@ struct ResizableSearchPanel: View {
             if isExpanded {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 6) {
-                        ForEach(Array(searchResults.enumerated()), id: \.offset) { idx, sel in
+                        ForEach(searchResults.indices, id: \.self) { idx in
+                            let sel = searchResults[idx]
                             let text = (sel.string ?? "Match \(idx+1)").trimmingCharacters(in: .whitespacesAndNewlines)
                             let pageIdx = idx + 1
                             

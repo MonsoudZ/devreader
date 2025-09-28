@@ -10,7 +10,6 @@ struct CompactLayoutView: View {
     @Binding var showingOutline: Bool
     @Binding var collapseAll: Bool
     @Binding var rightTab: RightTab
-    @Binding var rightTabRaw: String
     @Binding var showSearchPanel: Bool
     
     let onOpenFromLibrary: (LibraryItem) -> Void
@@ -18,9 +17,26 @@ struct CompactLayoutView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Button("Library") { showingLibrary = !showingLibrary }.buttonStyle(.bordered)
-                Button("Outline") { showingOutline = !showingOutline }.buttonStyle(.bordered)
-                Button(collapseAll ? "Expand All" : "Collapse All") { 
+                Button(action: { showingLibrary = !showingLibrary }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "sidebar.left")
+                        Text("Library")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel("Toggle Library Panel")
+                .accessibilityHint("Show or hide the library sidebar")
+                
+                Button(action: { showingOutline = !showingOutline }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "list.bullet")
+                        Text("Outline")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel("Toggle Outline Panel")
+                .accessibilityHint("Show or hide the document outline")
+                Button(action: { 
                     collapseAll.toggle()
                     if collapseAll {
                         showingLibrary = false
@@ -31,23 +47,29 @@ struct CompactLayoutView: View {
                         showingRightPanel = true
                         showingOutline = true
                     }
-                }.buttonStyle(.bordered)
+                }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: collapseAll ? "sidebar.left.and.right" : "sidebar.left")
+                        Text(collapseAll ? "Expand All" : "Collapse All")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .accessibilityLabel(collapseAll ? "Expand All Panels" : "Collapse All Panels")
+                .accessibilityHint("Show or hide all sidebar panels")
                 Spacer()
-                Picker("", selection: $rightTab) {
+                Picker("Right panel mode", selection: $rightTab) {
                     Text("Notes").tag(RightTab.notes)
                     Text("Code").tag(RightTab.code)
                     Text("Web").tag(RightTab.web)
                 }
                 .pickerStyle(.segmented)
                 .frame(maxWidth: 200)
-                .onChange(of: rightTab) { _, newValue in
-                    switch newValue {
-                    case .notes: rightTabRaw = "notes"
-                    case .code: rightTabRaw = "code"
-                    case .web: rightTabRaw = "web"
-                    }
-                }
-                Button(showingRightPanel ? "Hide Panel" : "Show Panel") { showingRightPanel.toggle() }.buttonStyle(.bordered)
+                .accessibilityLabel("Right panel mode")
+                .accessibilityValue("Currently showing \(rightTab == .notes ? "Notes" : rightTab == .code ? "Code" : "Web")")
+                Button(showingRightPanel ? "Hide Panel" : "Show Panel") { showingRightPanel.toggle() }
+                    .buttonStyle(.bordered)
+                    .accessibilityLabel(showingRightPanel ? "Hide Right Panel" : "Show Right Panel")
+                    .accessibilityHint("Toggle the right sidebar panel")
             }
             .padding(8)
             .background(Color(NSColor.controlBackgroundColor))
@@ -92,7 +114,7 @@ struct CompactLayoutView: View {
                                     }
                                     .padding(6)
                                 }
-                                .frame(maxHeight: 180)
+                                .frame(maxHeight: 300)
                             } label: {
                                 Text("Search Results (\(pdf.searchResults.count))").font(.subheadline)
                             }

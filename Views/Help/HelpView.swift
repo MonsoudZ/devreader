@@ -41,7 +41,7 @@ struct HelpView: View {
                     case .troubleshooting:
                         TroubleshootingView()
                     case .about:
-                        AboutView()
+                        AboutView(isPresented: .constant(true))
                     }
                 }
                 .padding()
@@ -300,9 +300,9 @@ struct TroubleshootingView: View {
     }
 }
 
-// MARK: - About View
+// MARK: - About View (moved to Views/About/AboutView.swift)
 
-struct AboutView: View {
+struct OldAboutView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             Text("About DevReader")

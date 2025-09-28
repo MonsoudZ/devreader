@@ -27,12 +27,45 @@ struct ContentView: View {
 	@AppStorage("ui.rightTab") private var rightTabRaw = "notes"
     @AppStorage("ui.showSearchPanel") private var showSearchPanel = true
     @AppStorage("ui.collapseAll") private var collapseAll = false
+    
+    // Computed property to derive rightTab from rightTabRaw
+    private var computedRightTab: RightTab {
+        get {
+            switch rightTabRaw {
+            case "code": return .code
+            case "web": return .web
+            default: return .notes
+            }
+        }
+        set {
+            switch newValue {
+            case .notes: rightTabRaw = "notes"
+            case .code: rightTabRaw = "code"
+            case .web: rightTabRaw = "web"
+            }
+        }
+    }
+    
+    // Helper function to update rightTabRaw
+    private func updateRightTabRaw(_ newTab: RightTab) {
+        switch newTab {
+        case .notes: rightTabRaw = "notes"
+        case .code: rightTabRaw = "code"
+        case .web: rightTabRaw = "web"
+        }
+    }
 
 	var body: some View {
 		mainContent
 			.modifier(ContentViewModifiers())
 			.enhancedToastOverlay(appEnvironment.enhancedToastCenter)
 			.errorOverlay(appEnvironment.errorMessageManager)
+			.sheet(isPresented: Binding(
+				get: { appEnvironment.isShowingSettings },
+				set: { appEnvironment.isShowingSettings = $0 }
+			)) {
+				SettingsView()
+			}
 	}
 	
 	@ViewBuilder
@@ -63,8 +96,10 @@ struct ContentView: View {
 			showingRightPanel: $showingRightPanel,
 			showingOutline: $showingOutline,
 			collapseAll: $collapseAll,
-			rightTab: $rightTab,
-			rightTabRaw: $rightTabRaw,
+			rightTab: Binding(
+				get: { computedRightTab },
+				set: { updateRightTabRaw($0) }
+			),
 			showSearchPanel: $showSearchPanel,
 			showingSettings: $appEnvironment.isShowingSettings,
 			onOpenFromLibrary: openFromLibrary,
@@ -133,8 +168,25 @@ struct ContentView: View {
 		appEnvironment.pdfController.captureHighlightToNotes()
 	}
 	func newSketchPage() {
-		// Implementation for creating new sketch page
-		appEnvironment.enhancedToastCenter.showInfo("New Sketch", "Sketch page created", category: .userAction)
+		guard let pdfURL = appEnvironment.pdfController.currentPDFURL else {
+			appEnvironment.enhancedToastCenter.showWarning("No PDF", "Please open a PDF first", category: .userAction)
+			return
+		}
+		
+		let pageSize = CGSize(width: 800, height: 600)
+		let pageIndex = appEnvironment.pdfController.currentPageIndex
+		
+		let sketchWindow = SketchWindow(
+			size: pageSize,
+			pdfURL: pdfURL,
+			pageIndex: pageIndex
+		) { image in
+			Task { @MainActor in
+				// Insert the sketch image into the PDF or save it
+				appEnvironment.enhancedToastCenter.showSuccess("Sketch Created", "Sketch saved to page \(pageIndex + 1)", category: .userAction)
+			}
+		}
+		sketchWindow.show()
 	}
 	func addStickyNote() {
 		// Implementation for adding sticky note

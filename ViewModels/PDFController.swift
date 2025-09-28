@@ -53,7 +53,7 @@ final class PDFController: ObservableObject {
 	private let bookmarksKey = "DevReader.Bookmarks.v1"
 	private let recentsKey = "DevReader.Recents.v1"
 	private let pinnedKey = "DevReader.Pinned.v1"
-	private var currentPDFURL: URL?
+	@Published private(set) var currentPDFURL: URL?
 	private let annotationFolderName = "Annotations"
 	private var loadingTask: Task<Void, Never>?
 	private var isHandlingMemoryPressure = false
