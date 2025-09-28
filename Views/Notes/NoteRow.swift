@@ -39,13 +39,27 @@ struct NoteRow: View {
 				Spacer()
 				if isEditing {
 					VStack(spacing: 4) {
-						Button("Save") { saveEdit() }.buttonStyle(.bordered).controlSize(.small)
-						Button("Cancel") { cancelEdit() }.buttonStyle(.bordered).controlSize(.small)
+						Button("Save") { saveEdit() }
+							.buttonStyle(.bordered)
+							.controlSize(.small)
+							.accessibilityLabel("Save note changes")
+							.accessibilityHint("Save the edited note content and title")
+						Button("Cancel") { cancelEdit() }
+							.buttonStyle(.bordered)
+							.controlSize(.small)
+							.accessibilityLabel("Cancel editing")
+							.accessibilityHint("Discard changes and exit edit mode")
 					}
 				} else {
 					VStack(spacing: 4) {
-						Button("Edit") { startEdit() }.buttonStyle(.bordered).controlSize(.small)
+						Button("Edit") { startEdit() }
+							.buttonStyle(.bordered)
+							.controlSize(.small)
+							.accessibilityLabel("Edit note")
+							.accessibilityHint("Edit the note content and title")
 						Button("Go") { jump() }
+							.accessibilityLabel("Go to page")
+							.accessibilityHint("Jump to page \(item.pageIndex + 1) in the PDF")
 					}
 				}
 			}
@@ -57,7 +71,13 @@ struct NoteRow: View {
 						TextField("Add tag...", text: $newTag)
 							.textFieldStyle(.roundedBorder)
 							.onSubmit { addTag() }
-						Button("Add") { addTag() }.buttonStyle(.bordered).controlSize(.small)
+							.accessibilityLabel("Add tag")
+							.accessibilityHint("Enter a new tag for this note")
+						Button("Add") { addTag() }
+							.buttonStyle(.bordered)
+							.controlSize(.small)
+							.accessibilityLabel("Add tag")
+							.accessibilityHint("Add the entered tag to this note")
 					}
 				}
 				
@@ -75,6 +95,8 @@ struct NoteRow: View {
 									Button("×") { notes.removeTag(tag, from: item) }
 										.font(.caption)
 										.foregroundStyle(.red)
+										.accessibilityLabel("Remove tag \(tag)")
+										.accessibilityHint("Remove this tag from the note")
 								}
 							}
 						}
@@ -84,7 +106,12 @@ struct NoteRow: View {
 				
 				if !isEditing && item.tags.isEmpty {
 					HStack {
-						Button("+ Add Tag") { showingTagEditor = true }.font(.caption).buttonStyle(.bordered).controlSize(.small)
+						Button("+ Add Tag") { showingTagEditor = true }
+							.font(.caption)
+							.buttonStyle(.bordered)
+							.controlSize(.small)
+							.accessibilityLabel("Add tag")
+							.accessibilityHint("Add a tag to this note")
 						Spacer()
 					}
 				}

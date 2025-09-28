@@ -50,6 +50,11 @@ extension Notification.Name {
 	static let dataRecovery     = Notification.Name("DevReader.dataRecovery")
 	static let showOnboarding   = Notification.Name("DevReader.showOnboarding")
 	static let memoryPressure   = Notification.Name("DevReader.memoryPressure")
+	
+	// Additional menu commands
+	static let toggleLibrary    = Notification.Name("DevReader.toggleLibrary")
+	static let toggleNotes      = Notification.Name("DevReader.toggleNotes")
+	static let showAbout        = Notification.Name("DevReader.showAbout")
 }
 
 // MARK: - Performance Monitoring

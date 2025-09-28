@@ -60,7 +60,9 @@ class AppEnvironment: ObservableObject {
     
     private func checkFirstLaunch() {
         let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
-        if !hasLaunchedBefore {
+        let didSeeOnboarding = UserDefaults.standard.bool(forKey: "didSeeOnboarding")
+        
+        if !hasLaunchedBefore || !didSeeOnboarding {
             isShowingOnboarding = true
             UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
         }
