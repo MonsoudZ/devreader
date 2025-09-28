@@ -179,13 +179,9 @@ final class PDFController: ObservableObject {
 		
 		// Fallback: Try direct PDF loading if all strategies failed
 		if chosenURL == nil {
-			do {
-				// Try direct loading with minimal error handling
-				if let directDoc = PDFDocument(url: url), directDoc.pageCount > 0 {
-					chosenURL = url
-				}
-			} catch {
-				// Direct loading failed
+			// Try direct loading with minimal error handling
+			if let directDoc = PDFDocument(url: url), directDoc.pageCount > 0 {
+				chosenURL = url
 			}
 		}
 		
@@ -495,8 +491,9 @@ final class PDFController: ObservableObject {
 			object: nil,
 			queue: .main
 		) { [weak self] _ in
+			guard let self = self else { return }
 			Task { @MainActor in
-				self?.handleMemoryPressure()
+				self.handleMemoryPressure()
 			}
 		}
 	}

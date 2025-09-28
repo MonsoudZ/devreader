@@ -733,15 +733,13 @@ struct WebViewHTML: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         
-        // Configure JavaScript settings with better error handling
-        config.preferences.javaScriptEnabled = true
+        // Configure JavaScript settings with better error handling (modern API)
         config.preferences.javaScriptCanOpenWindowsAutomatically = false
         
         // Configure website data store
         config.websiteDataStore = WKWebsiteDataStore.default()
         
-        // Configure process pool to prevent crashes
-        config.processPool = WKProcessPool()
+        // Process pool is no longer needed in modern WebKit
         
         // Set user agent
         config.applicationNameForUserAgent = "DevReader/1.0"
@@ -821,6 +819,12 @@ struct WebViewHTML: NSViewRepresentable {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 webView.loadHTMLString("<html><body><h1>Editor Loading Failed</h1><p>Please try refreshing the editor.</p></body></html>", baseURL: nil)
             }
+        }
+        
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
+            // Enable JavaScript using the modern API for Monaco editor
+            preferences.allowsContentJavaScript = true
+            decisionHandler(.allow, preferences)
         }
     }
 }

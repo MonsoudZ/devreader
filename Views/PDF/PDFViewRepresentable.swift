@@ -202,14 +202,10 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			}
 			
 			// Try to get a thumbnail with error handling
-			do {
-				let probe = page.thumbnail(of: CGSize(width: 24, height: 24), for: .mediaBox)
-				if probe.size == .zero {
-					// Fallback to rasterization with error handling
-					_ = try ImageProcessingService.rasterize(page: page, into: CGSize(width: 160, height: 200))
-				}
-			} catch {
-				// If rasterization fails, continue with degraded quality
+			let probe = page.thumbnail(of: CGSize(width: 24, height: 24), for: .mediaBox)
+			if probe.size == .zero {
+				// Fallback to rasterization with error handling
+				_ = ImageProcessingService.rasterize(page: page, into: CGSize(width: 160, height: 200))
 			}
 		}
 		

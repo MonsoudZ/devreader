@@ -84,15 +84,13 @@ struct WebView: NSViewRepresentable {
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         
-        // Configure JavaScript settings
-        config.preferences.javaScriptEnabled = true
+        // Configure JavaScript settings (modern API)
         config.preferences.javaScriptCanOpenWindowsAutomatically = false
         
         // Configure website data store
         config.websiteDataStore = WKWebsiteDataStore.default()
         
-        // Configure process pool to prevent crashes
-        config.processPool = WKProcessPool()
+        // Process pool is no longer needed in modern WebKit
         
         // Set user agent
         config.applicationNameForUserAgent = "DevReader/1.0"
@@ -130,6 +128,12 @@ struct WebView: NSViewRepresentable {
         }
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             decisionHandler(.allow)
+        }
+        
+        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
+            // Enable JavaScript using the modern API
+            preferences.allowsContentJavaScript = true
+            decisionHandler(.allow, preferences)
         }
     }
 }

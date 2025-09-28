@@ -90,8 +90,8 @@ class PerformanceMonitor: ObservableObject {
     }
     
     deinit {
-        Task { @MainActor in
-            self.stopMonitoring()
+        Task.detached { @MainActor in
+            PerformanceMonitor.shared.stopMonitoring()
         }
     }
     
