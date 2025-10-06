@@ -1,131 +1,243 @@
-import SwiftUI
-import Combine
+import Foundation
 
-/// Centralized app environment for consistent state across windows
+// MARK: - Envelope
+
+/// Single-file atomic container for all notes-related data.
+/// Bump `schemaVersion` when you change the layout and migrate in `loadEnvelope`.
+struct NotesEnvelope: Codable {
+    var schemaVersion: Int = 1
+    var notes: [NoteItem]
+    var pageNotes: [Int: String]
+    var tags: [String]
+    var updatedAt: Date = .init()
+}
+
+// MARK: - Protocol
+
+/// Protocol for notes persistence to enable dependency injection and testing
+protocol NotesPersistenceProtocol {
+    // Existing triplet API (kept for compatibility)
+    func saveNotes(_ notes: [NoteItem], for url: URL) throws
+    func loadNotes(for url: URL) -> [NoteItem]
+
+    func savePageNotes(_ pageNotes: [Int: String], for url: URL) throws
+    func loadPageNotes(for url: URL) -> [Int: String]
+
+    func saveTags(_ tags: Set<String>, for url: URL) throws
+    func loadTags(for url: URL) -> Set<String>
+
+    func clearData(for url: URL)
+    func validateData(for url: URL) -> Bool
+
+    // NEW: single-file atomic persistence
+    func saveEnvelope(_ env: NotesEnvelope, for url: URL) throws
+    func loadEnvelope(for url: URL) throws -> NotesEnvelope
+    /// Attempts to restore the last backup for the single envelope file.
+    @discardableResult
+    func restoreBackup(for url: URL) -> Bool
+}
+
+// MARK: - Production implementation using EnhancedPersistenceService
+
 @MainActor
-class AppEnvironment: ObservableObject {
-    static let shared = AppEnvironment()
-    
-    // Core controllers
-    @Published var pdfController: PDFController
-    @Published var notesStore: NotesStore
-    @Published var libraryStore: LibraryStore
-    @Published var sketchStore: SketchStore
-    @Published var codeStore: CodeStore
-    @Published var webStore: WebStore
-    
-    // Services
-    @Published var errorMessageManager: ErrorMessageManager
-    @Published var enhancedToastCenter: EnhancedToastCenter
-    
-    // UI State
-    @Published var isShowingHelp = false
-    @Published var isShowingSettings = false
-    @Published var isShowingOnboarding = false
-    
-    private init() {
-        // Initialize core controllers
-        self.pdfController = PDFController()
-        self.notesStore = NotesStore()
-        self.libraryStore = LibraryStore()
-        self.sketchStore = SketchStore()
-        self.codeStore = CodeStore()
-        self.webStore = WebStore()
-        
-        // Initialize services
-        self.errorMessageManager = ErrorMessageManager.shared
-        self.enhancedToastCenter = EnhancedToastCenter()
-        
-        // Set up cross-controller communication
-        setupControllerCommunication()
-        
-        // Check for first launch
-        checkFirstLaunch()
+final class NotesPersistenceService: NotesPersistenceProtocol {
+    private let ps = EnhancedPersistenceService.shared
+
+    // Single-file key
+    private let envKey = "DevReader.NotesEnvelope.v1"
+
+    // Legacy keys (kept for migration/validation)
+    private let notesKey = "DevReader.Notes.v1"
+    private let pageNotesKey = "DevReader.PageNotes.v1"
+    private let tagsKey = "DevReader.Tags.v1"
+
+    // MARK: Envelope (preferred)
+
+    func saveEnvelope(_ env: NotesEnvelope, for url: URL) throws {
+        try ps.saveCodable(env, forKey: envKey, url: url) // atomic write with backup
     }
-    
-    private func setupControllerCommunication() {
-        // PDF controller changes should update notes store
-        // Note: PDFController doesn't have @Published currentPDFURL, so we'll use notifications instead
-        
-        // Library store changes should update PDF controller
-        libraryStore.$items
-            .sink { [weak self] items in
-                // Update recent documents in PDF controller
-                self?.pdfController.updateRecentDocuments(from: items)
-            }
-            .store(in: &cancellables)
-    }
-    
-    private var cancellables = Set<AnyCancellable>()
-    
-    private func checkFirstLaunch() {
-        let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "hasLaunchedBefore")
-        let didSeeOnboarding = UserDefaults.standard.bool(forKey: "didSeeOnboarding")
-        
-        if !hasLaunchedBefore || !didSeeOnboarding {
-            isShowingOnboarding = true
-            UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
+
+    func loadEnvelope(for url: URL) throws -> NotesEnvelope {
+        // Preferred: read the envelope
+        if let env = ps.loadCodable(NotesEnvelope.self, forKey: envKey, url: url) {
+            return env
         }
-    }
-    
-    // MARK: - Window Management
-    
-    func openNewWindow() {
-        // Create new window with same environment
-        let newWindow = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 1200, height: 800),
-            styleMask: [.titled, .closable, .resizable, .miniaturizable],
-            backing: .buffered,
-            defer: false
+
+        // Fallback: stitch legacy files, then persist as envelope for next time
+        let legacyNotes = ps.loadCodable([NoteItem].self, forKey: notesKey, url: url) ?? []
+        let legacyPageNotes = ps.loadCodable([Int: String].self, forKey: pageNotesKey, url: url) ?? [:]
+        let legacyTags = Set(ps.loadCodable([String].self, forKey: tagsKey, url: url) ?? [])
+
+        let env = NotesEnvelope(
+            schemaVersion: 1,
+            notes: legacyNotes,
+            pageNotes: legacyPageNotes,
+            tags: Array(legacyTags),
+            updatedAt: Date()
         )
-        newWindow.contentView = NSHostingView(rootView: ContentView().environmentObject(self))
-        newWindow.makeKeyAndOrderFront(nil)
+
+        // Best-effort write of migrated format (don’t throw if it fails)
+        try? saveEnvelope(env, for: url)
+        return env
     }
-    
-    func openSettings() {
-        isShowingSettings = true
+
+    @discardableResult
+    func restoreBackup(for url: URL) -> Bool {
+        ps.restoreBackup(forKey: envKey, url: url)
     }
-    
-    func openHelp() {
-        isShowingHelp = true
+
+    // MARK: Compatibility – triplet methods delegate to the envelope
+
+    func saveNotes(_ notes: [NoteItem], for url: URL) throws {
+        var env = try loadEnvelope(for: url)
+        env.notes = notes
+        env.updatedAt = Date()
+        try saveEnvelope(env, for: url)
     }
-    
-    // MARK: - Data Management
-    
-    func clearAllData() {
-        // Clear all data from stores
-        notesStore.items.removeAll()
-        libraryStore.items.removeAll()
-        sketchStore.clearAllData()
-        codeStore.clearAllData()
-        webStore.clearAllData()
-        pdfController.document = nil
+
+    func loadNotes(for url: URL) -> [NoteItem] {
+        (try? loadEnvelope(for: url).notes) ?? []
     }
-    
-    func exportAllData() -> URL? {
-        // Create export package with all data
-        let exportURL = FileManager.default.temporaryDirectory.appendingPathComponent("DevReaderExport.zip")
-        // Implementation would create a zip with all data
-        return exportURL
+
+    func savePageNotes(_ pageNotes: [Int : String], for url: URL) throws {
+        var env = try loadEnvelope(for: url)
+        env.pageNotes = pageNotes
+        env.updatedAt = Date()
+        try saveEnvelope(env, for: url)
     }
-    
-    func importData(from url: URL) {
-        // Implementation would import data from file
-        // This would restore notes, library, sketches, etc.
+
+    func loadPageNotes(for url: URL) -> [Int : String] {
+        (try? loadEnvelope(for: url).pageNotes) ?? [:]
+    }
+
+    func saveTags(_ tags: Set<String>, for url: URL) throws {
+        var env = try loadEnvelope(for: url)
+        env.tags = Array(tags)
+        env.updatedAt = Date()
+        try saveEnvelope(env, for: url)
+    }
+
+    func loadTags(for url: URL) -> Set<String> {
+        Set((try? loadEnvelope(for: url).tags) ?? [])
+    }
+
+    func clearData(for url: URL) {
+        // Clears known keys (env + legacy) for the specific PDF
+        ps.clearData(for: url)
+    }
+
+    func validateData(for url: URL) -> Bool {
+        // Prefer the envelope; accept legacy if migrating
+        if ps.validateData(forKey: envKey, url: url) { return true }
+        let hasLegacy =
+            ps.validateData(forKey: notesKey, url: url) ||
+            ps.validateData(forKey: pageNotesKey, url: url) ||
+            ps.validateData(forKey: tagsKey, url: url)
+        return hasLegacy
     }
 }
 
-// MARK: - Extensions for PDFController
+// MARK: - Mock implementation for testing
 
-extension PDFController {
-    func updateRecentDocuments(from items: [LibraryItem]) {
-        // Update recent documents based on library items
-        _ = items
-            .sorted { $0.lastOpened ?? $0.addedDate > $1.lastOpened ?? $1.addedDate }
-            .prefix(10)
-            .map { $0.url }
-        
-        // Note: PDFController.recentDocuments is not directly settable
-        // This would need to be implemented in PDFController
+final class MockNotesPersistenceService: NotesPersistenceProtocol {
+    // Store by URL
+    var notes: [URL: [NoteItem]] = [:]
+    var pageNotes: [URL: [Int: String]] = [:]
+    var tags: [URL: Set<String>] = [:]
+    var envelopes: [URL: NotesEnvelope] = [:]
+
+    var shouldThrowError = false
+
+    // Triplet
+    func saveNotes(_ notes: [NoteItem], for url: URL) throws {
+        if shouldThrowError { throw NSError(domain: "MockError", code: 1) }
+        self.notes[url] = notes
+        // Keep envelope in sync (if present)
+        if var env = envelopes[url] {
+            env.notes = notes
+            env.updatedAt = Date()
+            envelopes[url] = env
+        }
+    }
+
+    func loadNotes(for url: URL) -> [NoteItem] {
+        if let env = envelopes[url] { return env.notes }
+        return notes[url] ?? []
+    }
+
+    func savePageNotes(_ pageNotes: [Int : String], for url: URL) throws {
+        if shouldThrowError { throw NSError(domain: "MockError", code: 1) }
+        self.pageNotes[url] = pageNotes
+        if var env = envelopes[url] {
+            env.pageNotes = pageNotes
+            env.updatedAt = Date()
+            envelopes[url] = env
+        }
+    }
+
+    func loadPageNotes(for url: URL) -> [Int : String] {
+        if let env = envelopes[url] { return env.pageNotes }
+        return pageNotes[url] ?? [:]
+    }
+
+    func saveTags(_ tags: Set<String>, for url: URL) throws {
+        if shouldThrowError { throw NSError(domain: "MockError", code: 1) }
+        self.tags[url] = tags
+        if var env = envelopes[url] {
+            env.tags = Array(tags)
+            env.updatedAt = Date()
+            envelopes[url] = env
+        }
+    }
+
+    func loadTags(for url: URL) -> Set<String> {
+        if let env = envelopes[url] { return Set(env.tags) }
+        return tags[url] ?? []
+    }
+
+    func clearData(for url: URL) {
+        notes.removeValue(forKey: url)
+        pageNotes.removeValue(forKey: url)
+        tags.removeValue(forKey: url)
+        envelopes.removeValue(forKey: url)
+    }
+
+    func validateData(for url: URL) -> Bool {
+        return envelopes[url] != nil ||
+               notes[url] != nil ||
+               pageNotes[url] != nil ||
+               tags[url] != nil
+    }
+
+    // Envelope
+    func saveEnvelope(_ env: NotesEnvelope, for url: URL) throws {
+        if shouldThrowError { throw NSError(domain: "MockError", code: 1) }
+        envelopes[url] = env
+        // Keep triplet mirrors updated for code that still reads them in tests
+        notes[url] = env.notes
+        pageNotes[url] = env.pageNotes
+        tags[url] = Set(env.tags)
+    }
+
+    func loadEnvelope(for url: URL) throws -> NotesEnvelope {
+        if let env = envelopes[url] {
+            return env
+        }
+        // Stitch from mirrors if present (legacy sim)
+        let env = NotesEnvelope(
+            schemaVersion: 1,
+            notes: notes[url] ?? [],
+            pageNotes: pageNotes[url] ?? [:],
+            tags: Array(tags[url] ?? []),
+            updatedAt: Date()
+        )
+        envelopes[url] = env
+        return env
+    }
+
+    @discardableResult
+    func restoreBackup(for url: URL) -> Bool {
+        // No-op in mock; return false to indicate nothing restored
+        return false
     }
 }
