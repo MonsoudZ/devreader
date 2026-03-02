@@ -91,7 +91,11 @@ final class NotesStoreTests: XCTestCase {
         XCTAssertTrue(store.items.first?.tags.contains("important") ?? false)
         XCTAssertTrue(store.availableTags.contains("important"))
 
-        store.removeTag("important", from: store.items.first!)
+        guard let firstItem = store.items.first else {
+            XCTFail("Store should have at least one item")
+            return
+        }
+        store.removeTag("important", from: firstItem)
         XCTAssertFalse(store.items.first?.tags.contains("important") ?? true)
     }
 

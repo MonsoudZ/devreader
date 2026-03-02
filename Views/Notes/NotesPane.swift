@@ -295,8 +295,16 @@ struct NotesPane: View {
 			// Save file
 			let url = await MainActor.run { FileService.savePlainText(defaultName: "DevReader-Notes.md") }
 			if let url = url {
-				try? md.data(using: .utf8)?.write(to: url)
-				
+				do {
+					try md.data(using: .utf8)?.write(to: url)
+				} catch {
+					await MainActor.run {
+						exportProgress = 0.0
+						exportStatus = "Export failed: \(error.localizedDescription)"
+					}
+					return
+				}
+
 				await MainActor.run {
 					exportProgress = 1.0
 					exportStatus = "Export completed successfully!"
@@ -329,11 +337,6 @@ struct NotesPane: View {
 			}
 		}.value
 	}
-    private func startOfDay(_ d: Date) -> Date { Calendar.current.startOfDay(for: d) }
-    private func endOfDay(_ d: Date) -> Date {
-        let start = Calendar.current.startOfDay(for: d)
-        return Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: start) ?? d
-    }
     // MARK: - Presets
     struct ExportPreset: Codable, Equatable { let name: String; let tag: String?; let bookmarks: Bool; let useDate: Bool; let from: Date; let to: Date }
     private func loadPresets() -> [ExportPreset] { (try? JSONDecoder().decode([ExportPreset].self, from: Data(exportPresetsRaw.utf8))) ?? [] }

@@ -95,10 +95,9 @@ final class ErrorRecoveryTests: XCTestCase {
         let sanitizedValid = ErrorRecoveryService.sanitizePDFData(validData)
         XCTAssertNotNil(sanitizedValid, "Valid data should be sanitized successfully")
         
-        // Test with corrupted data
+        // Corrupted data should return nil (not a valid PDF)
         let sanitizedCorrupted = ErrorRecoveryService.sanitizePDFData(corruptedData)
-        // Result may be nil for severely corrupted data, which is expected
-        XCTAssertTrue(sanitizedCorrupted == nil || sanitizedCorrupted != nil, "Sanitization should handle corrupted data gracefully")
+        XCTAssertNil(sanitizedCorrupted, "Corrupted non-PDF data should return nil")
     }
     
     // MARK: - PDF Rebuilding Tests

@@ -433,7 +433,7 @@ struct FileManagerView: View {
 	
 	private func loadRecentFiles() {
 		// Load recent files from a directory
-		let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+		guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
 		let codeFilesPath = documentsPath.appendingPathComponent("DevReader/CodeFiles")
 		
 		do {
