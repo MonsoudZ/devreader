@@ -8,7 +8,7 @@
 import Foundation
 
 /// Enhanced LibraryItem with stable identity and security-scoped bookmarks
-struct LibraryItem: Identifiable, Codable, Hashable {
+struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     let url: URL
     let securityScopedBookmark: Data?
@@ -91,36 +91,44 @@ struct LibraryItem: Identifiable, Codable, Hashable {
     
     // MARK: - Duplicate Detection
     
-    /// Check if this item is a duplicate of another item
+    /// Check if this item is a duplicate of another item.
+    /// Uses standardized file paths for reliable comparison across symlinks and path variations.
     func isDuplicate(of other: LibraryItem) -> Bool {
-        // Check by URL first (exact match)
-        if url == other.url {
+        // Check by standardized file path (resolves symlinks, .., and trailing slashes)
+        if url.standardizedFileURL == other.url.standardizedFileURL {
             return true
         }
-        
+
         // Check by security-scoped bookmark if available
         if let bookmark1 = securityScopedBookmark,
            let bookmark2 = other.securityScopedBookmark,
            bookmark1 == bookmark2 {
             return true
         }
-        
-        // Check by file attributes (size, modification date)
+
+        // Check by resolved real path (follows symlinks to the actual file)
+        let path1 = (try? FileManager.default.destinationOfSymbolicLink(atPath: url.path)) ?? url.path
+        let path2 = (try? FileManager.default.destinationOfSymbolicLink(atPath: other.url.path)) ?? other.url.path
+        if path1 == path2 {
+            return true
+        }
+
+        // Check by file attributes (size + modification date) as a fallback
         let attributes1 = (try? FileManager.default.attributesOfItem(atPath: url.path)) ?? [:]
         let attributes2 = (try? FileManager.default.attributesOfItem(atPath: other.url.path)) ?? [:]
-        
+
         let size1 = attributes1[.size] as? Int64 ?? 0
         let size2 = attributes2[.size] as? Int64 ?? 0
         let modDate1 = attributes1[.modificationDate] as? Date
         let modDate2 = attributes2[.modificationDate] as? Date
-        
+
         // Same file if size and modification date match
         if size1 == size2 && size1 > 0,
            let date1 = modDate1, let date2 = modDate2,
            abs(date1.timeIntervalSince(date2)) < 1.0 {
             return true
         }
-        
+
         return false
     }
     
@@ -156,7 +164,7 @@ struct LibraryItem: Identifiable, Codable, Hashable {
 // MARK: - Legacy Support
 
 /// Old LibraryItem format for migration
-struct OldLibraryItem: Codable {
+struct OldLibraryItem: Codable, Sendable {
     let url: URL
     let title: String
     let author: String?

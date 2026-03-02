@@ -37,7 +37,7 @@
 		A001004A2F00000000000001 /* Views/Help/HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100492F00000000000001 /* Views/Help/HelpView.swift */; };
 		A001004B2F00000000000001 /* Utils/ErrorMessageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */; };
 		A001004D2F00000000000001 /* Utils/EnhancedToastCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */; };
-		A00100502F00000000000001 /* Services/SimpleBackgroundPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100512F00000000000002 /* Services/SimpleBackgroundPersistenceService.swift */; };
+		A00100502F00000000000001 /* Services/LibraryPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100512F00000000000002 /* Services/LibraryPersistenceService.swift */; };
 		A00100522F00000000000003 /* Models/LibraryEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100532F00000000000004 /* Models/LibraryEnvelope.swift */; };
 		A00100562F00000000000007 /* Views/Error/ErrorDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100572F00000000000008 /* Views/Error/ErrorDisplayView.swift */; };
 		A00100582F00000000000009 /* Services/EnhancedPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100592F00000000000010 /* Services/EnhancedPersistenceService.swift */; };
@@ -112,7 +112,7 @@
 		A00100492F00000000000001 /* Views/Help/HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Help/HelpView.swift; sourceTree = "<group>"; };
 		A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/ErrorMessageManager.swift; sourceTree = "<group>"; };
 		A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/EnhancedToastCenter.swift; sourceTree = "<group>"; };
-		A00100512F00000000000002 /* Services/SimpleBackgroundPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SimpleBackgroundPersistenceService.swift; sourceTree = "<group>"; };
+		A00100512F00000000000002 /* Services/LibraryPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/LibraryPersistenceService.swift; sourceTree = "<group>"; };
 		A00100532F00000000000004 /* Models/LibraryEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/LibraryEnvelope.swift; sourceTree = "<group>"; };
 		A00100572F00000000000008 /* Views/Error/ErrorDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Error/ErrorDisplayView.swift; sourceTree = "<group>"; };
 		A00100592F00000000000010 /* Services/EnhancedPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/EnhancedPersistenceService.swift; sourceTree = "<group>"; };
@@ -185,7 +185,7 @@
 				A00100492F00000000000001 /* Views/Help/HelpView.swift */,
 				A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */,
 				A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */,
-				A00100512F00000000000002 /* Services/SimpleBackgroundPersistenceService.swift */,
+				A00100512F00000000000002 /* Services/LibraryPersistenceService.swift */,
 				A00100532F00000000000004 /* Models/LibraryEnvelope.swift */,
 				A00100572F00000000000008 /* Views/Error/ErrorDisplayView.swift */,
 				A00100592F00000000000010 /* Services/EnhancedPersistenceService.swift */,
@@ -433,7 +433,7 @@
 				A001004A2F00000000000001 /* Views/Help/HelpView.swift in Sources */,
 				A001004B2F00000000000001 /* Utils/ErrorMessageManager.swift in Sources */,
 				A001004D2F00000000000001 /* Utils/EnhancedToastCenter.swift in Sources */,
-				A00100502F00000000000001 /* Services/SimpleBackgroundPersistenceService.swift in Sources */,
+				A00100502F00000000000001 /* Services/LibraryPersistenceService.swift in Sources */,
 				A00100522F00000000000003 /* Models/LibraryEnvelope.swift in Sources */,
 				A00100562F00000000000007 /* Views/Error/ErrorDisplayView.swift in Sources */,
 				A00100582F00000000000009 /* Services/EnhancedPersistenceService.swift in Sources */,

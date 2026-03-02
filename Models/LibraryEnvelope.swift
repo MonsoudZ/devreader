@@ -1,7 +1,7 @@
 import Foundation
 
 /// Schema versioning and migration support for library data
-struct LibraryEnvelope: Codable {
+struct LibraryEnvelope: Codable, Sendable {
     let schemaVersion: String
     let createdDate: Date
     let lastModified: Date

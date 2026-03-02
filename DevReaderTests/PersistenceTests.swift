@@ -221,7 +221,7 @@ final class PersistenceTests: XCTestCase {
     // MARK: - Background Persistence Tests
 
     func testBackgroundPersistence() async {
-        let service = SimpleBackgroundPersistenceService.shared
+        let service = LibraryPersistenceService.shared
         let items = [
             LibraryItem(url: URL(fileURLWithPath: "/test1.pdf")),
             LibraryItem(url: URL(fileURLWithPath: "/test2.pdf")),
@@ -241,7 +241,7 @@ final class PersistenceTests: XCTestCase {
     }
 
     func testBackgroundDeduplication() async {
-        let service = SimpleBackgroundPersistenceService.shared
+        let service = LibraryPersistenceService.shared
         let items = [
             LibraryItem(url: URL(fileURLWithPath: "/test1.pdf")),
             LibraryItem(url: URL(fileURLWithPath: "/test1.pdf")), // Duplicate

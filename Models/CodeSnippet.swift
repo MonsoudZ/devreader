@@ -1,6 +1,6 @@
 import Foundation
 
-struct CodeSnippet: Identifiable, Codable {
+struct CodeSnippet: Identifiable, Codable, Sendable {
     let id: UUID
     var title: String
     var content: String

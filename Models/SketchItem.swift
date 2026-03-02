@@ -1,6 +1,6 @@
 import Foundation
 
-struct SketchItem: Identifiable, Codable {
+struct SketchItem: Identifiable, Codable, Sendable {
     let id: UUID
     let pdfURL: URL
     let pageIndex: Int

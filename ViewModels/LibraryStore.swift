@@ -9,7 +9,7 @@ final class LibraryStore: ObservableObject {
 	@Published var currentOperation: String = ""
 
 	private let key = "DevReader.Library.v1"
-	private let backgroundService = SimpleBackgroundPersistenceService.shared
+	private let backgroundService = LibraryPersistenceService.shared
 	private var persistWorkItem: DispatchWorkItem?
 	private var isRestoring = false
 

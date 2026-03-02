@@ -1,6 +1,6 @@
 import Foundation
 
-struct WebBookmark: Identifiable, Codable {
+struct WebBookmark: Identifiable, Codable, Sendable {
     let id: UUID
     var title: String
     var url: String

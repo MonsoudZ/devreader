@@ -277,7 +277,7 @@ struct ContentView: View {
                 Task { @MainActor in
                     // Notes: NotesStore persists on mutations; this is a “checkpoint” hook.
                     // Library: do a background save so large libraries don’t block UI.
-                    await SimpleBackgroundPersistenceService.shared.saveLibraryItems(appEnvironment.libraryStore.items)
+                    await LibraryPersistenceService.shared.saveLibraryItems(appEnvironment.libraryStore.items)
                 }
             }
     }
@@ -313,7 +313,7 @@ struct ContentView: View {
                 Task { @MainActor in
                     LoadingStateManager.shared.startImport("Importing PDFs…")
                     defer { LoadingStateManager.shared.stopImport() }
-                    _ = await SimpleBackgroundPersistenceService.shared.importPDFs(urls)
+                    _ = await LibraryPersistenceService.shared.importPDFs(urls)
                     appEnvironment.libraryStore.add(urls: urls)
                 }
             }

@@ -194,6 +194,7 @@ struct MonacoWebEditor: View {
 	@AppStorage("monacoCode") private var savedCode: String = ""
 	@State private var useFallback = false
 	@State private var isMonacoLoaded = false
+	@State private var loadTimeoutTask: Task<Void, Never>?
 	@State private var selectedLanguage: CodeLang = .python
 	@State private var output: String = ""
 	@State private var isRunning = false
@@ -212,9 +213,9 @@ struct MonacoWebEditor: View {
 		window._code = `\(initial.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "`", with: "\\`").replacingOccurrences(of: "$", with: "\\$"))`;
 		window._language = '\(language)';
 		require(['vs/editor/editor.main'], function(){
-		  window.editor = monaco.editor.create(document.getElementById('editor'), { 
-		    value: window._code, 
-		    language: window._language, 
+		  window.editor = monaco.editor.create(document.getElementById('editor'), {
+		    value: window._code,
+		    language: window._language,
 		    automaticLayout: true,
 		    theme: 'vs-dark',
 		    minimap: { enabled: true },
@@ -228,6 +229,7 @@ struct MonacoWebEditor: View {
 		  window.editor.onDidChangeModelContent(function(){
 		    try { window.webkit.messageHandlers.codeChanged.postMessage(window.editor.getValue()); } catch(e) { }
 		  });
+		  try { window.webkit.messageHandlers.editorReady.postMessage('ready'); } catch(e) { }
 		});
 		</script>
 		</head><body><div id=\"container\"><div id=\"editor\"></div></div></body></html>
@@ -281,22 +283,30 @@ struct MonacoWebEditor: View {
 				// Editor
 				VStack(spacing: 0) {
 					if useFallback {
-						FallbackCodeEditor(code: $savedCode)
+						FallbackCodeEditor(code: $savedCode, onRetryMonaco: {
+							useFallback = false
+							isMonacoLoaded = false
+						})
 					} else {
 						WebViewHTML(html: html(savedCode), savedCode: savedCode, language: selectedLanguage.monacoLanguage, onCodeChange: { newCode in
 							savedCode = newCode
 						}, onEditorReady: {
 							isMonacoLoaded = true
+							loadTimeoutTask?.cancel()
+							LoadingStateManager.shared.stopMonacoLoading()
 						})
 						.onAppear {
 							LoadingStateManager.shared.startMonacoLoading("Initializing Monaco editor...")
-							// Fallback only if Monaco hasn't loaded after 3s
-							DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-								if !isMonacoLoaded {
-									useFallback = true
-									LoadingStateManager.shared.stopMonacoLoading()
-								}
+							loadTimeoutTask?.cancel()
+							loadTimeoutTask = Task { @MainActor in
+								try? await Task.sleep(nanoseconds: 8_000_000_000) // 8 seconds
+								guard !Task.isCancelled, !isMonacoLoaded else { return }
+								useFallback = true
+								LoadingStateManager.shared.stopMonacoLoading()
 							}
+						}
+						.onDisappear {
+							loadTimeoutTask?.cancel()
 						}
 					}
 				}
@@ -739,12 +749,23 @@ struct ExportOptionsView: View {
 
 struct FallbackCodeEditor: View {
 	@Binding var code: String
+	var onRetryMonaco: (() -> Void)?
 	var body: some View {
 		VStack {
-			Text("Monaco Editor (Fallback Mode)")
-				.font(.caption)
-				.foregroundColor(.secondary)
-				.padding(.horizontal)
+			HStack {
+				Text("Monaco Editor Unavailable — Using Fallback")
+					.font(.caption)
+					.foregroundColor(.secondary)
+				Spacer()
+				if let retry = onRetryMonaco {
+					Button("Retry Monaco") { retry() }
+						.font(.caption)
+						.accessibilityLabel("Retry Monaco editor")
+						.accessibilityHint("Attempt to reload the Monaco editor")
+				}
+			}
+			.padding(.horizontal, 8)
+			.padding(.top, 4)
 			TextEditor(text: $code)
 				.font(.system(.body, design: .monospaced))
 				.padding(8)

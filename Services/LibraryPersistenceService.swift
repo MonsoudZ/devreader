@@ -2,11 +2,11 @@ import Foundation
 import Combine
 import os.log
 
-/// Simple background persistence service for batch operations
+/// Background persistence service for library batch operations (save, import, deduplicate)
 @MainActor
-class SimpleBackgroundPersistenceService: ObservableObject {
-    static let shared = SimpleBackgroundPersistenceService()
-    
+class LibraryPersistenceService: ObservableObject {
+    static let shared = LibraryPersistenceService()
+
     @Published var isProcessing: Bool = false
     @Published var progress: Double = 0.0
     @Published var currentOperation: String = ""
@@ -56,22 +56,22 @@ class SimpleBackgroundPersistenceService: ObservableObject {
             await saveLibraryItems(pending)
         }
     }
-    
+
     /// Import multiple PDFs with background processing
     func importPDFs(_ urls: [URL]) async -> [LibraryItem] {
         guard !isProcessing else { return [] }
-        
+
         isProcessing = true
         progress = 0.0
         currentOperation = "Importing PDFs..."
-        
+
         let importedItems = await Task.detached(priority: .userInitiated) { () -> [LibraryItem] in
             return urls.compactMap { url in
                 guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-                
+
                 let attributes = (try? FileManager.default.attributesOfItem(atPath: url.path)) ?? [:]
                 let fileSize = attributes[.size] as? Int64 ?? 0
-                
+
                 return LibraryItem(
                     url: url,
                     title: url.lastPathComponent,
@@ -81,45 +81,44 @@ class SimpleBackgroundPersistenceService: ObservableObject {
                 )
             }
         }.value
-        
+
         // Complete
         isProcessing = false
         progress = 1.0
         currentOperation = "Import completed"
-        
+
         return importedItems
     }
-    
+
     /// Remove duplicate items with background processing
     func removeDuplicates(from items: [LibraryItem]) async -> [LibraryItem] {
         guard !isProcessing else { return items }
-        
+
         isProcessing = true
         progress = 0.0
         currentOperation = "Removing duplicates..."
-        
+
         let uniqueItems = await Task.detached(priority: .userInitiated) { () -> [LibraryItem] in
             var result: [LibraryItem] = []
-            
+
             for item in items {
-                // Use a simple comparison instead of isDuplicate to avoid MainActor issues
                 let isDuplicate = result.contains { existingItem in
-                    existingItem.url == item.url
+                    existingItem.url.standardizedFileURL == item.url.standardizedFileURL
                 }
-                
+
                 if !isDuplicate {
                     result.append(item)
                 }
             }
-            
+
             return result
         }.value
-        
+
         // Complete
         isProcessing = false
         progress = 1.0
         currentOperation = "Deduplication completed"
-        
+
         return uniqueItems
     }
 }
