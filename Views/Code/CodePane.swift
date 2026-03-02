@@ -266,7 +266,7 @@ struct MonacoWebEditor: View {
 					if useFallback {
 						FallbackCodeEditor(code: $savedCode)
 					} else {
-						WebViewHTML(html: html(savedCode), savedCode: savedCode, onCodeChange: { newCode in
+						WebViewHTML(html: html(savedCode), savedCode: savedCode, language: selectedLanguage.monacoLanguage, onCodeChange: { newCode in
 							savedCode = newCode
 						}, onEditorReady: {
 							isMonacoLoaded = true
@@ -371,8 +371,8 @@ struct MonacoWebEditor: View {
 	}
 	
 	private func updateMonacoLanguage() {
-		// This would need to be implemented in the WebView coordinator
-		// For now, we'll reload the WebView with the new language
+		// Language change is handled by WebViewHTML.updateNSView via
+		// monaco.editor.setModelLanguage() when selectedLanguage changes.
 	}
 }
 
@@ -716,6 +716,7 @@ struct FallbackCodeEditor: View {
 struct WebViewHTML: NSViewRepresentable {
     var html: String
     var savedCode: String
+    var language: String
     var onCodeChange: (String) -> Void
     var onEditorReady: (() -> Void)?
     func makeCoordinator() -> Coord { Coord(onCodeChange: onCodeChange, savedCode: savedCode, onEditorReady: onEditorReady) }
@@ -751,15 +752,22 @@ struct WebViewHTML: NSViewRepresentable {
         
         return webView
     }
-    func updateNSView(_ view: WKWebView, context: Context) { 
+    func updateNSView(_ view: WKWebView, context: Context) {
         if view.url == nil {
             view.loadHTMLString(html, baseURL: URL(string: "https://cdn.jsdelivr.net"))
+            context.coordinator.currentLanguage = language
+        } else if context.coordinator.currentLanguage != language {
+            context.coordinator.currentLanguage = language
+            let escaped = language.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
+            let js = "if (window.editor) { monaco.editor.setModelLanguage(window.editor.getModel(), '\(escaped)'); }"
+            view.evaluateJavaScript(js, completionHandler: nil)
         }
     }
     final class Coord: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         let onCodeChange: (String) -> Void
         let savedCode: String
         let onEditorReady: (() -> Void)?
+        var currentLanguage: String = ""
         init(onCodeChange: @escaping (String) -> Void, savedCode: String, onEditorReady: (() -> Void)? = nil) {
             self.onCodeChange = onCodeChange
             self.savedCode = savedCode

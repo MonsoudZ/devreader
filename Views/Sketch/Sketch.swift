@@ -223,10 +223,9 @@ struct SketchView: View {
                     canvasSize = sz
                     loadSketch()
                 }
-                .onChange(of: sz) { _, newSize in 
-                    canvasSize = newSize
-                    // Scale strokes to new size if needed
+                .onChange(of: sz) { _, newSize in
                     scaleStrokesToNewSize(newSize)
+                    canvasSize = newSize
                 }
             }
         }
@@ -312,14 +311,13 @@ struct SketchView: View {
 	
 	private func scaleStrokesToNewSize(_ newSize: CGSize) {
 		guard canvasSize != .zero && newSize != canvasSize else { return }
-		
+
 		let scaleX = newSize.width / canvasSize.width
 		let scaleY = newSize.height / canvasSize.height
-		
-		// Scale all strokes to match new canvas size
+		let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
+
 		for i in strokes.indices {
-			// This is a simplified approach - in practice you'd need to
-			// transform the Path points based on the scale factors
+			strokes[i].path = strokes[i].path.applying(transform)
 			strokes[i].lineWidth *= min(scaleX, scaleY)
 		}
 	}

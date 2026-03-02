@@ -9,9 +9,6 @@ struct LibraryPane: View {
 	@State private var filter = ""
     @State private var selection = Set<UUID>()
     @State private var sort: SortOption = .recent
-    @State private var cachedSortedItems: [LibraryItem] = []
-    @State private var lastFilter = ""
-    @State private var lastSort: SortOption = .recent
     @State private var showingDeleteConfirmation = false
     @AppStorage("library.sortOrder") private var persistedSortOrder: String = "recent"
 	
@@ -47,7 +44,7 @@ struct LibraryPane: View {
 			.padding(8)
 			Divider()
             List(selection: $selection) {
-                ForEach(optimizedSortedFiltered()) { item in
+                ForEach(sortedFiltered()) { item in
 					Button(action: { open(item) }) {
 						HStack {
 							VStack(alignment: .leading, spacing: 2) {
@@ -107,32 +104,6 @@ struct LibraryPane: View {
 		return library.items.filter { $0.title.localizedCaseInsensitiveContains(filter) || $0.url.lastPathComponent.localizedCaseInsensitiveContains(filter) }
 	}
 
-    func optimizedSortedFiltered() -> [LibraryItem] {
-        // Check if we need to recompute
-        if filter != lastFilter || sort != lastSort || cachedSortedItems.isEmpty {
-            updateCachedItems()
-        }
-        return cachedSortedItems
-    }
-    
-    private func updateCachedItems() {
-        let base = filtered()
-        let sorted: [LibraryItem]
-        
-        switch sort {
-        case .recent: 
-            sorted = base.sorted { $0.addedAt > $1.addedAt }
-        case .titleAZ: 
-            sorted = base.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
-        case .titleZA: 
-            sorted = base.sorted { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedDescending }
-        }
-        
-        cachedSortedItems = sorted
-        lastFilter = filter
-        lastSort = sort
-    }
-    
     func sortedFiltered() -> [LibraryItem] {
         let base = filtered()
         switch sort {
