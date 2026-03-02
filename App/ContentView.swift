@@ -219,6 +219,31 @@ struct ContentView: View {
         NotificationCenter.default.publisher(for: .showOnboarding)
             .sink { _ in appEnvironment.isShowingOnboarding = true }
             .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .addNote)
+            .sink { notification in
+                if let note = notification.object as? NoteItem {
+                    appEnvironment.notesStore.add(note)
+                }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .showToast)
+            .sink { notification in
+                if let toast = notification.object as? ToastMessage {
+                    switch toast.type {
+                    case .success:
+                        appEnvironment.enhancedToastCenter.showSuccess("Success", toast.message)
+                    case .error:
+                        appEnvironment.enhancedToastCenter.showError("Error", toast.message)
+                    case .warning:
+                        appEnvironment.enhancedToastCenter.showWarning("Warning", toast.message)
+                    case .info:
+                        appEnvironment.enhancedToastCenter.showInfo("Info", toast.message)
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Autosave

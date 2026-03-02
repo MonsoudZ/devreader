@@ -149,10 +149,8 @@ struct NoteRow: View {
 		isEditing = true 
 	}
 	
-	private func saveEdit() { 
-		if let idx = notes.items.firstIndex(where: { $0.id == item.id }) { 
-			notes.items[idx].text = editingText
-		}
+	private func saveEdit() {
+		notes.updateText(editingText, for: item)
 		isEditing = false
 		isNewNote = false
 	}
