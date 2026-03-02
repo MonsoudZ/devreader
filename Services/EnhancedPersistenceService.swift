@@ -172,6 +172,16 @@ class EnhancedPersistenceService: ObservableObject {
         os_log("Cleared all data for PDF: %{public}@", log: logger, type: .info, url.lastPathComponent)
     }
     
+    /// Deletes data for a single key
+    func deleteKey(_ key: String) {
+        let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(key).json")
+        try? fileManager.removeItem(at: fileURL)
+        // Also clean up any temp/backup files
+        try? fileManager.removeItem(at: fileURL.appendingPathExtension("tmp"))
+        try? fileManager.removeItem(at: fileURL.appendingPathExtension("bak"))
+        os_log("Deleted data for key: %{public}@", log: logger, type: .debug, key)
+    }
+
     /// Clears all persistence data
     func clearAllData() {
         try? fileManager.removeItem(at: JSONStorageService.dataDirectory)

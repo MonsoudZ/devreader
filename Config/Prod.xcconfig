@@ -26,8 +26,9 @@ GCC_PREPROCESSOR_DEFINITIONS = $(inherited) DEV_READER_PROD=1
 SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEV_READER_PROD
 
 // Crash Reporting & Analytics
-CRASH_REPORTING_DSN = https://crashes.yourdomain.com/api/v1/crashes
-ANALYTICS_API_KEY = prod-analytics-key-abcdef
+// Set these via environment variables or Xcode build settings — do not hardcode secrets here
+CRASH_REPORTING_DSN = $(CRASH_REPORTING_DSN)
+ANALYTICS_API_KEY = $(ANALYTICS_API_KEY)
 TELEMETRY_ENABLED = YES
 DEBUG_TELEMETRY = NO
 

@@ -83,14 +83,15 @@ class CodeStore: ObservableObject {
 // MARK: - Code Snippet Model
 
 struct CodeSnippet: Identifiable, Codable {
-    let id = UUID()
+    let id: UUID
     var title: String
     var content: String
     var language: String
     let createdDate: Date
     var lastModified: Date
-    
-    init(title: String, content: String, language: String, createdDate: Date, lastModified: Date) {
+
+    init(id: UUID = UUID(), title: String, content: String, language: String, createdDate: Date, lastModified: Date) {
+        self.id = id
         self.title = title
         self.content = content
         self.language = language
@@ -110,16 +111,16 @@ protocol CodePersistenceProtocol {
 class CodePersistenceService: CodePersistenceProtocol {
     private let persistenceService = EnhancedPersistenceService.shared
     private let codeSnippetsKey = "DevReader.CodeSnippets.v1"
-    
+
     func saveCodeSnippets(_ snippets: [CodeSnippet]) throws {
         try persistenceService.saveCodable(snippets, forKey: codeSnippetsKey)
     }
-    
+
     func loadCodeSnippets() -> [CodeSnippet] {
         return persistenceService.loadCodable([CodeSnippet].self, forKey: codeSnippetsKey) ?? []
     }
-    
+
     func clearAllData() {
-        persistenceService.clearAllData()
+        persistenceService.deleteKey(codeSnippetsKey)
     }
 }

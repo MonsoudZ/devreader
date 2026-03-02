@@ -10,7 +10,6 @@
 		9932A8342E823CC2001C0FFE /* DevReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9932A8332E823CB4001C0FFE /* DevReader.swift */; };
 		A00100012F00000000000001 /* Models/NoteItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100002F00000000000001 /* Models/NoteItem.swift */; };
 		A00100032F00000000000001 /* Models/LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100022F00000000000001 /* Models/LibraryItem.swift */; };
-		A00100052F00000000000001 /* Models/SessionData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100042F00000000000001 /* Models/SessionData.swift */; };
 		A00100072F00000000000001 /* ViewModels/PDFController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100062F00000000000001 /* ViewModels/PDFController.swift */; };
 		A00100092F00000000000001 /* ViewModels/NotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100082F00000000000001 /* ViewModels/NotesStore.swift */; };
 		A001000B2F00000000000001 /* ViewModels/LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000A2F00000000000001 /* ViewModels/LibraryStore.swift */; };
@@ -41,7 +40,6 @@
 		A001003F2F00000000000001 /* Views/Settings/ModernSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100402F00000000000001 /* Views/Settings/ModernSettingsView.swift */; };
 		A00100432F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100442F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift */; };
 		A00100452F00000000000001 /* Views/Settings/LargePDFTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100462F00000000000001 /* Views/Settings/LargePDFTestView.swift */; };
-		A00100472F00000000000001 /* Services/CrashReportingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100482F00000000000001 /* Services/CrashReportingService.swift */; };
 		A001004A2F00000000000001 /* Views/Help/HelpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100492F00000000000001 /* Views/Help/HelpView.swift */; };
 		A001004B2F00000000000001 /* Utils/ErrorMessageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */; };
 		A001004D2F00000000000001 /* Utils/EnhancedToastCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */; };
@@ -84,7 +82,6 @@
 		9932A8332E823CB4001C0FFE /* DevReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevReader.swift; sourceTree = "<group>"; };
 		A00100002F00000000000001 /* Models/NoteItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/NoteItem.swift; sourceTree = "<group>"; };
 		A00100022F00000000000001 /* Models/LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/LibraryItem.swift; sourceTree = "<group>"; };
-		A00100042F00000000000001 /* Models/SessionData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/SessionData.swift; sourceTree = "<group>"; };
 		A00100062F00000000000001 /* ViewModels/PDFController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFController.swift; sourceTree = "<group>"; };
 		A00100082F00000000000001 /* ViewModels/NotesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/NotesStore.swift; sourceTree = "<group>"; };
 		A001000A2F00000000000001 /* ViewModels/LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/LibraryStore.swift; sourceTree = "<group>"; };
@@ -116,7 +113,6 @@
 		A00100402F00000000000001 /* Views/Settings/ModernSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/ModernSettingsView.swift; sourceTree = "<group>"; };
 		A00100442F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/LargePDFPerformanceMonitor.swift; sourceTree = "<group>"; };
 		A00100462F00000000000001 /* Views/Settings/LargePDFTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/LargePDFTestView.swift; sourceTree = "<group>"; };
-		A00100482F00000000000001 /* Services/CrashReportingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CrashReportingService.swift; sourceTree = "<group>"; };
 		A00100492F00000000000001 /* Views/Help/HelpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Help/HelpView.swift; sourceTree = "<group>"; };
 		A001004C2F00000000000001 /* Utils/ErrorMessageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/ErrorMessageManager.swift; sourceTree = "<group>"; };
 		A001004E2F00000000000001 /* Utils/EnhancedToastCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/EnhancedToastCenter.swift; sourceTree = "<group>"; };
@@ -182,7 +178,6 @@
 			isa = PBXGroup;
 			children = (
 				A001003A2F00000000000001 /* Services/JSONStorageService.swift */,
-				A00100482F00000000000001 /* Services/CrashReportingService.swift */,
 				A00100492F00000000000001 /* Views/Help/HelpView.swift */,
 				A001003E2F00000000000001 /* Views/UI/ModernHeaderView.swift */,
 				A00100442F00000000000001 /* Utils/LargePDFPerformanceMonitor.swift */,
@@ -226,7 +221,6 @@
 				A00100402F00000000000001 /* Views/Settings/ModernSettingsView.swift */,
 				A00100002F00000000000001 /* Models/NoteItem.swift */,
 				A00100022F00000000000001 /* Models/LibraryItem.swift */,
-				A00100042F00000000000001 /* Models/SessionData.swift */,
 				A00100062F00000000000001 /* ViewModels/PDFController.swift */,
 				A00100082F00000000000001 /* ViewModels/NotesStore.swift */,
 				A001000A2F00000000000001 /* ViewModels/LibraryStore.swift */,
@@ -405,7 +399,6 @@
 				9932A8342E823CC2001C0FFE /* DevReader.swift in Sources */,
 				A00100012F00000000000001 /* Models/NoteItem.swift in Sources */,
 				A00100032F00000000000001 /* Models/LibraryItem.swift in Sources */,
-				A00100052F00000000000001 /* Models/SessionData.swift in Sources */,
 				A00100072F00000000000001 /* ViewModels/PDFController.swift in Sources */,
 				A00100092F00000000000001 /* ViewModels/NotesStore.swift in Sources */,
 				A001000B2F00000000000001 /* ViewModels/LibraryStore.swift in Sources */,
@@ -436,7 +429,6 @@
 				A001002D2F00000000000001 /* Services/AnnotationService.swift in Sources */,
 				A001002E2F00000000000001 /* Services/ErrorRecoveryService.swift in Sources */,
 				A00100392F00000000000001 /* Services/JSONStorageService.swift in Sources */,
-				A00100472F00000000000001 /* Services/CrashReportingService.swift in Sources */,
 				A001004A2F00000000000001 /* Views/Help/HelpView.swift in Sources */,
 				A001004B2F00000000000001 /* Utils/ErrorMessageManager.swift in Sources */,
 				A001004D2F00000000000001 /* Utils/EnhancedToastCenter.swift in Sources */,

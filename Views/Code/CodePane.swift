@@ -165,11 +165,28 @@ enum CodeLang: String, CaseIterable {
 		case .sql: return "sql"
 		}
 	}
+
+	var monacoLanguage: String {
+		switch self {
+		case .python: return "python"
+		case .ruby: return "ruby"
+		case .node, .javascript: return "javascript"
+		case .swift: return "swift"
+		case .bash: return "shell"
+		case .go: return "go"
+		case .c: return "c"
+		case .cpp: return "cpp"
+		case .rust: return "rust"
+		case .java: return "java"
+		case .sql: return "sql"
+		}
+	}
 }
 
 struct MonacoWebEditor: View {
 	@AppStorage("monacoCode") private var savedCode: String = ""
 	@State private var useFallback = false
+	@State private var isMonacoLoaded = false
 	@State private var selectedLanguage: CodeLang = .python
 	@State private var output: String = ""
 	@State private var isRunning = false
@@ -178,14 +195,14 @@ struct MonacoWebEditor: View {
 	@State private var showExportOptions = false
 	
 	private func html(_ initial: String) -> String {
-		let language = getMonacoLanguage(selectedLanguage)
+		let language = selectedLanguage.monacoLanguage
 		return """
 		<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">
 		<style>html,body,#container{height:100%;margin:0}#container{display:flex;flex-direction:column}#editor{flex:1;}</style>
 		<script src=\"https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js\"></script>
 		<script>
 		require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs' } });
-		window._code = `\(initial.replacingOccurrences(of: "`", with: "\\`"))`;
+		window._code = `\(initial.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "`", with: "\\`").replacingOccurrences(of: "$", with: "\\$"))`;
 		window._language = '\(language)';
 		require(['vs/editor/editor.main'], function(){
 		  window.editor = monaco.editor.create(document.getElementById('editor'), { 
@@ -210,23 +227,7 @@ struct MonacoWebEditor: View {
 		"""
 	}
 	
-	private func getMonacoLanguage(_ lang: CodeLang) -> String {
-		switch lang {
-		case .python: return "python"
-		case .ruby: return "ruby"
-		case .node, .javascript: return "javascript"
-		case .swift: return "swift"
-		case .bash: return "shell"
-		case .go: return "go"
-		case .c: return "c"
-		case .cpp: return "cpp"
-		case .rust: return "rust"
-		case .java: return "java"
-		case .sql: return "sql"
-		}
-	}
-	
-	var body: some View { 
+	var body: some View {
 		VStack(spacing: 0) {
 			// Toolbar
 			HStack {
@@ -265,14 +266,16 @@ struct MonacoWebEditor: View {
 					if useFallback {
 						FallbackCodeEditor(code: $savedCode)
 					} else {
-						WebViewHTML(html: html(savedCode), savedCode: savedCode) { newCode in 
-							savedCode = newCode 
-						}
+						WebViewHTML(html: html(savedCode), savedCode: savedCode, onCodeChange: { newCode in
+							savedCode = newCode
+						}, onEditorReady: {
+							isMonacoLoaded = true
+						})
 						.onAppear {
 							LoadingStateManager.shared.startMonacoLoading("Initializing Monaco editor...")
-							// Set a timeout to fallback if WebView doesn't load
+							// Fallback only if Monaco hasn't loaded after 3s
 							DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-								if !useFallback {
+								if !isMonacoLoaded {
 									useFallback = true
 									LoadingStateManager.shared.stopMonacoLoading()
 								}
@@ -551,7 +554,7 @@ struct ExportOptionsView: View {
 			let settings = """
 			{
 				"files.associations": {
-					"*.\(language.fileExtension)": "\(getMonacoLanguage(language))"
+					"*.\(language.fileExtension)": "\(language.monacoLanguage)"
 				}
 			}
 			"""
@@ -693,21 +696,6 @@ struct ExportOptionsView: View {
 		}
 	}
 	
-	private func getMonacoLanguage(_ lang: CodeLang) -> String {
-		switch lang {
-		case .python: return "python"
-		case .ruby: return "ruby"
-		case .node, .javascript: return "javascript"
-		case .swift: return "swift"
-		case .bash: return "shell"
-		case .go: return "go"
-		case .c: return "c"
-		case .cpp: return "cpp"
-		case .rust: return "rust"
-		case .java: return "java"
-		case .sql: return "sql"
-		}
-	}
 }
 
 struct FallbackCodeEditor: View {
@@ -729,7 +717,8 @@ struct WebViewHTML: NSViewRepresentable {
     var html: String
     var savedCode: String
     var onCodeChange: (String) -> Void
-    func makeCoordinator() -> Coord { Coord(onCodeChange: onCodeChange, savedCode: savedCode) }
+    var onEditorReady: (() -> Void)?
+    func makeCoordinator() -> Coord { Coord(onCodeChange: onCodeChange, savedCode: savedCode, onEditorReady: onEditorReady) }
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         
@@ -770,9 +759,11 @@ struct WebViewHTML: NSViewRepresentable {
     final class Coord: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         let onCodeChange: (String) -> Void
         let savedCode: String
-        init(onCodeChange: @escaping (String) -> Void, savedCode: String) { 
+        let onEditorReady: (() -> Void)?
+        init(onCodeChange: @escaping (String) -> Void, savedCode: String, onEditorReady: (() -> Void)? = nil) {
             self.onCodeChange = onCodeChange
-            self.savedCode = savedCode 
+            self.savedCode = savedCode
+            self.onEditorReady = onEditorReady
         }
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             switch message.name {
@@ -787,6 +778,7 @@ struct WebViewHTML: NSViewRepresentable {
             case "editorReady":
                 print("Monaco Editor Ready")
                 LoadingStateManager.shared.stopMonacoLoading()
+                onEditorReady?()
             default:
                 break
             }
@@ -795,9 +787,12 @@ struct WebViewHTML: NSViewRepresentable {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 let escaped = self.savedCode
                     .replacingOccurrences(of: "\\", with: "\\\\")
-                    .replacingOccurrences(of: "`", with: "\\`")
-                    .replacingOccurrences(of: "\n", with: "\\n")
                     .replacingOccurrences(of: "'", with: "\\'")
+                    .replacingOccurrences(of: "\n", with: "\\n")
+                    .replacingOccurrences(of: "\r", with: "\\r")
+                    .replacingOccurrences(of: "\0", with: "\\0")
+                    .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
+                    .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
                 let js = "if (window.editor) { window.editor.setValue('\(escaped)'); } else { window._code = '\(escaped)'; }"
                 webView.evaluateJavaScript(js) { result, error in
                     if let error = error {

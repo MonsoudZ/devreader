@@ -1,6 +1,16 @@
 import Foundation
 import Combine
 
+private extension String {
+    func htmlEscaped() -> String {
+        self.replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&#39;")
+    }
+}
+
 /// Manages web bookmarks and persistence
 @MainActor
 class WebStore: ObservableObject {
@@ -64,19 +74,21 @@ class WebStore: ObservableObject {
             <h1>DevReader Bookmarks</h1>
             <ul>
         """
-        
+
         for bookmark in bookmarks {
+            let safeTitle = bookmark.title.htmlEscaped()
+            let safeURL = bookmark.url.htmlEscaped()
             html += """
-                <li><a href="\(bookmark.url)">\(bookmark.title)</a></li>
+                <li><a href="\(safeURL)">\(safeTitle)</a></li>
             """
         }
-        
+
         html += """
             </ul>
         </body>
         </html>
         """
-        
+
         return html
     }
     
@@ -105,12 +117,13 @@ class WebStore: ObservableObject {
 // MARK: - Web Bookmark Model
 
 struct WebBookmark: Identifiable, Codable {
-    let id = UUID()
+    let id: UUID
     var title: String
     var url: String
     let createdDate: Date
-    
-    init(title: String, url: String, createdDate: Date) {
+
+    init(id: UUID = UUID(), title: String, url: String, createdDate: Date) {
+        self.id = id
         self.title = title
         self.url = url
         self.createdDate = createdDate
@@ -128,16 +141,16 @@ protocol WebPersistenceProtocol {
 class WebPersistenceService: WebPersistenceProtocol {
     private let persistenceService = EnhancedPersistenceService.shared
     private let bookmarksKey = "DevReader.WebBookmarks.v1"
-    
+
     func saveBookmarks(_ bookmarks: [WebBookmark]) throws {
         try persistenceService.saveCodable(bookmarks, forKey: bookmarksKey)
     }
-    
+
     func loadBookmarks() -> [WebBookmark] {
         return persistenceService.loadCodable([WebBookmark].self, forKey: bookmarksKey) ?? []
     }
-    
+
     func clearAllData() {
-        persistenceService.clearAllData()
+        persistenceService.deleteKey(bookmarksKey)
     }
 }

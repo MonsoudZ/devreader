@@ -152,9 +152,6 @@ final class PDFController: ObservableObject {
 		// Strategy 2: Fallback to original if annotated failed
 		if chosenURL == nil {
 			do {
-				// Suppress JPEG2000 errors before loading
-				PDFSelectionBridge.suppressJPEG2000Errors()
-				
 				// Apply aggressive memory optimization before loading
 				applyAggressiveMemoryOptimizations()
 				
@@ -772,50 +769,26 @@ final class PDFController: ObservableObject {
 		guard let doc = document else { return }
 		isSearching = true
 		LoadingStateManager.shared.startSearch("Searching in large PDF...")
-		
+
 		Task {
-			do {
-				let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-				searchQuery = trimmed
-				guard !trimmed.isEmpty else { 
-					await MainActor.run { 
-						clearSearch()
-						LoadingStateManager.shared.stopSearch()
-					}
-					return 
-				}
-				
-				// For large PDFs, search in chunks to avoid blocking
-				let chunkSize = isLargePDF ? 100 : doc.pageCount
-				var allResults: [PDFSelection] = []
-				
-				for startPage in stride(from: 0, to: doc.pageCount, by: chunkSize) {
-					// Search this chunk - PDFKit doesn't support inRange parameter, so we'll search the whole document
-					// but limit results processing for performance
-					let chunkResults = doc.findString(trimmed, withOptions: [.caseInsensitive])
-					allResults.append(contentsOf: chunkResults)
-					
-					// Update progress for large PDFs
-					if isLargePDF {
-						let progress = Double(startPage) / Double(doc.pageCount)
-						await MainActor.run {
-							LoadingStateManager.shared.updateProgress(progress, message: "Searching page \(startPage + 1) of \(doc.pageCount)...")
-						}
-					}
-					
-					// Yield control to prevent blocking
-					try? await Task.sleep(nanoseconds: 10_000_000) // 10ms
-				}
-				
+			let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+			searchQuery = trimmed
+			guard !trimmed.isEmpty else {
 				await MainActor.run {
-					allResults.forEach { $0.color = NSColor.systemOrange.withAlphaComponent(0.6) }
-					searchResults = allResults
-					searchIndex = 0
-					focusCurrentSearchSelection()
+					clearSearch()
+					LoadingStateManager.shared.stopSearch()
 				}
+				return
 			}
-			
+
+			// PDFDocument.findString searches the entire document — call once
+			let results = doc.findString(trimmed, withOptions: [.caseInsensitive])
+
 			await MainActor.run {
+				results.forEach { $0.color = NSColor.systemOrange.withAlphaComponent(0.6) }
+				searchResults = results
+				searchIndex = 0
+				focusCurrentSearchSelection()
 				isSearching = false
 				LoadingStateManager.shared.stopSearch()
 			}

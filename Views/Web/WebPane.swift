@@ -127,11 +127,20 @@ struct WebView: NSViewRepresentable {
             print("WebView provisional navigation failed: \(error.localizedDescription)")
         }
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            if let url = navigationAction.request.url, let scheme = url.scheme?.lowercased(),
+               scheme != "http" && scheme != "https" && scheme != "about" {
+                decisionHandler(.cancel)
+                return
+            }
             decisionHandler(.allow)
         }
-        
+
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
-            // Enable JavaScript using the modern API
+            if let url = navigationAction.request.url, let scheme = url.scheme?.lowercased(),
+               scheme != "http" && scheme != "https" && scheme != "about" {
+                decisionHandler(.cancel, preferences)
+                return
+            }
             preferences.allowsContentJavaScript = true
             decisionHandler(.allow, preferences)
         }
