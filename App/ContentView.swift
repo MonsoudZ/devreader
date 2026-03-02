@@ -274,12 +274,13 @@ struct ContentView: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.begin { resp in
-            guard resp == .OK, let url = panel.url else { return }
-            appEnvironment.pdfController.open(url: url)
-            // Announce current PDF to NotesStore via notification
-            NotificationCenter.default.post(name: .currentPDFURLDidChange, object: nil, userInfo: ["url": url])
-            // Optionally add to library:
-            appEnvironment.libraryStore.add(urls: [url])
+            // Ensure we're on the main thread for @MainActor state access
+            DispatchQueue.main.async {
+                guard resp == .OK, let url = panel.url else { return }
+                appEnvironment.pdfController.open(url: url)
+                NotificationCenter.default.post(name: .currentPDFURLDidChange, object: nil, userInfo: ["url": url])
+                appEnvironment.libraryStore.add(urls: [url])
+            }
         }
     }
 
@@ -290,13 +291,15 @@ struct ContentView: View {
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
         panel.begin { resp in
-            guard resp == .OK else { return }
-            let urls = panel.urls
-            Task { @MainActor in
-                LoadingStateManager.shared.startImport("Importing PDFs…")
-                defer { LoadingStateManager.shared.stopImport() }
-                _ = await SimpleBackgroundPersistenceService.shared.importPDFs(urls)
-                appEnvironment.libraryStore.add(urls: urls)
+            DispatchQueue.main.async {
+                guard resp == .OK else { return }
+                let urls = panel.urls
+                Task { @MainActor in
+                    LoadingStateManager.shared.startImport("Importing PDFs…")
+                    defer { LoadingStateManager.shared.stopImport() }
+                    _ = await SimpleBackgroundPersistenceService.shared.importPDFs(urls)
+                    appEnvironment.libraryStore.add(urls: urls)
+                }
             }
         }
     }

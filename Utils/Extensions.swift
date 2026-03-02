@@ -111,11 +111,7 @@ class PerformanceMonitor: ObservableObject {
         }
     }
     
-    deinit {
-        Task.detached { @MainActor in
-            PerformanceMonitor.shared.stopMonitoring()
-        }
-    }
+    // No deinit needed — singleton lives for app lifetime; timer stops at process exit.
     
     func startMonitoring() {
         guard !isMonitoring else { return }

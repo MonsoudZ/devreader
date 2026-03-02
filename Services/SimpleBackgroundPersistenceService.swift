@@ -10,31 +10,45 @@ class SimpleBackgroundPersistenceService: ObservableObject {
     @Published var isProcessing: Bool = false
     @Published var progress: Double = 0.0
     @Published var currentOperation: String = ""
-    
+
     private let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "BackgroundPersistence")
-    
+
+    /// Pending items to save after the current operation finishes
+    private var pendingLibraryItems: [LibraryItem]?
+
     private init() {}
-    
+
     // MARK: - Batch Operations
-    
-    /// Save library items in background to prevent UI blocking
+
+    /// Save library items in background to prevent UI blocking.
+    /// If a save is already in progress, queues the latest items to save when it finishes.
     func saveLibraryItems(_ items: [LibraryItem]) async {
-        guard !isProcessing else { return }
-        
+        if isProcessing {
+            // Queue the latest items so they're saved when the current op finishes
+            pendingLibraryItems = items
+            return
+        }
+
         isProcessing = true
         progress = 0.0
         currentOperation = "Saving library items..."
-        
+
         // Use background queue for large operations
         await Task.detached(priority: .utility) {
             let envelope = LibraryEnvelope(items: items)
             try? JSONStorageService.save(envelope, to: JSONStorageService.libraryPath())
         }.value
-        
+
         // Complete
         isProcessing = false
         progress = 1.0
         currentOperation = "Save completed"
+
+        // If new items arrived while we were saving, save them now
+        if let pending = pendingLibraryItems {
+            pendingLibraryItems = nil
+            await saveLibraryItems(pending)
+        }
     }
     
     /// Import multiple PDFs with background processing

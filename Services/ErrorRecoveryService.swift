@@ -106,11 +106,8 @@ enum ErrorRecoveryService {
             }
         }
         
-        // Check for null bytes (common in corrupted files)
-        if data.contains(0) {
-            corruptions.append(.nullBytes)
-        }
-        
+        // Note: null-byte check removed — PDFs are binary and routinely contain null bytes
+
         // Check for reasonable file size
         if data.count < 100 {
             corruptions.append(.tooSmall)

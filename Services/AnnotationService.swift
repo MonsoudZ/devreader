@@ -23,9 +23,12 @@ enum AnnotationService {
     }
     
     static func saveAnnotatedCopyAsync(document: PDFDocument?, originalURL: URL?) async {
+        // Get data representation on the main thread (PDFDocument is not Sendable)
+        guard let doc = document, let src = originalURL, let dst = annotatedURL(for: src) else { return }
+        guard let data = doc.dataRepresentation() else { return }
+        // Write to disk on background thread
         await Task.detached {
-            guard let doc = document, let src = originalURL, let dst = annotatedURL(for: src) else { return }
-            if let data = doc.dataRepresentation() { try? data.write(to: dst) }
+            try? data.write(to: dst)
         }.value
     }
 }

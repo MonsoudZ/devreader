@@ -103,25 +103,25 @@ final class PDFController: ObservableObject {
 	private func loadAsync(url: URL) async {
         // Check if we're already loading the same PDF
         guard currentPDFURL != url else { return }
-        
+
+        // Save current page BEFORE cleanup resets currentPageIndex to 0
+        if let currentURL = currentPDFURL {
+            savePageForPDF(currentURL)
+        }
+
         // Clean up previous PDF state
         await cleanupCurrentPDF()
-        
+
         // Start performance tracking
         let startTime = Date()
         PerformanceMonitor.shared.trackPDFLoad(startTime)
-        
+
         // Start loading state
         LoadingStateManager.shared.startPDFLoading("Loading PDF...")
         isLoadingPDF = true
-        defer { 
+        defer {
             isLoadingPDF = false
             LoadingStateManager.shared.stopPDFLoading()
-        }
-        
-        // Save current page before switching
-        if let currentURL = currentPDFURL { 
-            savePageForPDF(currentURL) 
         }
 		
 		// Validate file exists and is accessible
@@ -548,30 +548,35 @@ final class PDFController: ObservableObject {
 	/// Load PDF with retry mechanism for transient failures
 	/// Moves heavy PDF decoding to background thread to prevent UI blocking
 	private func loadPDFWithRetry(url: URL, maxRetries: Int = 3) async throws -> PDFDocument? {
-		// Move PDF decoding to background thread to prevent UI blocking
-		return try await withCheckedThrowingContinuation { continuation in
-			Task.detached(priority: .userInitiated) {
-				do {
-					guard let doc = PDFDocument(url: url) else {
-						continuation.resume(throwing: PDFError.invalidDocument)
-						return
-					}
-					
-					// Basic validation
-					guard doc.pageCount > 0 else {
-						continuation.resume(throwing: PDFError.emptyDocument)
-						return
-					}
-					
-					// Return to main thread for UI updates
-					await MainActor.run {
+		var lastError: Error = PDFError.invalidDocument
+
+		for attempt in 1...maxRetries {
+			do {
+				let doc: PDFDocument? = try await withCheckedThrowingContinuation { continuation in
+					Task.detached(priority: .userInitiated) {
+						guard let doc = PDFDocument(url: url) else {
+							continuation.resume(throwing: PDFError.invalidDocument)
+							return
+						}
+						guard doc.pageCount > 0 else {
+							continuation.resume(throwing: PDFError.emptyDocument)
+							return
+						}
 						continuation.resume(returning: doc)
 					}
-				} catch {
-					continuation.resume(throwing: error)
+				}
+				if let doc = doc {
+					return doc
+				}
+			} catch {
+				lastError = error
+				if attempt < maxRetries {
+					log(AppLog.pdf, "PDF load attempt \(attempt)/\(maxRetries) failed, retrying...")
+					try? await Task.sleep(nanoseconds: UInt64(attempt) * 500_000_000)
 				}
 			}
 		}
+		throw lastError
 	}
 	
 	/// Apply aggressive memory optimizations for large PDFs or low memory systems
