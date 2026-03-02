@@ -173,6 +173,7 @@ struct ContentView: View {
     // MARK: - Menu Notification Wiring
     /// Subscribes to the command notifications posted by DevReaderApp’s .commands
     private func wireMenuNotifications() {
+        guard cancellables.isEmpty else { return }
         NotificationCenter.default.publisher(for: .openPDF)
             .sink { _ in openPDF() }
             .store(in: &cancellables)

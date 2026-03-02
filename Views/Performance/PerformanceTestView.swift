@@ -2,7 +2,7 @@ import SwiftUI
 import Foundation
 
 struct PerformanceTestView: View {
-    @StateObject private var performanceMonitor = PerformanceMonitor()
+    @StateObject private var performanceMonitor = PerformanceTestMonitor()
     @State private var isRunningTests = false
     @State private var testResults: [PerformanceTestResult] = []
     @State private var selectedTest: PerformanceTestType = .largePDF
@@ -182,7 +182,7 @@ struct TestTypeCard: View {
 // MARK: - Performance Metrics View
 
 struct PerformanceMetricsView: View {
-    @ObservedObject var monitor: PerformanceMonitor
+    @ObservedObject var monitor: PerformanceTestMonitor
     
     var body: some View {
         VStack(spacing: 12) {
@@ -256,7 +256,7 @@ struct MetricCard: View {
 // MARK: - Performance Monitor
 
 @MainActor
-class PerformanceMonitor: ObservableObject {
+class PerformanceTestMonitor: ObservableObject {
     @Published var memoryUsage: Double = 0
     @Published var cpuUsage: Double = 0
     @Published var averageLoadTime: Double = 0
@@ -264,20 +264,27 @@ class PerformanceMonitor: ObservableObject {
     
     private var loadTimes: [Double] = []
     private var searchTimes: [Double] = []
-    
+    private var monitoringTimer: Timer?
+
     init() {
         startMonitoring()
     }
-    
+
+    deinit {
+        monitoringTimer?.invalidate()
+    }
+
     private func startMonitoring() {
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            self.updateMetrics()
+        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.updateMetrics()
+            }
         }
     }
     
     private func updateMetrics() {
         // Update memory usage
-        let memoryInfo = mach_task_basic_info()
+        var memoryInfo = mach_task_basic_info()
         var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
         
         let kerr: kern_return_t = withUnsafeMutablePointer(to: &memoryInfo) {

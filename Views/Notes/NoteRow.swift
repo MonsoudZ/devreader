@@ -143,14 +143,14 @@ struct NoteRow: View {
 		}
 	}
 	
-	private func startEdit() { 
+	private func startEdit() {
 		editingText = item.text
-		editingTitle = "" // We don't have a title field in NoteItem yet, but this is for future expansion
-		isEditing = true 
+		editingTitle = item.title
+		isEditing = true
 	}
-	
+
 	private func saveEdit() {
-		notes.updateText(editingText, for: item)
+		notes.updateNote(title: editingTitle, text: editingText, for: item)
 		isEditing = false
 		isNewNote = false
 	}

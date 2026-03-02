@@ -59,13 +59,13 @@ struct WebPane: View {
 		guard canGoBack else { return }
 		historyIndex -= 1
 		currentURL = history[historyIndex]
-		urlString = currentURL!.absoluteString
+		urlString = currentURL?.absoluteString ?? urlString
 	}
 	private func goForward() {
 		guard canGoForward else { return }
 		historyIndex += 1
 		currentURL = history[historyIndex]
-		urlString = currentURL!.absoluteString
+		urlString = currentURL?.absoluteString ?? urlString
 	}
 	private func toggleBookmark() {
 		guard let u = currentURL else { return }

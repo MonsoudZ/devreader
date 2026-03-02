@@ -55,6 +55,14 @@ final class NotesStore: ObservableObject {
 		}
 	}
 
+	func updateNote(title: String, text: String, for note: NoteItem) {
+		if let index = items.firstIndex(where: { $0.id == note.id }) {
+			items[index].title = title
+			items[index].text = text
+			schedulePersist()
+		}
+	}
+
 	func groupedByChapter() -> [(key: String, value: [NoteItem])] {
 		let groups = Dictionary(grouping: items) { $0.chapter.isEmpty ? "(No Chapter)" : $0.chapter }
 		return groups.sorted { $0.key < $1.key }

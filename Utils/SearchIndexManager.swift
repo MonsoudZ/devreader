@@ -249,7 +249,7 @@ class SearchIndexManager: ObservableObject {
     }
     
     private func getIndexURL(for pdfURL: URL) -> URL {
-        let hash = String(pdfURL.path.hashValue)
+        let hash = PersistenceService.stableHash(for: pdfURL)
         return JSONStorageService.dataDirectory.appendingPathComponent("search_index_\(hash).json")
     }
     
@@ -307,18 +307,6 @@ struct SearchResult {
     let text: String
     let range: NSRange
     let context: String
-}
-
-struct SearchOptions {
-    let wholeWords: Bool
-    let caseSensitive: Bool
-    let maxResults: Int
-    
-    init(wholeWords: Bool = false, caseSensitive: Bool = false, maxResults: Int = 1000) {
-        self.wholeWords = wholeWords
-        self.caseSensitive = caseSensitive
-        self.maxResults = maxResults
-    }
 }
 
 struct IndexStats {
