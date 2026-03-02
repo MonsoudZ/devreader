@@ -6,7 +6,7 @@ struct OutlinePane: View {
     @State private var expandedSections: Set<String> = []
 
     private var entries: [(page: Int, title: String)] {
-        let allEntries = pdf.outlineMap.keys.sorted().map { ($0, pdf.outlineMap[$0] ?? "") }
+        let allEntries = pdf.outlineManager.outlineMap.keys.sorted().map { ($0, pdf.outlineManager.outlineMap[$0] ?? "") }
         
         // For large PDFs, limit visible entries and add search
         if pdf.isLargePDF {
@@ -39,7 +39,7 @@ struct OutlinePane: View {
             HStack {
                 Text("Outline").font(.headline)
                 if pdf.isLargePDF {
-                    Text("(\(pdf.outlineMap.count) items)")
+                    Text("(\(pdf.outlineManager.outlineMap.count) items)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

@@ -59,11 +59,11 @@ final class PDFControllerTests: XCTestCase {
         let tmp = makeTempURL("c")
 
         ctrl.loadForTesting(document: doc, url: tmp)
-        ctrl.toggleBookmark(0)
-        XCTAssertTrue(ctrl.isBookmarked(0))
+        ctrl.bookmarkManager.toggleBookmark(0, for: ctrl.currentPDFURL)
+        XCTAssertTrue(ctrl.bookmarkManager.isBookmarked(0))
 
         ctrl.loadForTesting(document: doc, url: tmp)
-        XCTAssertTrue(ctrl.isBookmarked(0))
+        XCTAssertTrue(ctrl.bookmarkManager.isBookmarked(0))
     }
 
     // MARK: - goToPage
@@ -110,13 +110,13 @@ final class PDFControllerTests: XCTestCase {
         ctrl.loadForTesting(document: doc, url: tmp)
 
         // Manually set some search state
-        ctrl.searchQuery = "test"
-        ctrl.searchIndex = 2
+        ctrl.searchManager.searchQuery = "test"
+        ctrl.searchManager.searchIndex = 2
 
-        ctrl.clearSearch()
-        XCTAssertEqual(ctrl.searchQuery, "")
-        XCTAssertTrue(ctrl.searchResults.isEmpty)
-        XCTAssertEqual(ctrl.searchIndex, 0)
+        ctrl.searchManager.clearSearch()
+        XCTAssertEqual(ctrl.searchManager.searchQuery, "")
+        XCTAssertTrue(ctrl.searchManager.searchResults.isEmpty)
+        XCTAssertEqual(ctrl.searchManager.searchIndex, 0)
     }
 
     func testSearchEmptyQueryClearsResults() {
@@ -125,9 +125,9 @@ final class PDFControllerTests: XCTestCase {
         ctrl.loadForTesting(document: doc, url: tmp)
 
         // Search with whitespace-only query should clear
-        ctrl.performSearch("   ")
-        XCTAssertTrue(ctrl.searchResults.isEmpty)
-        XCTAssertEqual(ctrl.searchQuery, "")
+        ctrl.searchManager.performSearch("   ", in: ctrl.document)
+        XCTAssertTrue(ctrl.searchManager.searchResults.isEmpty)
+        XCTAssertEqual(ctrl.searchManager.searchQuery, "")
     }
 
     func testSearchNoOpsWhenEmpty() {
@@ -136,11 +136,11 @@ final class PDFControllerTests: XCTestCase {
         ctrl.loadForTesting(document: doc, url: tmp)
 
         // No results — next/prev/jump should not crash
-        XCTAssertTrue(ctrl.searchResults.isEmpty)
-        ctrl.nextSearchResult()
-        ctrl.previousSearchResult()
-        ctrl.jumpToSearchResult(5)
-        XCTAssertEqual(ctrl.searchIndex, 0)
+        XCTAssertTrue(ctrl.searchManager.searchResults.isEmpty)
+        ctrl.searchManager.nextSearchResult(in: ctrl.document)
+        ctrl.searchManager.previousSearchResult(in: ctrl.document)
+        ctrl.searchManager.jumpToSearchResult(5, in: ctrl.document)
+        XCTAssertEqual(ctrl.searchManager.searchIndex, 0)
     }
 
     // MARK: - Recents
@@ -150,8 +150,8 @@ final class PDFControllerTests: XCTestCase {
         let tmp = makeTempURL()
         ctrl.loadForTesting(document: doc, url: tmp)
 
-        ctrl.addRecent(tmp)
-        XCTAssertTrue(ctrl.recentDocuments.contains(tmp))
+        ctrl.bookmarkManager.addRecent(tmp)
+        XCTAssertTrue(ctrl.bookmarkManager.recentDocuments.contains(tmp))
     }
 
     func testAddRecentMaintainsCapOf10() {
@@ -164,10 +164,10 @@ final class PDFControllerTests: XCTestCase {
         for i in 0..<12 {
             let url = makeTempURL("recent\(i)")
             urls.append(url)
-            ctrl.addRecent(url)
+            ctrl.bookmarkManager.addRecent(url)
         }
 
-        XCTAssertLessThanOrEqual(ctrl.recentDocuments.count, 10)
+        XCTAssertLessThanOrEqual(ctrl.bookmarkManager.recentDocuments.count, 10)
     }
 
     func testAddRecentNoDuplicates() {
@@ -175,11 +175,11 @@ final class PDFControllerTests: XCTestCase {
         let tmp = makeTempURL()
         ctrl.loadForTesting(document: doc, url: tmp)
 
-        ctrl.addRecent(tmp)
-        ctrl.addRecent(tmp)
-        ctrl.addRecent(tmp)
+        ctrl.bookmarkManager.addRecent(tmp)
+        ctrl.bookmarkManager.addRecent(tmp)
+        ctrl.bookmarkManager.addRecent(tmp)
 
-        let occurrences = ctrl.recentDocuments.filter { $0 == tmp }.count
+        let occurrences = ctrl.bookmarkManager.recentDocuments.filter { $0 == tmp }.count
         XCTAssertEqual(occurrences, 1)
     }
 
@@ -190,17 +190,17 @@ final class PDFControllerTests: XCTestCase {
         let tmp = makeTempURL()
         ctrl.loadForTesting(document: doc, url: tmp)
 
-        ctrl.addRecent(tmp)
-        XCTAssertTrue(ctrl.recentDocuments.contains(tmp))
+        ctrl.bookmarkManager.addRecent(tmp)
+        XCTAssertTrue(ctrl.bookmarkManager.recentDocuments.contains(tmp))
 
-        ctrl.pin(tmp)
-        XCTAssertTrue(ctrl.isPinned(tmp))
-        XCTAssertTrue(ctrl.pinnedDocuments.contains(tmp))
-        XCTAssertFalse(ctrl.recentDocuments.contains(tmp))
+        ctrl.bookmarkManager.pin(tmp)
+        XCTAssertTrue(ctrl.bookmarkManager.isPinned(tmp))
+        XCTAssertTrue(ctrl.bookmarkManager.pinnedDocuments.contains(tmp))
+        XCTAssertFalse(ctrl.bookmarkManager.recentDocuments.contains(tmp))
 
-        ctrl.unpin(tmp)
-        XCTAssertFalse(ctrl.isPinned(tmp))
-        XCTAssertTrue(ctrl.recentDocuments.contains(tmp))
+        ctrl.bookmarkManager.unpin(tmp)
+        XCTAssertFalse(ctrl.bookmarkManager.isPinned(tmp))
+        XCTAssertTrue(ctrl.bookmarkManager.recentDocuments.contains(tmp))
     }
 
     func testPinnedReducesRecentsCap() {
@@ -210,15 +210,15 @@ final class PDFControllerTests: XCTestCase {
 
         // Pin 3 URLs
         for i in 0..<3 {
-            ctrl.pin(makeTempURL("pin\(i)"))
+            ctrl.bookmarkManager.pin(makeTempURL("pin\(i)"))
         }
 
         // Add 10 recents — cap should be 10 - 3 = 7
         for i in 0..<10 {
-            ctrl.addRecent(makeTempURL("r\(i)"))
+            ctrl.bookmarkManager.addRecent(makeTempURL("r\(i)"))
         }
 
-        XCTAssertLessThanOrEqual(ctrl.recentDocuments.count, 7)
+        XCTAssertLessThanOrEqual(ctrl.bookmarkManager.recentDocuments.count, 7)
     }
 
     // MARK: - Clear Session
@@ -229,16 +229,16 @@ final class PDFControllerTests: XCTestCase {
         ctrl.loadForTesting(document: doc, url: tmp)
 
         ctrl.goToPage(3)
-        ctrl.toggleBookmark(2)
-        ctrl.searchQuery = "test"
+        ctrl.bookmarkManager.toggleBookmark(2, for: ctrl.currentPDFURL)
+        ctrl.searchManager.searchQuery = "test"
 
         ctrl.clearSession()
 
         XCTAssertNil(ctrl.document)
         XCTAssertEqual(ctrl.currentPageIndex, 0)
-        XCTAssertTrue(ctrl.bookmarks.isEmpty)
-        XCTAssertEqual(ctrl.searchQuery, "")
-        XCTAssertTrue(ctrl.searchResults.isEmpty)
+        XCTAssertTrue(ctrl.bookmarkManager.bookmarks.isEmpty)
+        XCTAssertEqual(ctrl.searchManager.searchQuery, "")
+        XCTAssertTrue(ctrl.searchManager.searchResults.isEmpty)
     }
 
     // MARK: - Bookmarks
@@ -248,13 +248,13 @@ final class PDFControllerTests: XCTestCase {
         let tmp = makeTempURL()
         ctrl.loadForTesting(document: doc, url: tmp)
 
-        XCTAssertFalse(ctrl.isBookmarked(2))
+        XCTAssertFalse(ctrl.bookmarkManager.isBookmarked(2))
 
-        ctrl.toggleBookmark(2)
-        XCTAssertTrue(ctrl.isBookmarked(2))
+        ctrl.bookmarkManager.toggleBookmark(2, for: ctrl.currentPDFURL)
+        XCTAssertTrue(ctrl.bookmarkManager.isBookmarked(2))
 
-        ctrl.toggleBookmark(2)
-        XCTAssertFalse(ctrl.isBookmarked(2))
+        ctrl.bookmarkManager.toggleBookmark(2, for: ctrl.currentPDFURL)
+        XCTAssertFalse(ctrl.bookmarkManager.isBookmarked(2))
     }
 
     // MARK: - Multi-PDF Isolation
@@ -267,20 +267,20 @@ final class PDFControllerTests: XCTestCase {
 
         // Set bookmarks on PDF 1
         ctrl.loadForTesting(document: doc1, url: tmp1)
-        ctrl.toggleBookmark(1)
-        ctrl.toggleBookmark(3)
+        ctrl.bookmarkManager.toggleBookmark(1, for: ctrl.currentPDFURL)
+        ctrl.bookmarkManager.toggleBookmark(3, for: ctrl.currentPDFURL)
 
         // Switch to PDF 2, set different bookmarks
         ctrl.loadForTesting(document: doc2, url: tmp2)
-        ctrl.toggleBookmark(0)
-        ctrl.toggleBookmark(4)
+        ctrl.bookmarkManager.toggleBookmark(0, for: ctrl.currentPDFURL)
+        ctrl.bookmarkManager.toggleBookmark(4, for: ctrl.currentPDFURL)
 
         // Switch back to PDF 1 — bookmarks should be preserved
         ctrl.loadForTesting(document: doc1, url: tmp1)
-        XCTAssertTrue(ctrl.isBookmarked(1))
-        XCTAssertTrue(ctrl.isBookmarked(3))
-        XCTAssertFalse(ctrl.isBookmarked(0))
-        XCTAssertFalse(ctrl.isBookmarked(4))
+        XCTAssertTrue(ctrl.bookmarkManager.isBookmarked(1))
+        XCTAssertTrue(ctrl.bookmarkManager.isBookmarked(3))
+        XCTAssertFalse(ctrl.bookmarkManager.isBookmarked(0))
+        XCTAssertFalse(ctrl.bookmarkManager.isBookmarked(4))
     }
 
     func testMultiplePDFPageIndexIsolation() {

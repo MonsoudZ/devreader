@@ -65,7 +65,7 @@ final class PerformanceTests: XCTestCase {
         
         // Simulate search operations
         for _ in 0..<10 {
-            await MainActor.run { pdf.performSearch("keywords") }
+            await MainActor.run { pdf.searchManager.performSearch("keywords", in: pdf.document) }
         }
         
         let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime

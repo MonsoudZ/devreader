@@ -12,6 +12,8 @@ struct CodePane: View {
 			}
 			.pickerStyle(.segmented)
 			.padding(8)
+			.accessibilityLabel("Editor mode")
+			.accessibilityHint("Switch between scratchpad and Monaco editor")
 			Divider()
 			switch mode {
 			case .scratch: ScratchRunner()
@@ -66,9 +68,14 @@ struct ScratchRunner: View {
 				}
 				.pickerStyle(.menu)
 				.frame(maxWidth: 150)
-				
+				.accessibilityLabel("Programming language")
+				.accessibilityHint("Select the programming language for code execution")
+
 				Spacer()
-				Button(isRunning ? "Running…" : "Run") { run() }.disabled(isRunning)
+				Button(isRunning ? "Running…" : "Run") { run() }
+					.disabled(isRunning)
+					.accessibilityLabel("Run code")
+					.accessibilityHint("Execute the code in the editor")
 			}.padding(8)
 			Divider()
 			TextEditor(text: $code)
@@ -238,18 +245,28 @@ struct MonacoWebEditor: View {
 				}
 				.pickerStyle(.menu)
 				.frame(maxWidth: 120)
-				
+				.accessibilityLabel("Programming language")
+				.accessibilityHint("Select the programming language for the editor")
+
 				Button("Run") { executeCode() }
-				.disabled(isRunning)
-				
+					.disabled(isRunning)
+					.accessibilityLabel("Run code")
+					.accessibilityHint("Execute the code in the editor")
+
 				Button("Save") { saveFile() }
-				
+					.accessibilityLabel("Save file")
+					.accessibilityHint("Save the current code to a file")
+
 				Button("Load") { showFileManager = true }
-				
+					.accessibilityLabel("Load file")
+					.accessibilityHint("Open the file manager to load a file")
+
 				Button("Export") { showExportOptions = true }
-				
+					.accessibilityLabel("Export code")
+					.accessibilityHint("Export code to various editor formats")
+
 				Spacer()
-				
+
 				Text(currentFileName)
 					.font(.caption)
 					.foregroundColor(.secondary)
@@ -296,6 +313,8 @@ struct MonacoWebEditor: View {
 						Button("Clear") { output = "" }
 							.font(.caption)
 							.padding(.horizontal, 8)
+							.accessibilityLabel("Clear output")
+							.accessibilityHint("Clear the code execution output")
 					}
 					.background(Color(NSColor.controlBackgroundColor))
 					
@@ -393,9 +412,11 @@ struct FileManagerView: View {
 					.font(.headline)
 				Spacer()
 				Button("Close") { dismiss() }
+					.accessibilityLabel("Close file manager")
+					.accessibilityHint("Close the file manager window")
 			}
 			.padding()
-			
+
 			HStack {
 				// File List
 				VStack(alignment: .leading) {
@@ -420,9 +441,15 @@ struct FileManagerView: View {
 				// File Actions
 				VStack {
 					Button("Open File...") { openFile() }
+						.accessibilityLabel("Open file")
+						.accessibilityHint("Browse and open a file from disk")
 					Button("New File") { newFile() }
+						.accessibilityLabel("New file")
+						.accessibilityHint("Create a new empty file")
 					Button("Delete Selected") { deleteFile() }
 						.disabled(selectedFile == nil)
+						.accessibilityLabel("Delete selected file")
+						.accessibilityHint("Delete the currently selected file")
 				}
 				.padding()
 			}
@@ -508,14 +535,26 @@ struct ExportOptionsView: View {
 			
 			VStack(alignment: .leading, spacing: 15) {
 				Button("Export to VSCode Project") { exportToVSCode() }
+					.accessibilityLabel("Export to VSCode")
+					.accessibilityHint("Create a VSCode project with the current code")
 				Button("Export to Vim Configuration") { exportToVim() }
+					.accessibilityLabel("Export to Vim")
+					.accessibilityHint("Export code as a Vim configuration file")
 				Button("Export to Emacs Configuration") { exportToEmacs() }
+					.accessibilityLabel("Export to Emacs")
+					.accessibilityHint("Export code as an Emacs configuration file")
 				Button("Export to JetBrains Project") { exportToJetBrains() }
+					.accessibilityLabel("Export to JetBrains")
+					.accessibilityHint("Create a JetBrains project with the current code")
 				Button("Export as Standalone File") { exportAsFile() }
+					.accessibilityLabel("Export as standalone file")
+					.accessibilityHint("Save the code as a standalone source file")
 			}
-			
+
 			HStack {
 				Button("Cancel") { dismiss() }
+					.accessibilityLabel("Cancel export")
+					.accessibilityHint("Close the export options without exporting")
 				Spacer()
 			}
 		}

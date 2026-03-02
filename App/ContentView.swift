@@ -111,12 +111,14 @@ struct ContentView: View {
             } label: {
                 Label("Open", systemImage: "folder")
             }
+            .accessibilityIdentifier("openPDFButton")
 
             Button {
                 importPDFs()
             } label: {
                 Label("Import", systemImage: "tray.and.arrow.down")
             }
+            .accessibilityIdentifier("importPDFButton")
 
             Spacer()
 
@@ -126,6 +128,7 @@ struct ContentView: View {
                     .help("Toggle Library")
             }
             .toggleStyle(.button)
+            .accessibilityIdentifier("toggleLibrary")
 
             // Right pane toggle
             Toggle(isOn: $showingRightPanel) {
@@ -133,6 +136,7 @@ struct ContentView: View {
                     .help("Toggle Tools")
             }
             .toggleStyle(.button)
+            .accessibilityIdentifier("toggleTools")
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
@@ -152,6 +156,7 @@ struct ContentView: View {
             .pickerStyle(.segmented)
             .padding(8)
             .overlay(dividerHorizontal, alignment: .bottom)
+            .accessibilityIdentifier("rightTabPicker")
 
             // Tab content
             Group {

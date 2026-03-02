@@ -20,7 +20,6 @@ final class AppDependencies: ObservableObject {
     // Expose the types so views can call e.g. deps.persistence.someFunc(...)
     let persistence = PersistenceService.self
     let file        = FileService.self
-    let annotation  = AnnotationService.self
 
     init() {}
 

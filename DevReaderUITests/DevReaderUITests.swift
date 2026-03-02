@@ -10,36 +10,83 @@ import XCTest
 final class DevReaderUITests: XCTestCase {
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
+    // MARK: - Core UI Tests
+
     @MainActor
-    func testExample() throws {
+    func testAppLaunchShowsMainUI() throws {
         if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
-            throw XCTSkip("UI smoke test skipped (set DEVREADER_UI_E2E=1 to enable)")
+            throw XCTSkip("UI test skipped (set DEVREADER_UI_E2E=1 to enable)")
         }
-        // UI tests must launch the application that they test.
+
         let app = XCUIApplication()
         app.launch()
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+        // Verify Open and Import buttons exist
+        XCTAssertTrue(app.buttons["openPDFButton"].waitForExistence(timeout: 5), "Open PDF button should exist")
+        XCTAssertTrue(app.buttons["importPDFButton"].exists, "Import PDF button should exist")
+
+        // Verify Library and Tools toggles exist
+        XCTAssertTrue(app.toggles["toggleLibrary"].exists, "Library toggle should exist")
+        XCTAssertTrue(app.toggles["toggleTools"].exists, "Tools toggle should exist")
     }
+
+    @MainActor
+    func testToggleLibraryPanel() throws {
+        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
+            throw XCTSkip("UI test skipped (set DEVREADER_UI_E2E=1 to enable)")
+        }
+
+        let app = XCUIApplication()
+        app.launch()
+
+        let libraryToggle = app.toggles["toggleLibrary"]
+        XCTAssertTrue(libraryToggle.waitForExistence(timeout: 5), "Library toggle should exist")
+
+        // Toggle library off
+        libraryToggle.click()
+
+        // Toggle library back on
+        libraryToggle.click()
+
+        // Verify toggle is still functional
+        XCTAssertTrue(libraryToggle.exists, "Library toggle should still exist after toggling")
+    }
+
+    @MainActor
+    func testToggleToolsPanel() throws {
+        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
+            throw XCTSkip("UI test skipped (set DEVREADER_UI_E2E=1 to enable)")
+        }
+
+        let app = XCUIApplication()
+        app.launch()
+
+        let toolsToggle = app.toggles["toggleTools"]
+        XCTAssertTrue(toolsToggle.waitForExistence(timeout: 5), "Tools toggle should exist")
+
+        // Toggle tools off
+        toolsToggle.click()
+
+        // Toggle tools back on
+        toolsToggle.click()
+
+        // Verify toggle is still functional
+        XCTAssertTrue(toolsToggle.exists, "Tools toggle should still exist after toggling")
+    }
+
+    // MARK: - Launch Performance
 
     @MainActor
     func testLaunchPerformance() throws {
         if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
             throw XCTSkip("UI launch performance test skipped (set DEVREADER_UI_E2E=1 to enable)")
         }
-        // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }

@@ -116,14 +116,14 @@ final class LargePDFTests: XCTestCase {
             let startTime = CFAbsoluteTimeGetCurrent()
 
             if pdfController.isLargePDF {
-                pdfController.performSearchOptimized(term)
+                pdfController.searchManager.performSearchOptimized(term, in: pdfController.document)
             } else {
-                pdfController.performSearch(term)
+                pdfController.searchManager.performSearch(term, in: pdfController.document)
             }
 
             // Wait for search to complete
             var searchAttempts = 0
-            while pdfController.isSearching && searchAttempts < 100 {
+            while pdfController.searchManager.isSearching && searchAttempts < 100 {
                 try await Task.sleep(nanoseconds: 100_000_000)
                 searchAttempts += 1
             }
@@ -131,7 +131,7 @@ final class LargePDFTests: XCTestCase {
             let searchTime = CFAbsoluteTimeGetCurrent() - startTime
 
             XCTAssertLessThan(searchTime, 10.0, "Search for '\(term)' should complete within 10 seconds")
-            XCTAssertFalse(pdfController.isSearching, "Search should complete")
+            XCTAssertFalse(pdfController.searchManager.isSearching, "Search should complete")
         }
     }
 
@@ -183,7 +183,7 @@ final class LargePDFTests: XCTestCase {
 
         // Test outline building performance
         let startTime = CFAbsoluteTimeGetCurrent()
-        pdfController.rebuildOutlineMap()
+        pdfController.outlineManager.rebuildOutlineMap(from: pdfController.document)
         let outlineTime = CFAbsoluteTimeGetCurrent() - startTime
 
         // Outline building should complete quickly regardless of content
@@ -211,7 +211,7 @@ final class LargePDFTests: XCTestCase {
                 let randomPage = Int.random(in: 0..<min(100, document.pageCount))
                 pdfController.goToPage(randomPage)
 
-                pdfController.performSearch("test")
+                pdfController.searchManager.performSearch("test", in: pdfController.document)
                 try await Task.sleep(nanoseconds: 200_000_000) // 200ms
             }
 

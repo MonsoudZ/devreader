@@ -126,10 +126,10 @@ struct NotesPane: View {
 				LazyVStack(alignment: .leading, spacing: 12) {
 					if showPageNotes { pageNotesEditor }
 					Divider()
-					if !pdf.bookmarks.isEmpty {
+					if !pdf.bookmarkManager.bookmarks.isEmpty {
 						VStack(alignment: .leading, spacing: 6) {
 							Text("Bookmarks").font(.headline)
-							ForEach(Array(pdf.bookmarks).sorted(), id: \.self) { pageIndex in
+							ForEach(Array(pdf.bookmarkManager.bookmarks).sorted(), id: \.self) { pageIndex in
 								HStack {
 									Image(systemName: "bookmark.fill").foregroundStyle(.blue)
 									Text("Page \(pageIndex + 1)").font(.body)
@@ -167,7 +167,7 @@ struct NotesPane: View {
 	func addCustomNote() {
 		guard pdf.document != nil else { return }
 		let pageIndex = pdf.currentPageIndex
-		let chapter = pdf.outlineMap[pageIndex] ?? ""
+		let chapter = pdf.outlineManager.outlineMap[pageIndex] ?? ""
 		let note = NoteItem(text: "", pageIndex: pageIndex, chapter: chapter)
 		notes.add(note)
 		// Auto-start editing the new note
@@ -221,7 +221,7 @@ struct NotesPane: View {
 		let currentDateTo = dateTo
 		let currentPageNotes = notes.pageNotes
 		let currentNotesItems = notes.items
-		let currentBookmarks = pdf.bookmarks
+		let currentBookmarks = pdf.bookmarkManager.bookmarks
 		
 		// Move heavy processing to background thread
 		await Task.detached(priority: .userInitiated) { @Sendable in

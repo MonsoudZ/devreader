@@ -76,9 +76,9 @@ final class ProductionTests: XCTestCase {
         XCTAssertNotNil(pdfController.document, "Document should be loaded")
 
         // Use performSearch directly
-        pdfController.performSearch("Hello")
+        pdfController.searchManager.performSearch("Hello", in: pdfController.document)
 
-        XCTAssertGreaterThan(pdfController.searchResults.count, 0, "Should find search results")
+        XCTAssertGreaterThan(pdfController.searchManager.searchResults.count, 0, "Should find search results")
 
         // Clean up
         try? FileManager.default.removeItem(at: testURL)
@@ -91,10 +91,10 @@ final class ProductionTests: XCTestCase {
 
         pdfController.loadForTesting(document: document, url: testURL)
 
-        pdfController.performSearch("Hello")
+        pdfController.searchManager.performSearch("Hello", in: pdfController.document)
 
         // Verify search results have proper highlighting
-        for result in pdfController.searchResults {
+        for result in pdfController.searchManager.searchResults {
             XCTAssertNotNil(result, "Search result should not be nil")
             XCTAssertGreaterThan(result.pages.count, 0, "Search result should have pages")
         }
@@ -118,7 +118,7 @@ final class ProductionTests: XCTestCase {
 
         let startTime = CFAbsoluteTimeGetCurrent()
 
-        pdfController.performSearch("Page")
+        pdfController.searchManager.performSearch("Page", in: pdfController.document)
 
         let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
 

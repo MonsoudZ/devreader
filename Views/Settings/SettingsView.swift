@@ -24,10 +24,22 @@ struct SettingsView: View {
 						Text("Pink").tag("pink")
 					}
 					.pickerStyle(.segmented)
-					HStack { Text("Default Zoom"); Spacer(); Slider(value: $defaultZoom, in: 0.5...3.0, step: 0.1); Text("\(Int(defaultZoom * 100))%").frame(width: 40) }
+					.accessibilityLabel("Highlight color")
+					.accessibilityHint("Select the color used for PDF highlights")
+					HStack {
+						Text("Default Zoom")
+						Spacer()
+						Slider(value: $defaultZoom, in: 0.5...3.0, step: 0.1)
+							.accessibilityLabel("Default zoom level")
+							.accessibilityHint("Adjust the default zoom level for PDFs")
+							.accessibilityValue("\(Int(defaultZoom * 100)) percent")
+						Text("\(Int(defaultZoom * 100))%").frame(width: 40)
+					}
 				}
 				Section("Data") {
 					Toggle("Auto-save Notes", isOn: $autoSave)
+					.accessibilityLabel("Auto-save notes")
+					.accessibilityHint("Automatically save notes at regular intervals")
 					HStack {
 						Text("Autosave Interval")
 						Spacer()
@@ -39,6 +51,8 @@ struct SettingsView: View {
 						}
 						.pickerStyle(.segmented)
 						.frame(width: 260)
+						.accessibilityLabel("Autosave interval")
+						.accessibilityHint("Choose how often notes are automatically saved")
 					}
 					Text("Notes and annotations are automatically saved to your Mac.").font(.caption).foregroundStyle(.secondary)
 				}
@@ -75,6 +89,8 @@ struct SettingsView: View {
 						exportPerformanceReport()
 					}
 					.buttonStyle(.bordered)
+					.accessibilityLabel("Export performance report")
+					.accessibilityHint("Export a performance report for large PDF loading")
 				}
 				
 				Section("Data Management") {
@@ -96,11 +112,15 @@ struct SettingsView: View {
 							createBackup()
 						}
 						.buttonStyle(.bordered)
-						
+						.accessibilityLabel("Create backup")
+						.accessibilityHint("Create a backup of all app data")
+
 						Button("Validate Data") {
 							validateData()
 						}
 						.buttonStyle(.bordered)
+						.accessibilityLabel("Validate data")
+						.accessibilityHint("Check all data files for corruption or integrity issues")
 					}
 					.padding(.top, 4)
 				}
@@ -108,7 +128,7 @@ struct SettingsView: View {
 			}
 			.navigationTitle("Settings")
 			.frame(width: 400, height: 300)
-			.toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+			.toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() }.accessibilityLabel("Done").accessibilityHint("Close the settings window") } }
 			.alert(alertTitle, isPresented: $showingAlert) {
 				Button("OK") { }
 			} message: {
