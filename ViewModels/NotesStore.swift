@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import os.log
 
 @MainActor
 final class NotesStore: ObservableObject {
@@ -101,7 +102,7 @@ final class NotesStore: ObservableObject {
 			try persistenceService.savePageNotes(pageNotes, for: url)
 			try persistenceService.saveTags(availableTags, for: url)
 		} catch {
-			print("Failed to persist notes for PDF: \(url.lastPathComponent), error: \(error)")
+			logError(AppLog.notes, "Failed to persist notes for PDF: \(url.lastPathComponent), error: \(error)")
 		}
 	}
 
@@ -111,7 +112,7 @@ final class NotesStore: ObservableObject {
 		availableTags = persistenceService.loadTags(for: url)
 
 		if !persistenceService.validateData(for: url) {
-			print("Data validation failed for PDF: \(url.lastPathComponent)")
+			logError(AppLog.notes, "Data validation failed for PDF: \(url.lastPathComponent)")
 		}
 	}
 }

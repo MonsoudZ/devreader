@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import os.log
 
 /// Manages code snippets and persistence
 @MainActor
@@ -65,7 +66,7 @@ class CodeStore: ObservableObject {
         do {
             try persistenceService.saveCodeSnippets(codeSnippets)
         } catch {
-            print("Failed to save code snippets: \(error)")
+            logError(AppLog.app, "Failed to save code snippets: \(error)")
         }
     }
     

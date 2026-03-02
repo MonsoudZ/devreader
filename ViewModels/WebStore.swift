@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import os.log
 
 private extension String {
     func htmlEscaped() -> String {
@@ -98,7 +99,7 @@ class WebStore: ObservableObject {
         do {
             try persistenceService.saveBookmarks(bookmarks)
         } catch {
-            print("Failed to save bookmarks: \(error)")
+            logError(AppLog.app, "Failed to save bookmarks: \(error)")
         }
     }
     

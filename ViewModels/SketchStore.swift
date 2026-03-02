@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import SwiftUI
+import os.log
 
 /// Manages sketch data and persistence
 @MainActor
@@ -91,7 +92,7 @@ class SketchStore: ObservableObject {
         do {
             try persistenceService.saveSketches(sketches)
         } catch {
-            print("Failed to save sketches: \(error)")
+            logError(AppLog.app, "Failed to save sketches: \(error)")
         }
     }
     

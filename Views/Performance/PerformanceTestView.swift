@@ -293,8 +293,8 @@ class PerformanceMonitor: ObservableObject {
             memoryUsage = Double(memoryInfo.resident_size) / 1024 / 1024 // Convert to MB
         }
         
-        // Update CPU usage (simplified)
-        cpuUsage = Double.random(in: 10...90) // Placeholder
+        // Update CPU usage via thread_info
+        cpuUsage = getCPUUsage()
     }
     
     func runTest(_ testType: PerformanceTestView.PerformanceTestType) async -> PerformanceTestResult {
@@ -344,29 +344,79 @@ class PerformanceMonitor: ObservableObject {
         }
     }
     
+    private func getCPUUsage() -> Double {
+        var threadList: thread_act_array_t?
+        var threadCount = mach_msg_type_number_t(0)
+        let result = task_threads(mach_task_self_, &threadList, &threadCount)
+        guard result == KERN_SUCCESS, let threads = threadList else { return 0 }
+        defer {
+            vm_deallocate(mach_task_self_, vm_address_t(bitPattern: threads), vm_size_t(Int(threadCount) * MemoryLayout<thread_t>.size))
+        }
+        var totalUsage: Double = 0
+        for i in 0..<Int(threadCount) {
+            var info = thread_basic_info()
+            var infoCount = mach_msg_type_number_t(THREAD_BASIC_INFO_COUNT)
+            let kr = withUnsafeMutablePointer(to: &info) {
+                $0.withMemoryRebound(to: integer_t.self, capacity: Int(infoCount)) {
+                    thread_info(threads[i], thread_flavor_t(THREAD_BASIC_INFO), $0, &infoCount)
+                }
+            }
+            if kr == KERN_SUCCESS && info.flags & TH_FLAGS_IDLE == 0 {
+                totalUsage += Double(info.cpu_usage) / Double(TH_USAGE_SCALE) * 100
+            }
+        }
+        return min(totalUsage, 100)
+    }
+
     private func simulateLargePDFTest() async {
-        // Simulate large PDF loading
-        try? await Task.sleep(nanoseconds: UInt64.random(in: 2_000_000_000...8_000_000_000))
+        // Allocate and process a large data buffer to stress memory/CPU
+        await Task.detached(priority: .userInitiated) {
+            var data = Data(count: 50 * 1024 * 1024) // 50 MB
+            data.withUnsafeMutableBytes { buffer in
+                guard let ptr = buffer.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return }
+                for i in 0..<buffer.count { ptr[i] = UInt8(i & 0xFF) }
+            }
+        }.value
     }
-    
+
     private func simulateSearchTest() async {
-        // Simulate search operations
-        try? await Task.sleep(nanoseconds: UInt64.random(in: 500_000_000...2_000_000_000))
+        // Search through a large array of random strings
+        await Task.detached(priority: .userInitiated) {
+            let strings = (0..<100_000).map { "item_\($0)_\(UUID().uuidString)" }
+            for query in ["item_50000", "item_99999", "nonexistent"] {
+                _ = strings.filter { $0.contains(query) }
+            }
+        }.value
     }
-    
+
     private func simulateMemoryTest() async {
-        // Simulate memory-intensive operations
-        try? await Task.sleep(nanoseconds: UInt64.random(in: 1_000_000_000...3_000_000_000))
+        // Allocate and release memory in waves to measure memory handling
+        await Task.detached(priority: .userInitiated) {
+            var buffers: [Data] = []
+            for _ in 0..<10 {
+                buffers.append(Data(count: 10 * 1024 * 1024)) // 10 MB each
+            }
+            buffers.removeAll()
+        }.value
     }
-    
+
     private func simulateUITest() async {
-        // Simulate UI operations
-        try? await Task.sleep(nanoseconds: UInt64.random(in: 200_000_000...1_000_000_000))
+        // Sort a large array repeatedly to measure responsiveness
+        await Task.detached(priority: .userInitiated) {
+            var array = (0..<500_000).map { _ in Int.random(in: 0..<1_000_000) }
+            array.sort()
+            array.sort { $0 > $1 }
+        }.value
     }
-    
+
     private func simulateStressTest() async {
-        // Simulate stress test
-        try? await Task.sleep(nanoseconds: UInt64.random(in: 5_000_000_000...12_000_000_000))
+        // Run all operations concurrently
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.simulateLargePDFTest() }
+            group.addTask { await self.simulateSearchTest() }
+            group.addTask { await self.simulateMemoryTest() }
+            group.addTask { await self.simulateUITest() }
+        }
     }
 }
 

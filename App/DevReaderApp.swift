@@ -57,11 +57,7 @@ struct DevReaderApp: App {
     // MARK: - Bootstrap
     init() {
         // Initialize base persistence layer early; store message for later alert if it fails.
-        do {
-            try PersistenceService.initialize()
-        } catch {
-            UserDefaults.standard.set(error.localizedDescription, forKey: "initializationError")
-        }
+        PersistenceService.initialize()
     }
 
     // MARK: - Body
@@ -226,17 +222,11 @@ struct DevReaderApp: App {
 
     private func retryInitialization() {
         clearInitializationError()
-        do {
-            try PersistenceService.initialize()
-            // Prefer enhanced toast center for modern UX
-            appEnvironment.enhancedToastCenter.showSuccess(
-                "Initialization Succeeded",
-                "App storage and services are ready.",
-                category: .system
-            )
-        } catch {
-            initializationError = error.localizedDescription
-            showingErrorAlert = true
-        }
+        PersistenceService.initialize()
+        appEnvironment.enhancedToastCenter.showSuccess(
+            "Initialization Succeeded",
+            "App storage and services are ready.",
+            category: .system
+        )
     }
 }
