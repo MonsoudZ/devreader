@@ -9,11 +9,9 @@ struct SettingsView: View {
 	@AppStorage("autoSave") private var autoSave = true
 	@AppStorage("autosaveIntervalSeconds") private var autosaveIntervalSeconds: Double = 30
 	@StateObject private var performanceMonitor = PerformanceMonitor.shared
-	// @StateObject private var largePDFMonitor = LargePDFPerformanceMonitor.shared
 	@State private var alertMessage = ""
 	@State private var alertTitle = ""
 	@State private var showingAlert = false
-	@State private var showingLargePDFTests = false
 	
 	var body: some View {
 		NavigationView {
@@ -73,10 +71,6 @@ struct SettingsView: View {
 					Text("Large PDF performance monitoring will be available in a future update.")
 						.font(.caption)
 						.foregroundStyle(.secondary)
-					Button("Run Large PDF Tests") {
-						showingLargePDFTests = true
-					}
-					.buttonStyle(.bordered)
 					Button("Export Performance Report") {
 						exportPerformanceReport()
 					}
@@ -120,9 +114,6 @@ struct SettingsView: View {
 			} message: {
 				Text(alertMessage)
 			}
-			// .sheet(isPresented: $showingLargePDFTests) {
-			//	LargePDFTestView()
-			// }
 		}
 	}
 	

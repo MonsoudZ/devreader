@@ -300,86 +300,6 @@ struct TroubleshootingView: View {
     }
 }
 
-// MARK: - About View (moved to Views/About/AboutView.swift)
-
-struct OldAboutView: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            Text("About DevReader")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-            
-            Text("A modern PDF reader and development environment for macOS.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
-            VStack(alignment: .leading, spacing: 16) {
-                InfoRowView(label: "Version", value: "1.0.0")
-                InfoRowView(label: "Build", value: "2024.12.01")
-                InfoRowView(label: "Platform", value: "macOS 12.0+")
-                InfoRowView(label: "Architecture", value: "Apple Silicon & Intel")
-            }
-            
-            Divider()
-            
-            Text("Built with")
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("• SwiftUI - Modern macOS UI framework")
-                Text("• PDFKit - Apple's PDF rendering engine")
-                Text("• Monaco Editor - VS Code editor integration")
-                Text("• WebKit - Modern web browsing")
-                Text("• JSON Storage - Fast, reliable data persistence")
-            }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            
-            Divider()
-            
-            Text("Privacy & Security")
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("• Local storage only - No data leaves your device")
-                Text("• Sandboxed execution - Code runs in isolated environment")
-                Text("• No telemetry - No usage data collection")
-                Text("• GDPR/CCPA compliant - Privacy-first design")
-            }
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            
-            Divider()
-            
-            Text("Open Source")
-                .font(.headline)
-                .fontWeight(.semibold)
-            
-            Text("DevReader is open source and available on GitHub under the MIT License.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
-            HStack {
-                Button("View on GitHub") {
-                    if let url = URL(string: "https://github.com/Mengzanaty/devreader") {
-                        NSWorkspace.shared.open(url)
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("Report Issue") {
-                    if let url = URL(string: "https://github.com/Mengzanaty/devreader/issues") {
-                        NSWorkspace.shared.open(url)
-                    }
-                }
-                .buttonStyle(.bordered)
-            }
-        }
-    }
-}
-
 // MARK: - Supporting Views
 
 struct ShortcutGroupView: View {
@@ -523,23 +443,6 @@ struct HelpLinkView: View {
         .padding()
         .background(Color.secondary.opacity(0.1))
         .cornerRadius(8)
-    }
-}
-
-struct InfoRowView: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Text(label)
-                .fontWeight(.medium)
-            
-            Spacer()
-            
-            Text(value)
-                .foregroundStyle(.secondary)
-        }
     }
 }
 

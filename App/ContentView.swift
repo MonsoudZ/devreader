@@ -104,7 +104,6 @@ struct ContentView: View {
     }
 
     // MARK: - Header Bar
-    /// Minimal top bar for common actions; replace with your ModernHeaderView if preferred.
     private var headerBar: some View {
         HStack(spacing: 8) {
             Button {

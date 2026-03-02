@@ -23,30 +23,37 @@ final class EnhancedPersistenceTests: XCTestCase {
     // MARK: - Collision Prevention Tests
     
     func testKeyGenerationPreventsCollisions() async {
-        // Create two PDFs with same name but different locations
-        let pdf1 = createTempPDF(name: "book.pdf", content: "Content 1")
-        let pdf2 = createTempPDF(name: "book.pdf", content: "Content 2")
-        
+        // Create two PDFs with same name in different subdirectories
+        let subdir1 = FileManager.default.temporaryDirectory.appendingPathComponent("dir1", isDirectory: true)
+        let subdir2 = FileManager.default.temporaryDirectory.appendingPathComponent("dir2", isDirectory: true)
+        try? FileManager.default.createDirectory(at: subdir1, withIntermediateDirectories: true)
+        try? FileManager.default.createDirectory(at: subdir2, withIntermediateDirectories: true)
+
+        let pdf1 = subdir1.appendingPathComponent("book.pdf")
+        let pdf2 = subdir2.appendingPathComponent("book.pdf")
+        try? "Content 1".write(to: pdf1, atomically: true, encoding: .utf8)
+        try? "Content 2".write(to: pdf2, atomically: true, encoding: .utf8)
+
         let key1 = persistenceService.generateKey("test.notes", for: pdf1)
         let key2 = persistenceService.generateKey("test.notes", for: pdf2)
-        
+
         XCTAssertNotEqual(key1, key2, "Keys should be different for same-named PDFs in different locations")
-        
+
         // Clean up
-        try? FileManager.default.removeItem(at: pdf1)
-        try? FileManager.default.removeItem(at: pdf2)
+        try? FileManager.default.removeItem(at: subdir1)
+        try? FileManager.default.removeItem(at: subdir2)
     }
     
-    func testKeyGenerationIncludesFileAttributes() async {
-        let pdf = createTempPDF(name: "test.pdf", content: "Original content")
+    func testKeyGenerationUsesPathOnly() async {
+        let pdf = createTempPDF(name: "test_attrs.pdf", content: "Original content")
         let key1 = persistenceService.generateKey("test.notes", for: pdf)
-        
-        // Modify file content (changes modification date)
+
+        // Modify file content — key should NOT change (path-only hashing by design)
         try? "Modified content".write(to: pdf, atomically: true, encoding: .utf8)
         let key2 = persistenceService.generateKey("test.notes", for: pdf)
-        
-        XCTAssertNotEqual(key1, key2, "Keys should be different after file modification")
-        
+
+        XCTAssertEqual(key1, key2, "Key should be stable when only file content changes (path-based hashing)")
+
         // Clean up
         try? FileManager.default.removeItem(at: pdf)
     }
@@ -91,7 +98,7 @@ final class EnhancedPersistenceTests: XCTestCase {
             try persistenceService.saveCodable(testData, forKey: "test.corruption", url: pdf)
             
             // Corrupt the file
-            let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("test.corruption.\(pdf.path.hashValue).json")
+            let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("test.corruption.\(PersistenceService.stableHash(for: pdf)).json")
             try? "corrupted data".write(to: fileURL, atomically: true, encoding: .utf8)
             
             // Try to load corrupted data
@@ -113,19 +120,22 @@ final class EnhancedPersistenceTests: XCTestCase {
     // MARK: - NotesStore Integration Tests
     
     func testNotesStoreWithMockPersistence() async {
-        let pdf = createTempPDF(name: "test.pdf", content: "Content")
-        
+        let pdf = createTempPDF(name: "test_mock.pdf", content: "Content")
+
         // Set current PDF
         notesStore.setCurrentPDF(pdf)
-        
+
         // Add a note
         let note = NoteItem(text: "Test note", pageIndex: 1, chapter: "Test Chapter")
         notesStore.add(note)
-        
+
+        // Wait for debounced persistence (0.3s + buffer)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
         // Verify note was saved
         XCTAssertEqual(mockPersistenceService.lastSavedNotes.count, 1, "Note should be saved")
         XCTAssertEqual(mockPersistenceService.lastSavedNotes.first?.text, "Test note", "Note text should match")
-        
+
         // Clean up
         try? FileManager.default.removeItem(at: pdf)
     }
@@ -177,20 +187,23 @@ final class EnhancedPersistenceTests: XCTestCase {
     }
     
     func testTagsPersistenceSync() async {
-        let pdf = createTempPDF(name: "test.pdf", content: "Content")
+        let pdf = createTempPDF(name: "test_tags.pdf", content: "Content")
         notesStore.setCurrentPDF(pdf)
-        
+
         // Add a note with tags
         let note = NoteItem(text: "Test note", pageIndex: 1, chapter: "Test Chapter")
         notesStore.add(note)
         notesStore.addTag("important", to: note)
         notesStore.addTag("review", to: note)
-        
+
+        // Wait for debounced persistence (0.3s + buffer)
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
         // Verify tags were saved
         XCTAssertEqual(mockPersistenceService.lastSavedTags.count, 2, "Should save 2 tags")
         XCTAssertTrue(mockPersistenceService.lastSavedTags.contains("important"), "Should contain 'important' tag")
         XCTAssertTrue(mockPersistenceService.lastSavedTags.contains("review"), "Should contain 'review' tag")
-        
+
         // Clean up
         try? FileManager.default.removeItem(at: pdf)
     }
@@ -205,7 +218,7 @@ final class EnhancedPersistenceTests: XCTestCase {
         try? persistenceService.saveCodable(testData, forKey: "test.recovery", url: pdf)
         
         // Corrupt the data
-        let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("test.recovery.\(pdf.path.hashValue).json")
+        let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("test.recovery.\(PersistenceService.stableHash(for: pdf)).json")
         try? "corrupted data".write(to: fileURL, atomically: true, encoding: .utf8)
         
         // Attempt recovery

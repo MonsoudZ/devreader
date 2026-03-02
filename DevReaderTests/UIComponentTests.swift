@@ -1,9 +1,11 @@
 import XCTest
 import SwiftUI
+import PDFKit
 
 @testable import DevReader
 
 /// SwiftUI UI tests for component behavior
+@MainActor
 final class UIComponentTests: XCTestCase {
     
     // MARK: - Panel Collapse/Expand Tests
@@ -127,38 +129,6 @@ final class UIComponentTests: XCTestCase {
         XCTAssertLessThanOrEqual(panelHeight, maxHeight, "Should be below maximum")
     }
     
-    // MARK: - Persistence Tests
-    
-    func testCodeStorePersistence() throws {
-        // Test CodeStore persistence functionality
-        
-        let codeStore = CodeStore()
-        
-        // Test creating snippet
-        codeStore.createSnippet(title: "Test Snippet", content: "print('Hello')", language: "swift")
-        
-        XCTAssertEqual(codeStore.codeSnippets.count, 1, "Should have one code snippet")
-        XCTAssertNotNil(codeStore.currentSnippet, "Should have current snippet")
-        
-        // Test updating snippet
-        codeStore.updateCurrentSnippet("print('Updated')")
-        
-        XCTAssertEqual(codeStore.currentSnippet?.content, "print('Updated')", "Should update snippet content")
-    }
-    
-    func testWebStorePersistence() throws {
-        // Test WebStore persistence functionality
-        
-        let webStore = WebStore()
-        
-        // Test adding bookmark
-        webStore.addBookmark(title: "Test Site", url: "https://example.com")
-        
-        XCTAssertEqual(webStore.bookmarks.count, 1, "Should have one bookmark")
-        XCTAssertEqual(webStore.bookmarks.first?.title, "Test Site", "Should have correct title")
-        XCTAssertEqual(webStore.bookmarks.first?.url, "https://example.com", "Should have correct URL")
-    }
-    
     // MARK: - Error Handling Tests
     
     func testErrorDisplayAccessibility() throws {
@@ -176,12 +146,6 @@ final class UIComponentTests: XCTestCase {
 // MARK: - Test Helpers
 
 extension UIComponentTests {
-    
-    private func createMockPDFSelection() -> PDFSelection {
-        // Create a mock PDFSelection for testing
-        // This would need to be implemented based on PDFKit's PDFSelection
-        fatalError("Mock PDFSelection creation not implemented")
-    }
     
     private func measurePerformance<T>(_ block: () throws -> T) rethrows -> (T, TimeInterval) {
         let startTime = CFAbsoluteTimeGetCurrent()

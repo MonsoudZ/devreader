@@ -220,10 +220,8 @@ enum ErrorRecoveryService {
 enum CorruptionType: String, CaseIterable {
     case empty = "Empty file"
     case invalidHeader = "Invalid PDF header"
-    case nullBytes = "Contains null bytes"
     case tooSmall = "File too small"
-    case corrupted = "General corruption"
-    
+
     var description: String {
         return self.rawValue
     }

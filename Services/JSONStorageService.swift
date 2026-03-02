@@ -252,9 +252,9 @@ enum JSONStorageService {
     
     // MARK: - Backup System
     static func createBackup() throws -> URL {
-        let timestamp = DateFormatter().apply {
-            $0.dateFormat = "yyyy-MM-dd_HH-mm-ss"
-        }.string(from: Date())
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
+        let timestamp = formatter.string(from: Date())
         
         let backupURL = backupDirectory.appendingPathComponent("backup_\(timestamp).json")
         let allData = try exportAllData()
@@ -341,19 +341,4 @@ enum JSONStorageService {
     }
 }
 
-// MARK: - Data Structures
-struct DevReaderData: Codable {
-    let library: [LibraryItem]
-    let recentDocuments: [String]
-    let pinnedDocuments: [String]
-    let exportDate: Date
-    let version: String
-}
 
-// MARK: - Extensions
-extension DateFormatter {
-    func apply(_ block: (DateFormatter) -> Void) -> DateFormatter {
-        block(self)
-        return self
-    }
-}

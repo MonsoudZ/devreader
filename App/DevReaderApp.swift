@@ -90,7 +90,7 @@ struct DevReaderApp: App {
                         .frame(minWidth: 800, minHeight: 560)
                 }
                 .sheet(isPresented: $appEnvironment.isShowingSettings) {
-                    SettingsView() // or ModernSettingsView if you prefer the newer UI
+                    SettingsView()
                         .environmentObject(appEnvironment)
                         .frame(minWidth: 720, minHeight: 520)
                 }

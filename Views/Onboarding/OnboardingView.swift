@@ -198,14 +198,4 @@ struct OnboardingStepFactory {
 		]
 	}
 	
-	// Future: Add methods for localized steps, custom steps, etc.
-	static func createLocalizedSteps(for locale: Locale) -> [OnboardingStep] {
-		// Implementation for localized onboarding
-		return createDefaultSteps()
-	}
-	
-	static func createCustomSteps(_ customSteps: [OnboardingStep]) -> [OnboardingStep] {
-		// Implementation for custom onboarding flows
-		return customSteps
-	}
 }
