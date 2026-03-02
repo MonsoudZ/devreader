@@ -38,6 +38,11 @@ final class AppEnvironment: ObservableObject {
         pdf.onPDFChanged = { [weak notes] url in
             notes?.setCurrentPDF(url)
         }
+
+        // Restore last-opened PDF after init completes and wiring is in place
+        Task { @MainActor in
+            pdf.restoreLastOpenedPDF()
+        }
     }
 
     // MARK: - Convenience

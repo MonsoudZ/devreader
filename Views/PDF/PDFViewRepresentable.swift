@@ -91,8 +91,7 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			guard let doc = sender.document, let page = sender.currentPage else { return }
 			let idx = doc.index(for: page)
 			if idx != parent.pdf.currentPageIndex && idx >= 0 && idx < doc.pageCount {
-				parent.pdf.currentPageIndex = idx
-				parent.pdf.updateReadingProgress()
+				parent.pdf.didScrollToPage(idx)
 			}
 		}
 

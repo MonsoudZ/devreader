@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 import AppKit
 
 // Right panel tabs
-enum RightTab { case notes, code, web }
+enum RightTab: String { case notes, code, web }
 
 struct ContentView: View {
     // MARK: - Environment & App Config
@@ -22,7 +22,7 @@ struct ContentView: View {
     @AppStorage("ui.showingRightPanel") private var showingRightPanel = true
 
     // MARK: - Local UI State
-    @State private var rightTab: RightTab = .notes
+    @AppStorage("ui.rightTab") private var rightTab: RightTab = .notes
     @State private var showingAlert = false
     @State private var alertTitle = ""
     @State private var alertMessage = ""
@@ -242,6 +242,18 @@ struct ContentView: View {
                         appEnvironment.enhancedToastCenter.showInfo("Info", toast.message)
                     }
                 }
+            }
+            .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: .pdfLoadError)
+            .sink { notification in
+                let filename = (notification.object as? URL)?.lastPathComponent ?? "Unknown file"
+                appEnvironment.enhancedToastCenter.showError(
+                    "PDF Load Failed",
+                    "Could not open \"\(filename)\". The file may be missing, corrupted, or inaccessible.",
+                    category: .fileOperation,
+                    duration: 6
+                )
             }
             .store(in: &cancellables)
     }

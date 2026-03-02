@@ -30,7 +30,7 @@ enum PDFError: LocalizedError {
 @MainActor
 final class PDFController: ObservableObject {
 	@Published var document: PDFDocument?
-	@Published var currentPageIndex: Int = 0 { didSet { persist() } }
+	@Published var currentPageIndex: Int = 0
 	@Published var outlineMap: [Int: String] = [:]
 	@Published var bookmarks: Set<Int> = []
 	@Published private(set) var recentDocuments: [URL] = []
@@ -58,6 +58,9 @@ final class PDFController: ObservableObject {
 	private var loadingTask: Task<Void, Never>?
 	private var isHandlingMemoryPressure = false
 	private var memoryPressureObserver: Any?
+	private var persistPageWorkItem: DispatchWorkItem?
+	private var isRestoringPage = false
+	private let lastOpenedPDFKey = "DevReader.LastOpenedPDF.v1"
 
 	init() {
 		restore()
@@ -111,10 +114,8 @@ final class PDFController: ObservableObject {
         // Check if we're already loading the same PDF
         guard currentPDFURL != url else { return }
 
-        // Save current page BEFORE cleanup resets currentPageIndex to 0
-        if let currentURL = currentPDFURL {
-            savePageForPDF(currentURL)
-        }
+        // Flush any pending debounced persistence before switching
+        flushPendingPersistence()
 
         // Clean up previous PDF state
         await cleanupCurrentPDF()
@@ -224,7 +225,10 @@ final class PDFController: ObservableObject {
 			
 			self.document = doc
 			self.currentPDFURL = url
-			
+
+			// Persist last-opened PDF for state restoration
+			PersistenceService.saveCodable(url, forKey: lastOpenedPDFKey)
+
 			// For large PDFs, defer outline building to avoid blocking
 			if isLargePDF {
 				LoadingStateManager.shared.updatePDFProgress(0.8, message: "Building outline for large PDF...")
@@ -253,7 +257,7 @@ final class PDFController: ObservableObject {
 	}
 	
 	func clearSession() {
-		if let currentURL = currentPDFURL { savePageForPDF(currentURL) }
+		flushPendingPersistence()
 		document = nil
 		currentPDFURL = nil
 		currentPageIndex = 0
@@ -261,6 +265,7 @@ final class PDFController: ObservableObject {
 		bookmarks.removeAll()
 		UserDefaults.standard.removeObject(forKey: sessionKey)
         clearSearch()
+		PersistenceService.delete(forKey: lastOpenedPDFKey)
 		onPDFChanged?(nil)
 	}
 	
@@ -270,7 +275,7 @@ final class PDFController: ObservableObject {
 		guard let doc = document, pageIndex >= 0, pageIndex < doc.pageCount else { return }
 		currentPageIndex = pageIndex
 		updateReadingProgress()
-		if let url = currentPDFURL { savePageForPDF(url) }
+		schedulePersistPage()
 	}
 	
 	func updateReadingProgress() {
@@ -462,14 +467,48 @@ final class PDFController: ObservableObject {
 		}
 	}
 	
-	private func persist() { if let url = currentPDFURL { savePageForPDF(url) } }
-	
+	// MARK: - Debounced Page Persistence
+
+	/// Called by the coordinator when the user scrolls to a new page.
+	func didScrollToPage(_ index: Int) {
+		guard let doc = document, index >= 0, index < doc.pageCount else { return }
+		currentPageIndex = index
+		updateReadingProgress()
+		schedulePersistPage()
+	}
+
+	private func schedulePersistPage() {
+		guard !isRestoringPage else { return }
+		persistPageWorkItem?.cancel()
+		let workItem = DispatchWorkItem { [weak self] in
+			Task { @MainActor in
+				guard let self = self, let url = self.currentPDFURL else { return }
+				self.savePageForPDF(url)
+			}
+		}
+		persistPageWorkItem = workItem
+		DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+	}
+
+	/// Immediately flush any pending debounced persistence (call on lifecycle events / PDF switch).
+	func flushPendingPersistence() {
+		if let workItem = persistPageWorkItem {
+			workItem.cancel()
+			persistPageWorkItem = nil
+			if let url = currentPDFURL {
+				savePageForPDF(url)
+			}
+		}
+	}
+
     func savePageForPDF(_ url: URL) {
         let pageKey = PersistenceService.key(sessionKey, for: url)
         PersistenceService.saveInt(currentPageIndex, forKey: pageKey)
     }
-	
+
     private func loadPageForPDF(_ url: URL) {
+		isRestoringPage = true
+		defer { isRestoringPage = false }
         let pageKey = PersistenceService.key(sessionKey, for: url)
         let savedPage = PersistenceService.loadInt(forKey: pageKey) ?? 0
 		if savedPage > 0 {
@@ -706,6 +745,15 @@ final class PDFController: ObservableObject {
 				logError(AppLog.pdf, "Session recovery failed")
 			}
 		}
+	}
+
+	// MARK: - State Restoration
+
+	/// Restore the last-opened PDF on app launch.
+	func restoreLastOpenedPDF() {
+		guard let url: URL = PersistenceService.loadCodable(URL.self, forKey: lastOpenedPDFKey),
+			  FileManager.default.fileExists(atPath: url.path) else { return }
+		load(url: url)
 	}
 
 #if DEBUG

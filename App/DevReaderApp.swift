@@ -199,8 +199,9 @@ struct DevReaderApp: App {
                 // Good place to refresh transient permissions or resume tasks
                 break
             case .inactive, .background:
-                // Flush any pending persistence if needed
-                break
+                // Flush any pending debounced persistence
+                appEnvironment.pdfController.flushPendingPersistence()
+                appEnvironment.libraryStore.flushPendingPersistence()
             @unknown default:
                 break
             }
