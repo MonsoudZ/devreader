@@ -155,9 +155,9 @@ struct NoteRow: View {
 		isNewNote = false
 	}
 	
-	private func cancelEdit() { 
+	private func cancelEdit() {
 		editingText = item.text
-		editingTitle = ""
+		editingTitle = item.title
 		isEditing = false
 		if isNewNote {
 			// If this was a new note and user cancels, remove it

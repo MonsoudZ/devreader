@@ -7,8 +7,10 @@ enum JSONStorageService {
     
     // MARK: - Storage Locations
     static var appSupportURL: URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            .appendingPathComponent("DevReader", isDirectory: true)
+        guard let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return FileManager.default.temporaryDirectory.appendingPathComponent("DevReader", isDirectory: true)
+        }
+        return base.appendingPathComponent("DevReader", isDirectory: true)
     }
     
     static var dataDirectory: URL {

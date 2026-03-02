@@ -52,10 +52,15 @@ class WebStore: ObservableObject {
     func exportBookmarks() -> URL? {
         let exportURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("DevReader_Bookmarks.html")
-        
+
         let html = generateBookmarksHTML()
-        try? html.write(to: exportURL, atomically: true, encoding: .utf8)
-        return exportURL
+        do {
+            try html.write(to: exportURL, atomically: true, encoding: .utf8)
+            return exportURL
+        } catch {
+            logError(AppLog.app, "Failed to export bookmarks: \(error)")
+            return nil
+        }
     }
     
     private func extractTitle(from urlString: String) -> String {

@@ -11,7 +11,7 @@ enum RightTab { case notes, code, web }
 struct ContentView: View {
     // MARK: - Environment & App Config
     @EnvironmentObject private var appEnvironment: AppEnvironment
-    @EnvironmentObject private var toastCenter: ToastCenter  // kept for compatibility with existing toasts
+    // Legacy ToastCenter removed — all toasts now use EnhancedToastCenter via appEnvironment
     @AppStorage("defaultZoom") private var defaultZoom: Double = 1.0
     @AppStorage("highlightColor") private var highlightColor: String = "yellow"
     @AppStorage("autoSave") private var autoSave: Bool = true

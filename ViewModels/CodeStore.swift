@@ -55,9 +55,14 @@ class CodeStore: ObservableObject {
     func exportSnippet(_ snippet: CodeSnippet) -> URL? {
         let exportURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("\(snippet.title).\(snippet.language)")
-        
-        try? snippet.content.write(to: exportURL, atomically: true, encoding: .utf8)
-        return exportURL
+
+        do {
+            try snippet.content.write(to: exportURL, atomically: true, encoding: .utf8)
+            return exportURL
+        } catch {
+            logError(AppLog.app, "Failed to export snippet: \(error)")
+            return nil
+        }
     }
     
     // MARK: - Persistence

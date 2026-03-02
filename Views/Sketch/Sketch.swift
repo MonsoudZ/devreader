@@ -130,7 +130,10 @@ struct SketchView: View {
 			try container.encode(pathData, forKey: .pathData)
 
 			// Encode color
-			let nsColor = NSColor(color).usingColorSpace(.deviceRGB) ?? NSColor.black.usingColorSpace(.deviceRGB)!
+			guard let nsColor = NSColor(color).usingColorSpace(.deviceRGB) ?? NSColor.black.usingColorSpace(.deviceRGB) else {
+				try container.encode(Data(), forKey: .colorData)
+				return
+			}
 			let components: [CGFloat] = [nsColor.redComponent, nsColor.greenComponent, nsColor.blueComponent, nsColor.alphaComponent]
 			let colorData = try JSONEncoder().encode(components)
 			try container.encode(colorData, forKey: .colorData)

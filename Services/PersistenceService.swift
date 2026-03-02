@@ -20,16 +20,11 @@ enum PersistenceService {
         return base + "." + hash
     }
 
-    // Enhanced key generation for production safety
-    static func key(_ base: String, for url: URL?, withScope scope: String? = nil) -> String {
+    // Scoped key generation for namespacing
+    static func key(_ base: String, for url: URL?, withScope scope: String) -> String {
         guard let u = url else { return base }
         let hash = stableHash(for: u)
-
-        if let scope = scope {
-            return base + "." + scope + "." + hash
-        }
-
-        return base + "." + hash
+        return base + "." + scope + "." + hash
     }
     
     // Initialize JSON-based persistence

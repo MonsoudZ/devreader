@@ -36,7 +36,13 @@ class SimpleBackgroundPersistenceService: ObservableObject {
         // Use background queue for large operations
         await Task.detached(priority: .utility) {
             let envelope = LibraryEnvelope(items: items)
-            try? JSONStorageService.save(envelope, to: JSONStorageService.libraryPath())
+            do {
+                try JSONStorageService.save(envelope, to: JSONStorageService.libraryPath())
+            } catch {
+                await MainActor.run {
+                    logError(AppLog.app, "Failed to save library items in background: \(error)")
+                }
+            }
         }.value
 
         // Complete

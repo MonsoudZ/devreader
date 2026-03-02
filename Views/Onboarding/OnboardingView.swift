@@ -104,8 +104,8 @@ struct OnboardingView: View {
 		}
 		.frame(minWidth: 600, minHeight: 500)
 		.onAppear {
-			// Mark onboarding as seen when it appears
-			didSeeOnboarding = true
+			// Reset to first step when view appears
+			currentStep = 0
 		}
 		.onKeyPress(.rightArrow) {
 			if currentStep < steps.count - 1 {

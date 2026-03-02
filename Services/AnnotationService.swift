@@ -1,5 +1,6 @@
 import Foundation
 import PDFKit
+import os.log
 
 enum AnnotationService {
     private static let folderName = "Annotations"
@@ -19,16 +20,25 @@ enum AnnotationService {
 
     static func saveAnnotatedCopy(document: PDFDocument?, originalURL: URL?) {
         guard let doc = document, let src = originalURL, let dst = annotatedURL(for: src) else { return }
-        if let data = doc.dataRepresentation() { try? data.write(to: dst) }
+        guard let data = doc.dataRepresentation() else { return }
+        do {
+            try data.write(to: dst)
+        } catch {
+            logError(AppLog.pdf, "Failed to save annotated copy: \(error)")
+        }
     }
-    
+
     static func saveAnnotatedCopyAsync(document: PDFDocument?, originalURL: URL?) async {
-        // Get data representation on the main thread (PDFDocument is not Sendable)
         guard let doc = document, let src = originalURL, let dst = annotatedURL(for: src) else { return }
         guard let data = doc.dataRepresentation() else { return }
-        // Write to disk on background thread
         await Task.detached {
-            try? data.write(to: dst)
+            do {
+                try data.write(to: dst)
+            } catch {
+                await MainActor.run {
+                    logError(AppLog.pdf, "Failed to save annotated copy async: \(error)")
+                }
+            }
         }.value
     }
 }

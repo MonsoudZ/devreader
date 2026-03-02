@@ -62,20 +62,24 @@ class SketchStore: ObservableObject {
     }
     
     func exportSketch(_ sketch: SketchItem) -> URL? {
-        // Export sketch as image
         guard let image = NSImage(data: sketch.canvasData) else { return nil }
-        
+
         let exportURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("\(sketch.title).png")
-        
+
         guard let tiffData = image.tiffRepresentation,
               let bitmapRep = NSBitmapImageRep(data: tiffData),
               let pngData = bitmapRep.representation(using: .png, properties: [:]) else {
             return nil
         }
-        
-        try? pngData.write(to: exportURL)
-        return exportURL
+
+        do {
+            try pngData.write(to: exportURL)
+            return exportURL
+        } catch {
+            logError(AppLog.app, "Failed to export sketch: \(error)")
+            return nil
+        }
     }
     
     func getSketches(for pdfURL: URL) -> [SketchItem] {

@@ -35,17 +35,13 @@ final class NotesStore: ObservableObject {
 	}
 
 	func add(_ note: NoteItem) {
-		LoadingStateManager.shared.startLoading(.general, message: "Adding note...")
 		items.insert(note, at: 0)
 		schedulePersist()
-		LoadingStateManager.shared.stopLoading(.general)
 	}
 
 	func remove(_ note: NoteItem) {
-		LoadingStateManager.shared.startLoading(.general, message: "Removing note...")
 		items.removeAll { $0.id == note.id }
 		schedulePersist()
-		LoadingStateManager.shared.stopLoading(.general)
 	}
 
 	func updateText(_ text: String, for note: NoteItem) {

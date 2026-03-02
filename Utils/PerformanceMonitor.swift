@@ -98,16 +98,7 @@ class PerformanceMonitor: ObservableObject {
     }
 
     private func optimizeMemoryUsage() async {
-        await clearImageCaches()
-        await forceGarbageCollection()
-    }
-
-    private func clearImageCaches() async {
         URLCache.shared.removeAllCachedResponses()
-    }
-
-    private func forceGarbageCollection() async {
-        autoreleasepool { }
     }
 
     // MARK: - Performance Tracking

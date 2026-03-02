@@ -45,7 +45,7 @@ struct DevReaderApp: App {
     // Shared app-wide state (stores, controllers, services)
     @StateObject private var deps           = AppDependencies()
     @StateObject private var appEnvironment = AppEnvironment.shared        // central hub
-    @StateObject private var toastCenter    = ToastCenter()                // legacy toasts (kept for compat)
+    // Legacy ToastCenter removed — all toasts now use EnhancedToastCenter
 
     // Init error surfacing
     @State private var initializationError: String?
@@ -68,7 +68,7 @@ struct DevReaderApp: App {
                 // DI + shared state
                 .environment(\.deps, deps)
                 .environmentObject(appEnvironment)
-                .environmentObject(toastCenter)
+                // .environmentObject(toastCenter) — removed, using EnhancedToastCenter
 
                 // Global overlays (non-blocking toast + error overlay)
                 // Enhanced, categorized toasts:

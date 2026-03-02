@@ -166,8 +166,10 @@ class ErrorMessageManager: ObservableObject {
                 RecoveryAction(
                     title: "Check Connection",
                     style: .secondary,
-                    action: { 
-                        NSWorkspace.shared.open(URL(string: "https://www.apple.com/support/")!)
+                    action: {
+                        if let url = URL(string: "https://www.apple.com/support/") {
+                            NSWorkspace.shared.open(url)
+                        }
                         ErrorMessageManager.shared.dismissError()
                     }
                 )
@@ -186,8 +188,10 @@ class ErrorMessageManager: ObservableObject {
                 RecoveryAction(
                     title: "Open System Preferences",
                     style: .primary,
-                    action: { 
-                        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy")!)
+                    action: {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy") {
+                            NSWorkspace.shared.open(url)
+                        }
                         ErrorMessageManager.shared.dismissError()
                     }
                 ),
