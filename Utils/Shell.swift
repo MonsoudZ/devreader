@@ -4,6 +4,11 @@ enum Shell {
     /// Default execution timeout in seconds
     private static let executionTimeout: TimeInterval = 30
 
+    private struct RunResult {
+        let output: String
+        let exitCode: Int32
+    }
+
     @discardableResult
     static func run(_ cmd: String, args: [String] = [], stdin: String? = nil) -> String {
         let p = Process()
@@ -51,12 +56,118 @@ enum Shell {
         return out + (err.isEmpty ? "" : "\n[stderr]\n" + err)
     }
 
+    private static func runReturningResult(_ cmd: String, args: [String] = [], stdin: String? = nil) -> RunResult {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: cmd)
+        p.arguments = args
+        let inPipe = Pipe(); let outPipe = Pipe(); let errPipe = Pipe()
+        p.standardOutput = outPipe; p.standardError = errPipe; p.standardInput = inPipe
+        do { try p.run() } catch { return RunResult(output: "Failed to start: \(error)", exitCode: -1) }
+        if let s = stdin { inPipe.fileHandleForWriting.write(Data(s.utf8)) }
+        inPipe.fileHandleForWriting.closeFile()
+
+        var outData = Data()
+        var errData = Data()
+        let outGroup = DispatchGroup()
+        let errGroup = DispatchGroup()
+
+        outGroup.enter()
+        DispatchQueue.global(qos: .userInitiated).async {
+            outData = outPipe.fileHandleForReading.readDataToEndOfFile()
+            outGroup.leave()
+        }
+        errGroup.enter()
+        DispatchQueue.global(qos: .userInitiated).async {
+            errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+            errGroup.leave()
+        }
+
+        let deadline = Date().addingTimeInterval(executionTimeout)
+        while p.isRunning && Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        if p.isRunning {
+            p.terminate()
+            return RunResult(output: "[Execution timed out after \(Int(executionTimeout))s]", exitCode: -1)
+        }
+
+        outGroup.wait()
+        errGroup.wait()
+
+        let out = String(data: outData, encoding: .utf8) ?? ""
+        let err = String(data: errData, encoding: .utf8) ?? ""
+        let output = out + (err.isEmpty ? "" : "\n[stderr]\n" + err)
+        return RunResult(output: output, exitCode: p.terminationStatus)
+    }
+
+    private static func runWithFallbackReturningResult(_ primary: String, fallback: String, args: [String] = [], stdin: String? = nil) -> RunResult {
+        if FileManager.default.fileExists(atPath: primary) {
+            let result = runReturningResult(primary, args: args, stdin: stdin)
+            if result.exitCode != -1 {
+                return result
+            }
+        }
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.arguments = [fallback] + args
+
+        let outPipe = Pipe()
+        let errPipe = Pipe()
+        process.standardOutput = outPipe
+        process.standardError = errPipe
+
+        if let stdin = stdin {
+            let inPipe = Pipe()
+            process.standardInput = inPipe
+            inPipe.fileHandleForWriting.write(stdin.data(using: .utf8) ?? Data())
+            inPipe.fileHandleForWriting.closeFile()
+        }
+
+        do {
+            try process.run()
+        } catch {
+            return RunResult(output: "Error: \(error.localizedDescription). Please ensure \(fallback) is installed and available in PATH.", exitCode: -1)
+        }
+
+        var outData = Data()
+        var errData = Data()
+        let group = DispatchGroup()
+
+        group.enter()
+        DispatchQueue.global(qos: .userInitiated).async {
+            outData = outPipe.fileHandleForReading.readDataToEndOfFile()
+            group.leave()
+        }
+        group.enter()
+        DispatchQueue.global(qos: .userInitiated).async {
+            errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+            group.leave()
+        }
+
+        let deadline = Date().addingTimeInterval(executionTimeout)
+        while process.isRunning && Date() < deadline {
+            Thread.sleep(forTimeInterval: 0.1)
+        }
+        if process.isRunning {
+            process.terminate()
+            return RunResult(output: "[Execution timed out after \(Int(executionTimeout))s]", exitCode: -1)
+        }
+
+        group.wait()
+
+        let out = String(data: outData, encoding: .utf8) ?? ""
+        let err = String(data: errData, encoding: .utf8) ?? ""
+        let output = out + (err.isEmpty ? "" : "\n[stderr]\n" + err)
+        return RunResult(output: output, exitCode: process.terminationStatus)
+    }
+
     private static func runWithFallback(_ primary: String, fallback: String, args: [String] = [], stdin: String? = nil) -> String {
         // Try primary path first
         if FileManager.default.fileExists(atPath: primary) {
-            let result = run(primary, args: args, stdin: stdin)
-            if !result.contains("Failed to start:") && !result.contains("command not found") {
-                return result
+            let result = runReturningResult(primary, args: args, stdin: stdin)
+            if result.exitCode != -1 {
+                return result.output
             }
         }
 
@@ -157,6 +268,12 @@ enum Shell {
                 result = compileAndRunRust(tempFile: tempFile)
             case "java":
                 result = compileAndRunJava(tempFile: tempFile)
+            case "typescript":
+                result = runWithFallback("/usr/local/bin/npx", fallback: "npx", args: ["tsx", tempFile.path])
+            case "kotlin":
+                result = runWithFallback("/usr/local/bin/kotlinc", fallback: "kotlinc", args: ["-script", tempFile.path])
+            case "dart":
+                result = runWithFallback("/usr/local/bin/dart", fallback: "dart", args: ["run", tempFile.path])
             case "sql":
                 result = runWithFallback("/usr/bin/sqlite3", fallback: "sqlite3", args: [":memory:", ".read", tempFile.path])
             default:
@@ -197,6 +314,9 @@ enum Shell {
         case "c++", "cpp": return "cpp"
         case "rust": return "rs"
         case "java": return "java"
+        case "typescript": return "ts"
+        case "kotlin": return "kt"
+        case "dart": return "dart"
         case "sql": return "sql"
         default: return "txt"
         }
@@ -208,18 +328,18 @@ enum Shell {
         defer { try? FileManager.default.removeItem(at: outputFile) }
 
         // Try gcc first, then clang as fallback
-        let compileResult = runWithFallback("/usr/bin/gcc", fallback: "gcc", args: ["-o", outputFile.path, tempFile.path])
-        if !compileResult.contains("error") && !compileResult.contains("Failed to start:") {
+        let compileResult = runWithFallbackReturningResult("/usr/bin/gcc", fallback: "gcc", args: ["-o", outputFile.path, tempFile.path])
+        if compileResult.exitCode == 0 {
             return run(outputFile.path)
         }
 
         // Try clang as fallback
-        let clangResult = runWithFallback("/usr/bin/clang", fallback: "clang", args: ["-o", outputFile.path, tempFile.path])
-        if !clangResult.contains("error") && !clangResult.contains("Failed to start:") {
+        let clangResult = runWithFallbackReturningResult("/usr/bin/clang", fallback: "clang", args: ["-o", outputFile.path, tempFile.path])
+        if clangResult.exitCode == 0 {
             return run(outputFile.path)
         }
 
-        return "Compilation failed. Please ensure gcc or clang is installed.\nGCC Error: \(compileResult)\nClang Error: \(clangResult)"
+        return "Compilation failed. Please ensure gcc or clang is installed.\nGCC Error: \(compileResult.output)\nClang Error: \(clangResult.output)"
     }
 
     private static func compileAndRunCpp(tempFile: URL) -> String {
@@ -228,18 +348,18 @@ enum Shell {
         defer { try? FileManager.default.removeItem(at: outputFile) }
 
         // Try g++ first, then clang++ as fallback
-        let compileResult = runWithFallback("/usr/bin/g++", fallback: "g++", args: ["-o", outputFile.path, tempFile.path])
-        if !compileResult.contains("error") && !compileResult.contains("Failed to start:") {
+        let compileResult = runWithFallbackReturningResult("/usr/bin/g++", fallback: "g++", args: ["-o", outputFile.path, tempFile.path])
+        if compileResult.exitCode == 0 {
             return run(outputFile.path)
         }
 
         // Try clang++ as fallback
-        let clangResult = runWithFallback("/usr/bin/clang++", fallback: "clang++", args: ["-o", outputFile.path, tempFile.path])
-        if !clangResult.contains("error") && !clangResult.contains("Failed to start:") {
+        let clangResult = runWithFallbackReturningResult("/usr/bin/clang++", fallback: "clang++", args: ["-o", outputFile.path, tempFile.path])
+        if clangResult.exitCode == 0 {
             return run(outputFile.path)
         }
 
-        return "Compilation failed. Please ensure g++ or clang++ is installed.\nG++ Error: \(compileResult)\nClang++ Error: \(clangResult)"
+        return "Compilation failed. Please ensure g++ or clang++ is installed.\nG++ Error: \(compileResult.output)\nClang++ Error: \(clangResult.output)"
     }
 
     private static func compileAndRunRust(tempFile: URL) -> String {
@@ -247,23 +367,33 @@ enum Shell {
             .appendingPathExtension("\(UUID().uuidString).out")
         defer { try? FileManager.default.removeItem(at: outputFile) }
 
-        let compileResult = runWithFallback("/usr/local/bin/rustc", fallback: "rustc", args: ["-o", outputFile.path, tempFile.path])
-        if !compileResult.contains("error") && !compileResult.contains("Failed to start:") {
+        let compileResult = runWithFallbackReturningResult("/usr/local/bin/rustc", fallback: "rustc", args: ["-o", outputFile.path, tempFile.path])
+        if compileResult.exitCode == 0 {
             return run(outputFile.path)
         }
-        return "Rust compilation failed. Please ensure rustc is installed.\nError: \(compileResult)"
+        return "Rust compilation failed. Please ensure rustc is installed.\nError: \(compileResult.output)"
     }
 
     private static func compileAndRunJava(tempFile: URL) -> String {
-        let compileResult = runWithFallback("/usr/bin/javac", fallback: "javac", args: [tempFile.path])
-        if !compileResult.contains("error") && !compileResult.contains("Failed to start:") {
-            let className = tempFile.deletingPathExtension().lastPathComponent
-            let runResult = runWithFallback("/usr/bin/java", fallback: "java", args: [className])
-            // Clean up .class file
-            let classFile = tempFile.deletingPathExtension().appendingPathExtension("class")
-            try? FileManager.default.removeItem(at: classFile)
-            return runResult
+        // Use a dedicated temp directory so inner classes (Foo$Bar.class) are cleaned up
+        let javaDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("devreader_java_\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: javaDir) }
+
+        do {
+            try FileManager.default.createDirectory(at: javaDir, withIntermediateDirectories: true)
+        } catch {
+            return "Failed to create temp directory: \(error.localizedDescription)"
         }
-        return "Java compilation failed. Please ensure javac and java are installed.\nError: \(compileResult)"
+
+        let compileResult = runWithFallbackReturningResult(
+            "/usr/bin/javac", fallback: "javac",
+            args: ["-d", javaDir.path, tempFile.path]
+        )
+        if compileResult.exitCode == 0 {
+            let className = tempFile.deletingPathExtension().lastPathComponent
+            return runWithFallback("/usr/bin/java", fallback: "java", args: ["-cp", javaDir.path, className])
+        }
+        return "Java compilation failed. Please ensure javac and java are installed.\nError: \(compileResult.output)"
     }
 }

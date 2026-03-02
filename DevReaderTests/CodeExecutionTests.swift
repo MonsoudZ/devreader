@@ -31,7 +31,7 @@ final class CodeExecutionTests: XCTestCase {
     
     func testAllLanguagesSupported() {
         let allLanguages = CodeLang.allCases
-        XCTAssertEqual(allLanguages.count, 12, "Should support 12 programming languages")
+        XCTAssertEqual(allLanguages.count, 15, "Should support 15 programming languages")
         
         // Test that all languages have proper file extensions
         for language in allLanguages {
@@ -54,6 +54,9 @@ final class CodeExecutionTests: XCTestCase {
             .cpp: "cpp",
             .rust: "rs",
             .java: "java",
+            .typescript: "ts",
+            .kotlin: "kt",
+            .dart: "dart",
             .sql: "sql"
         ]
         
@@ -241,6 +244,9 @@ final class CodeExecutionTests: XCTestCase {
             ("cpp", "cpp"),
             ("rust", "rs"),
             ("java", "java"),
+            ("typescript", "ts"),
+            ("kotlin", "kt"),
+            ("dart", "dart"),
             ("sql", "sql")
         ]
         

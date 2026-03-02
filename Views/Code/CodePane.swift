@@ -53,6 +53,12 @@ struct ScratchRunner: View {
 			return "// Write some quick test code and run it.\n// Example:\n// fn main() { println!(\"hello from DevReader!\"); }"
 		case .java:
 			return "// Write some quick test code and run it.\n// Example:\n// public class Main {\n//     public static void main(String[] args) {\n//         System.out.println(\"hello from DevReader!\");\n//     }\n// }"
+		case .typescript:
+			return "// Write some quick test code and run it.\n// Example:\n// console.log('hello from DevReader!');"
+		case .kotlin:
+			return "// Write some quick test code and run it.\n// Example:\n// println(\"hello from DevReader!\")"
+		case .dart:
+			return "// Write some quick test code and run it.\n// Example:\n// print('hello from DevReader!');"
 		case .sql:
 			return "-- Write some quick test code and run it.\n-- Example:\n-- SELECT 'hello from DevReader!' as message;"
 		}
@@ -120,6 +126,9 @@ enum CodeLang: String, CaseIterable {
 	case cpp = "C++"
 	case rust = "Rust"
 	case java = "Java"
+	case typescript = "TypeScript"
+	case kotlin = "Kotlin"
+	case dart = "Dart"
 	case sql = "SQL"
 	
 	var command: String {
@@ -135,6 +144,9 @@ enum CodeLang: String, CaseIterable {
 		case .cpp: return "g++"
 		case .rust: return "rustc"
 		case .java: return "javac"
+		case .typescript: return "npx"
+		case .kotlin: return "kotlinc"
+		case .dart: return "dart"
 		case .sql: return "sqlite3"
 		}
 	}
@@ -152,6 +164,9 @@ enum CodeLang: String, CaseIterable {
 		case .cpp: return ["-o", "temp_cpp", "-"]
 		case .rust: return ["-o", "temp_rust", "-"]
 		case .java: return ["-"]
+		case .typescript: return ["tsx"]
+		case .kotlin: return ["-script"]
+		case .dart: return ["run"]
 		case .sql: return ["-"]
 		}
 	}
@@ -169,6 +184,9 @@ enum CodeLang: String, CaseIterable {
 		case .cpp: return "cpp"
 		case .rust: return "rs"
 		case .java: return "java"
+		case .typescript: return "ts"
+		case .kotlin: return "kt"
+		case .dart: return "dart"
 		case .sql: return "sql"
 		}
 	}
@@ -185,6 +203,9 @@ enum CodeLang: String, CaseIterable {
 		case .cpp: return "cpp"
 		case .rust: return "rust"
 		case .java: return "java"
+		case .typescript: return "typescript"
+		case .kotlin: return "kotlin"
+		case .dart: return "dart"
 		case .sql: return "sql"
 		}
 	}
@@ -725,10 +746,13 @@ struct ExportOptionsView: View {
 		case .cpp: return "cpp"
 		case .rust: return "rust"
 		case .java: return "java"
+		case .typescript: return "typescript"
+		case .kotlin: return "kotlin"
+		case .dart: return "dart"
 		case .sql: return "sql"
 		}
 	}
-	
+
 	private func getEmacsMode() -> String {
 		switch language {
 		case .python: return "python"
@@ -741,10 +765,13 @@ struct ExportOptionsView: View {
 		case .cpp: return "c++"
 		case .rust: return "rust"
 		case .java: return "java"
+		case .typescript: return "typescript"
+		case .kotlin: return "kotlin"
+		case .dart: return "dart"
 		case .sql: return "sql"
 		}
 	}
-	
+
 }
 
 struct FallbackCodeEditor: View {

@@ -438,7 +438,7 @@ final class PDFController: ObservableObject {
 	func recoverFromCorruption() {
 		log(AppLog.pdf, "Attempting to recover from session corruption...")
 		Task {
-			let success = await ErrorRecoveryService.recoverSession()
+			let success = await ErrorRecoveryService.resetCorruptedState()
 			if success {
 				clearSession()
 				document = nil

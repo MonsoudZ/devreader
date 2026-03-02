@@ -190,8 +190,8 @@ enum ErrorRecoveryService {
     }
     
     // MARK: - Session Recovery
-    static func recoverSession() async -> Bool {
-        os_log("Starting session recovery", log: logger, type: .info)
+    static func resetCorruptedState() async -> Bool {
+        os_log("Starting corrupted state reset", log: logger, type: .info)
         
         do {
             // Clear potentially corrupted UserDefaults

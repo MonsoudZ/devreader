@@ -176,12 +176,12 @@ final class ErrorRecoveryTests: XCTestCase {
     
     // MARK: - Session Recovery Tests
     
-    func testRecoverSession() async {
-        // Test session recovery
-        let success = await ErrorRecoveryService.recoverSession()
-        
-        // Session recovery should complete (may succeed or fail depending on current state)
-        XCTAssertTrue(success == true || success == false, "Session recovery should complete")
+    func testResetCorruptedState() async {
+        // Test corrupted state reset
+        let success = await ErrorRecoveryService.resetCorruptedState()
+
+        // Corrupted state reset should complete (may succeed or fail depending on current state)
+        XCTAssertTrue(success == true || success == false, "Corrupted state reset should complete")
     }
     
     // MARK: - Integration Tests

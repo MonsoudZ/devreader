@@ -7,13 +7,17 @@ import os.log
 @MainActor
 class LoadingStateManager: ObservableObject {
     static let shared = LoadingStateManager()
-    
+
     @Published var isLoading = false
     @Published var loadingMessage = ""
     @Published var loadingProgress: Double = 0.0
     @Published var loadingType: LoadingType = .general
-    
+
+    private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "LoadingState")
+    private static let safetyTimeoutSeconds: TimeInterval = 30
+
     private var loadingTasks: Set<String> = []
+    private var timeoutTasks: [String: Task<Void, Never>] = [:]
     
     enum LoadingType {
         case general
@@ -35,13 +39,22 @@ class LoadingStateManager: ObservableObject {
     func startLoading(_ type: LoadingType, message: String, progress: Double = 0.0) {
         let taskId = "\(type)"
         loadingTasks.insert(taskId)
-        
+
         isLoading = true
         loadingType = type
         loadingMessage = message
         loadingProgress = progress
-        
-        os_log("Started loading: %{public}@ - %{public}@", log: OSLog.default, type: .info, String(describing: type), message)
+
+        os_log("Started loading: %{public}@ - %{public}@", log: Self.logger, type: .info, String(describing: type), message)
+
+        // Cancel any existing timeout for this task before scheduling a new one
+        timeoutTasks[taskId]?.cancel()
+        timeoutTasks[taskId] = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: UInt64(Self.safetyTimeoutSeconds * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            os_log("Safety timeout fired for: %{public}@", log: Self.logger, type: .error, taskId)
+            self?.stopLoading(type)
+        }
     }
     
     func updateProgress(_ progress: Double, message: String? = nil) {
@@ -54,18 +67,23 @@ class LoadingStateManager: ObservableObject {
     func stopLoading(_ type: LoadingType) {
         let taskId = "\(type)"
         loadingTasks.remove(taskId)
-        
+
+        timeoutTasks[taskId]?.cancel()
+        timeoutTasks[taskId] = nil
+
         if loadingTasks.isEmpty {
             isLoading = false
             loadingMessage = ""
             loadingProgress = 0.0
         }
-        
-        os_log("Stopped loading: %{public}@", log: OSLog.default, type: .info, String(describing: type))
+
+        os_log("Stopped loading: %{public}@", log: Self.logger, type: .info, String(describing: type))
     }
     
     func stopAllLoading() {
         loadingTasks.removeAll()
+        for task in timeoutTasks.values { task.cancel() }
+        timeoutTasks.removeAll()
         isLoading = false
         loadingMessage = ""
         loadingProgress = 0.0

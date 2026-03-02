@@ -189,8 +189,15 @@ final class EnhancedToastCenter: ObservableObject {
         )
     }
     
+    // MARK: - Dismissal
+
+    /// Dismisses a toast, correctly resetting `isShowingCriticalError` when needed.
+    func dismissToast(_ toast: EnhancedToast) {
+        removeToast(toast)
+    }
+
     // MARK: - Private Methods
-    
+
     private func addToast(_ toast: EnhancedToast) {
         // Remove oldest toast if we're at the limit
         if toasts.count >= maxToasts {
@@ -260,7 +267,7 @@ struct EnhancedToastOverlay: ViewModifier {
             VStack(alignment: .trailing, spacing: 12) {
                 ForEach(center.toasts) { toast in
                     EnhancedToastView(toast: toast) {
-                        center.toasts.removeAll { $0.id == toast.id }
+                        center.dismissToast(toast)
                     }
                 }
             }
