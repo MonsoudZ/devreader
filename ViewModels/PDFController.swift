@@ -66,17 +66,22 @@ final class PDFController: ObservableObject {
 	func load(url: URL) {
 		// Cancel any existing loading task
 		loadingTask?.cancel()
-		
+
 		// Create new loading task with debouncing
 		loadingTask = Task {
 			// Small delay to debounce rapid switching
 			try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-			
+
 			// Check if task was cancelled
 			guard !Task.isCancelled else { return }
-			
+
 			await loadAsync(url: url)
 		}
+	}
+
+	/// Convenience alias used by ContentView
+	func open(url: URL) {
+		load(url: url)
 	}
 	
 	private func cleanupCurrentPDF() async {
@@ -524,8 +529,8 @@ final class PDFController: ObservableObject {
 		}
 		
 		// Reset the flag after a delay to prevent immediate re-triggering
-		DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-			self.isHandlingMemoryPressure = false
+		DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+			self?.isHandlingMemoryPressure = false
 		}
 	}
 	
@@ -574,13 +579,8 @@ final class PDFController: ObservableObject {
 	
 	/// Apply aggressive memory optimizations for large PDFs or low memory systems
 	private func applyAggressiveMemoryOptimizations() {
-		// Force garbage collection
 		autoreleasepool {
-			// Clear any cached data
 			clearImageCaches()
-			
-			// Reduce memory footprint
-			NotificationCenter.default.post(name: .memoryPressure, object: nil)
 		}
 	}
 	

@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import Combine
 import os.log
 
@@ -6,38 +7,26 @@ import os.log
 @MainActor
 class EnhancedPersistenceService: ObservableObject {
     static let shared = EnhancedPersistenceService()
-    
+
     private let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "EnhancedPersistence")
     private let fileManager = FileManager.default
-    
+
     private init() {}
-    
+
     // MARK: - Collision-Safe Key Generation
-    
-    /// Generates a collision-safe key that includes file attributes
+
+    /// Generates a collision-safe key using a deterministic SHA256 hash of the file path.
+    /// Only the path is used — file attributes like size/date are excluded to prevent
+    /// keys from changing when files are touched, synced, or re-downloaded.
     func generateKey(_ base: String, for url: URL?, scope: String? = nil) -> String {
         guard let url = url else { return base }
-        
-        // Get comprehensive file attributes for collision prevention
-        let attributes = (try? fileManager.attributesOfItem(atPath: url.path)) ?? [:]
-        let fileSize = attributes[.size] as? Int64 ?? 0
-        let modificationDate = attributes[.modificationDate] as? Date ?? Date()
-        let creationDate = attributes[.creationDate] as? Date ?? Date()
-        
-        // Create a unique identifier using multiple file attributes
-        let pathHash = url.path.hashValue
-        let sizeHash = fileSize.hashValue
-        let modHash = modificationDate.timeIntervalSince1970.hashValue
-        let creationHash = creationDate.timeIntervalSince1970.hashValue
-        
-        // Combine all attributes for maximum uniqueness
-        let compositeHash = "\(pathHash)\(sizeHash)\(modHash)\(creationHash)".hashValue
-        let uniqueId = String(abs(compositeHash))
-        
+
+        let uniqueId = PersistenceService.stableHash(for: url)
+
         if let scope = scope {
             return "\(base).\(scope).\(uniqueId)"
         }
-        
+
         return "\(base).\(uniqueId)"
     }
     
@@ -58,32 +47,37 @@ class EnhancedPersistenceService: ObservableObject {
         do {
             // Encode data
             let jsonData = try JSONEncoder().encode(data)
-            
+
             // Write to temporary file
             try jsonData.write(to: tempURL)
-            
-            // Create backup if original exists
+
             if fileManager.fileExists(atPath: fileURL.path) {
+                // Create backup before replacing
+                try? fileManager.removeItem(at: backupURL)
                 try fileManager.copyItem(at: fileURL, to: backupURL)
+
+                // Atomic replace
+                _ = try fileManager.replaceItem(at: fileURL, withItemAt: tempURL, backupItemName: nil, options: [], resultingItemURL: nil)
+            } else {
+                // First write — just move into place
+                try fileManager.moveItem(at: tempURL, to: fileURL)
             }
-            
-            // Atomic move to final location
-            _ = try fileManager.replaceItem(at: fileURL, withItemAt: tempURL, backupItemName: nil, options: [], resultingItemURL: nil)
-            
+
             // Clean up backup
             try? fileManager.removeItem(at: backupURL)
-            
+
             os_log("Atomically saved data for key: %{public}@", log: logger, type: .debug, finalKey)
-            
+
         } catch {
             // Restore from backup if atomic write failed
             if fileManager.fileExists(atPath: backupURL.path) {
-                try? fileManager.replaceItem(at: fileURL, withItemAt: backupURL, backupItemName: nil, options: [], resultingItemURL: nil)
+                try? fileManager.removeItem(at: fileURL)
+                try? fileManager.moveItem(at: backupURL, to: fileURL)
             }
-            
+
             // Clean up temporary file
             try? fileManager.removeItem(at: tempURL)
-            
+
             os_log("Failed to save data atomically for key: %{public}@, error: %{public}@", log: logger, type: .error, finalKey, error.localizedDescription)
             throw error
         }
@@ -181,6 +175,29 @@ class EnhancedPersistenceService: ObservableObject {
     /// Clears all persistence data
     func clearAllData() {
         try? fileManager.removeItem(at: JSONStorageService.dataDirectory)
+        JSONStorageService.ensureDirectories()
         os_log("Cleared all persistence data", log: logger, type: .info)
+    }
+
+    // MARK: - Backup Restore
+
+    /// Attempts to restore from a `.bak` file for the given key.
+    /// Returns `true` if a backup was found and restored.
+    func restoreBackup(forKey key: String, url: URL? = nil) -> Bool {
+        let finalKey = generateKey(key, for: url)
+        let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
+        let backupURL = fileURL.appendingPathExtension("bak")
+
+        guard fileManager.fileExists(atPath: backupURL.path) else { return false }
+
+        do {
+            try? fileManager.removeItem(at: fileURL)
+            try fileManager.copyItem(at: backupURL, to: fileURL)
+            os_log("Restored backup for key: %{public}@", log: logger, type: .info, finalKey)
+            return true
+        } catch {
+            os_log("Backup restore failed for key: %{public}@, error: %{public}@", log: logger, type: .error, finalKey, error.localizedDescription)
+            return false
+        }
     }
 }

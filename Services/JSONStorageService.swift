@@ -25,17 +25,17 @@ enum JSONStorageService {
     }
     
     static func notesPath(for pdfURL: URL) -> URL {
-        let hash = String(pdfURL.path.hashValue)
+        let hash = PersistenceService.stableHash(for: pdfURL)
         return dataDirectory.appendingPathComponent("notes_\(hash).json")
     }
-    
+
     static func sessionPath(for pdfURL: URL) -> URL {
-        let hash = String(pdfURL.path.hashValue)
+        let hash = PersistenceService.stableHash(for: pdfURL)
         return dataDirectory.appendingPathComponent("session_\(hash).json")
     }
-    
+
     static func bookmarksPath(for pdfURL: URL) -> URL {
-        let hash = String(pdfURL.path.hashValue)
+        let hash = PersistenceService.stableHash(for: pdfURL)
         return dataDirectory.appendingPathComponent("bookmarks_\(hash).json")
     }
     

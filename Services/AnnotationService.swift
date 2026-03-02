@@ -13,7 +13,7 @@ enum AnnotationService {
 
     static func annotatedURL(for original: URL) -> URL? {
         guard let dir = appSupportDirectory() else { return nil }
-        let file = String(original.path.hashValue) + ".pdf"
+        let file = PersistenceService.stableHash(for: original) + ".pdf"
         return dir.appendingPathComponent(file)
     }
 

@@ -325,16 +325,7 @@ extension ErrorMessageManager {
 
 // MARK: - Extensions (errorOverlay moved to ErrorDisplayView.swift)
 
-// MARK: - Notification Names
-
-extension Notification.Name {
-    static let openPDF = Notification.Name("openPDF")
-    static let showHelp = Notification.Name("showHelp")
-    static let addNote = Notification.Name("addNote")
-    static let showToast = Notification.Name("showToast")
-    static let importPDFs = Notification.Name("importPDFs")
-    static let toggleSearch = Notification.Name("toggleSearch")
-}
+// Notification.Name definitions live in Utils/Extensions.swift (single source of truth).
 
 // MARK: - Toast Message Model
 

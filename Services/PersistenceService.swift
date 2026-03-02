@@ -1,42 +1,34 @@
 import Foundation
+import CryptoKit
 import os.log
 
 // Enhanced persistence service with JSON file-based storage
 enum PersistenceService {
     private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "Persistence")
     private static var hasMigrated = false
-    
+
+    /// Deterministic hash of a URL path using SHA256. Stable across app launches.
+    static func stableHash(for url: URL) -> String {
+        let digest = SHA256.hash(data: Data(url.path.utf8))
+        return digest.prefix(16).map { String(format: "%02x", $0) }.joined()
+    }
+
     // Builds a namespaced key with proper PDF scoping to prevent collisions
     static func key(_ base: String, for url: URL?) -> String {
         guard let u = url else { return base }
-        
-        // Use a more robust hash that includes file attributes to prevent collisions
-        let fileAttributes = (try? FileManager.default.attributesOfItem(atPath: u.path)) ?? [:]
-        let fileSize = fileAttributes[.size] as? Int ?? 0
-        let modificationDate = fileAttributes[.modificationDate] as? Date ?? Date()
-        
-        // Create a composite hash that includes path, size, and modification date
-        let compositeString = "\(u.path)\(fileSize)\(modificationDate.timeIntervalSince1970)"
-        let hash = String(compositeString.hashValue)
-        
+        let hash = stableHash(for: u)
         return base + "." + hash
     }
-    
+
     // Enhanced key generation for production safety
     static func key(_ base: String, for url: URL?, withScope scope: String? = nil) -> String {
         guard let u = url else { return base }
-        
-        let fileAttributes = (try? FileManager.default.attributesOfItem(atPath: u.path)) ?? [:]
-        let fileSize = fileAttributes[.size] as? Int ?? 0
-        let modificationDate = fileAttributes[.modificationDate] as? Date ?? Date()
-        
-        let compositeString = "\(u.path)\(fileSize)\(modificationDate.timeIntervalSince1970)"
-        let hash = String(compositeString.hashValue)
-        
+        let hash = stableHash(for: u)
+
         if let scope = scope {
             return base + "." + scope + "." + hash
         }
-        
+
         return base + "." + hash
     }
     

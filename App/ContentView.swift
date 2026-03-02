@@ -37,9 +37,16 @@ struct ContentView: View {
             HStack(spacing: 0) {
                 // Left: Library list (optional)
                 if showingLibrary {
-                    LibraryPane()
-                        .frame(minWidth: 260, idealWidth: 300, maxWidth: 360)
-                        .overlay(dividerVertical, alignment: .trailing)
+                    LibraryPane(
+                        library: appEnvironment.libraryStore,
+                        pdf: appEnvironment.pdfController,
+                        open: { item in
+                            appEnvironment.pdfController.open(url: item.url)
+                            NotificationCenter.default.post(name: .currentPDFURLDidChange, object: nil, userInfo: ["url": item.url])
+                        }
+                    )
+                    .frame(minWidth: 260, idealWidth: 300, maxWidth: 360)
+                    .overlay(dividerVertical, alignment: .trailing)
                 }
 
                 // Center: PDF + header
@@ -151,7 +158,7 @@ struct ContentView: View {
             Group {
                 switch rightTab {
                 case .notes:
-                    NotesPane()
+                    NotesPane(pdf: appEnvironment.pdfController, notes: appEnvironment.notesStore)
                 case .code:
                     CodePane()
                 case .web:
@@ -198,11 +205,11 @@ struct ContentView: View {
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .captureHighlight)
-            .sink { _ in appEnvironment.pdfController.captureCurrentSelectionAsNote() }
+            .sink { _ in appEnvironment.pdfController.captureHighlightToNotes() }
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .addStickyNote)
-            .sink { _ in appEnvironment.pdfController.addStickyNoteAtCurrentPage() }
+            .sink { _ in appEnvironment.pdfController.addStickyNote() }
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .showHelp)
@@ -228,7 +235,7 @@ struct ContentView: View {
                 Task { @MainActor in
                     // Notes: NotesStore persists on mutations; this is a “checkpoint” hook.
                     // Library: do a background save so large libraries don’t block UI.
-                    await BackgroundPersistenceService.shared.saveLibraryItems(appEnvironment.libraryStore.items)
+                    await SimpleBackgroundPersistenceService.shared.saveLibraryItems(appEnvironment.libraryStore.items)
                 }
             }
     }
@@ -262,7 +269,7 @@ struct ContentView: View {
             Task { @MainActor in
                 LoadingStateManager.shared.startImport("Importing PDFs…")
                 defer { LoadingStateManager.shared.stopImport() }
-                _ = await BackgroundPersistenceService.shared.importPDFs(urls)
+                _ = await SimpleBackgroundPersistenceService.shared.importPDFs(urls)
                 appEnvironment.libraryStore.add(urls: urls)
             }
         }
@@ -303,16 +310,4 @@ struct ContentView: View {
     }
 }
 
-// MARK: - Convenience Notification Names (your app already uses these in DevReaderApp)
-extension Notification.Name {
-    static let openPDF        = Notification.Name("DevReader.openPDF")
-    static let importPDFs     = Notification.Name("DevReader.importPDFs")
-    static let closePDF       = Notification.Name("DevReader.closePDF")
-    static let toggleSearch   = Notification.Name("DevReader.toggleSearch")
-    static let toggleLibrary  = Notification.Name("DevReader.toggleLibrary")
-    static let toggleNotes    = Notification.Name("DevReader.toggleNotes")
-    static let captureHighlight = Notification.Name("DevReader.captureHighlight")
-    static let addStickyNote  = Notification.Name("DevReader.addStickyNote")
-    static let showHelp       = Notification.Name("DevReader.showHelp")
-    static let showOnboarding = Notification.Name("DevReader.showOnboarding")
-}
+// Notification.Name definitions live in Utils/Extensions.swift (single source of truth).
