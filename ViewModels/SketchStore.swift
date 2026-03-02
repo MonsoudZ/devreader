@@ -18,6 +18,10 @@ class SketchStore: ObservableObject {
     // MARK: - Sketch Management
     
     func createSketch(for pdfURL: URL, pageIndex: Int) {
+        createSketch(for: pdfURL, pageIndex: pageIndex, canvasData: Data(), strokesData: nil)
+    }
+
+    func createSketch(for pdfURL: URL, pageIndex: Int, canvasData: Data, strokesData: Data?) {
         let sketch = SketchItem(
             id: UUID(),
             pdfURL: pdfURL,
@@ -25,10 +29,11 @@ class SketchStore: ObservableObject {
             title: "Sketch \(sketches.count + 1)",
             createdDate: Date(),
             lastModified: Date(),
-            canvasData: Data(),
+            canvasData: canvasData,
+            strokesData: strokesData,
             isExported: false
         )
-        
+
         sketches.append(sketch)
         currentSketch = sketch
         saveSketches()
@@ -111,9 +116,10 @@ struct SketchItem: Identifiable, Codable {
     let createdDate: Date
     var lastModified: Date
     var canvasData: Data
+    var strokesData: Data?
     var isExported: Bool
-    
-    init(id: UUID = UUID(), pdfURL: URL, pageIndex: Int, title: String, createdDate: Date, lastModified: Date, canvasData: Data, isExported: Bool = false) {
+
+    init(id: UUID = UUID(), pdfURL: URL, pageIndex: Int, title: String, createdDate: Date, lastModified: Date, canvasData: Data, strokesData: Data? = nil, isExported: Bool = false) {
         self.id = id
         self.pdfURL = pdfURL
         self.pageIndex = pageIndex
@@ -121,6 +127,7 @@ struct SketchItem: Identifiable, Codable {
         self.createdDate = createdDate
         self.lastModified = lastModified
         self.canvasData = canvasData
+        self.strokesData = strokesData
         self.isExported = isExported
     }
 }

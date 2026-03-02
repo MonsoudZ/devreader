@@ -45,39 +45,95 @@ struct SketchView: View {
 	var pdfURL: URL? = nil
 	var pageIndex: Int = 0
 	
-    struct Stroke: Identifiable, Codable { 
-		let id = UUID()
+    struct Stroke: Identifiable, Codable {
+		let id: UUID
 		var path: Path
 		var color: Color
 		var lineWidth: CGFloat
-		
-		// Custom coding for Path and Color
+
+		private enum PathCommand: Codable {
+			case move(x: CGFloat, y: CGFloat)
+			case line(x: CGFloat, y: CGFloat)
+			case quadCurve(toX: CGFloat, toY: CGFloat, controlX: CGFloat, controlY: CGFloat)
+			case curve(toX: CGFloat, toY: CGFloat, c1X: CGFloat, c1Y: CGFloat, c2X: CGFloat, c2Y: CGFloat)
+			case closeSubpath
+		}
+
 		enum CodingKeys: String, CodingKey {
 			case id, pathData, colorData, lineWidth
 		}
-		
+
 		init(path: Path, color: Color, lineWidth: CGFloat) {
+			self.id = UUID()
 			self.path = path
 			self.color = color
 			self.lineWidth = lineWidth
 		}
-		
+
 		init(from decoder: Decoder) throws {
 			let container = try decoder.container(keyedBy: CodingKeys.self)
-			let _ = try container.decode(Data.self, forKey: .pathData)
-			let _ = try container.decode(Data.self, forKey: .colorData)
+			id = try container.decode(UUID.self, forKey: .id)
 			lineWidth = try container.decode(CGFloat.self, forKey: .lineWidth)
-			
-			// Reconstruct Path and Color from data
-			path = Path()
-			color = Color.black
+
+			// Decode path
+			let pathData = try container.decode(Data.self, forKey: .pathData)
+			let commands = try JSONDecoder().decode([PathCommand].self, from: pathData)
+			var decodedPath = Path()
+			for cmd in commands {
+				switch cmd {
+				case .move(let x, let y):
+					decodedPath.move(to: CGPoint(x: x, y: y))
+				case .line(let x, let y):
+					decodedPath.addLine(to: CGPoint(x: x, y: y))
+				case .quadCurve(let toX, let toY, let cx, let cy):
+					decodedPath.addQuadCurve(to: CGPoint(x: toX, y: toY), control: CGPoint(x: cx, y: cy))
+				case .curve(let toX, let toY, let c1X, let c1Y, let c2X, let c2Y):
+					decodedPath.addCurve(to: CGPoint(x: toX, y: toY), control1: CGPoint(x: c1X, y: c1Y), control2: CGPoint(x: c2X, y: c2Y))
+				case .closeSubpath:
+					decodedPath.closeSubpath()
+				}
+			}
+			path = decodedPath
+
+			// Decode color
+			let colorData = try container.decode(Data.self, forKey: .colorData)
+			let components = try JSONDecoder().decode([CGFloat].self, from: colorData)
+			if components.count == 4 {
+				color = Color(.sRGB, red: components[0], green: components[1], blue: components[2], opacity: components[3])
+			} else {
+				color = Color.black
+			}
 		}
-		
+
 		func encode(to encoder: Encoder) throws {
 			var container = encoder.container(keyedBy: CodingKeys.self)
-			try container.encode(Data(), forKey: .pathData) // Simplified for now
-			try container.encode(Data(), forKey: .colorData)
+			try container.encode(id, forKey: .id)
 			try container.encode(lineWidth, forKey: .lineWidth)
+
+			// Encode path
+			var commands: [PathCommand] = []
+			path.forEach { element in
+				switch element {
+				case .move(to: let p):
+					commands.append(.move(x: p.x, y: p.y))
+				case .line(to: let p):
+					commands.append(.line(x: p.x, y: p.y))
+				case .quadCurve(to: let p, control: let c):
+					commands.append(.quadCurve(toX: p.x, toY: p.y, controlX: c.x, controlY: c.y))
+				case .curve(to: let p, control1: let c1, control2: let c2):
+					commands.append(.curve(toX: p.x, toY: p.y, c1X: c1.x, c1Y: c1.y, c2X: c2.x, c2Y: c2.y))
+				case .closeSubpath:
+					commands.append(.closeSubpath)
+				}
+			}
+			let pathData = try JSONEncoder().encode(commands)
+			try container.encode(pathData, forKey: .pathData)
+
+			// Encode color
+			let nsColor = NSColor(color).usingColorSpace(.deviceRGB) ?? NSColor.black.usingColorSpace(.deviceRGB)!
+			let components: [CGFloat] = [nsColor.redComponent, nsColor.greenComponent, nsColor.blueComponent, nsColor.alphaComponent]
+			let colorData = try JSONEncoder().encode(components)
+			try container.encode(colorData, forKey: .colorData)
 		}
 	}
 	
@@ -230,17 +286,26 @@ struct SketchView: View {
 	
 	private func saveSketch() {
 		guard let pdfURL = pdfURL else { return }
-		
-		// Create sketch using the store's method
-		// The store will handle the SketchItem creation
-		
-		sketchStore.createSketch(for: pdfURL, pageIndex: pageIndex)
+
+		// Encode strokes to JSON
+		let strokesData = try? JSONEncoder().encode(strokes)
+
+		// Render canvas image as TIFF data
+		let image = render()
+		let canvasData = image.tiffRepresentation ?? Data()
+
+		sketchStore.createSketch(for: pdfURL, pageIndex: pageIndex, canvasData: canvasData, strokesData: strokesData)
 	}
-	
+
 	private func loadSketch() {
-		// Load sketches from the store
-		// Note: This is a simplified implementation
-		// In a full implementation, you'd reconstruct strokes from the image data
+		guard let pdfURL = pdfURL else { return }
+
+		let existing = sketchStore.getSketches(for: pdfURL, pageIndex: pageIndex)
+		guard let latest = existing.last, let data = latest.strokesData else { return }
+
+		if let decoded = try? JSONDecoder().decode([Stroke].self, from: data) {
+			strokes = decoded
+		}
 	}
 	
 	// MARK: - Window Resizing Support
