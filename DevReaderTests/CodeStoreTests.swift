@@ -39,7 +39,9 @@ final class CodeStoreTests: XCTestCase {
 
     func testDeleteCurrentSnippet() {
         store.createSnippet(title: "ToDelete", content: "delete me", language: "swift")
-        let snippet = store.codeSnippets.first!
+        guard let snippet = store.codeSnippets.first else {
+            XCTFail("Store should have a snippet"); return
+        }
 
         store.deleteSnippet(snippet)
 
@@ -51,7 +53,9 @@ final class CodeStoreTests: XCTestCase {
         store.createSnippet(title: "First", content: "1", language: "swift")
         store.createSnippet(title: "Second", content: "2", language: "swift")
 
-        let first = store.codeSnippets.first!
+        guard let first = store.codeSnippets.first else {
+            XCTFail("Store should have snippets"); return
+        }
         store.deleteSnippet(first)
 
         XCTAssertEqual(store.codeSnippets.count, 1)
@@ -62,7 +66,9 @@ final class CodeStoreTests: XCTestCase {
 
     func testExportSnippet() {
         store.createSnippet(title: "Export", content: "export content", language: "swift")
-        let snippet = store.codeSnippets.first!
+        guard let snippet = store.codeSnippets.first else {
+            XCTFail("Store should have a snippet"); return
+        }
 
         let exportURL = store.exportSnippet(snippet)
 

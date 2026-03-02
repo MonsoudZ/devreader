@@ -31,7 +31,9 @@ final class WebStoreTests: XCTestCase {
         store.addBookmark(title: "Apple", url: "https://apple.com")
         store.addBookmark(title: "Google", url: "https://google.com")
 
-        let bookmark = store.bookmarks.first!
+        guard let bookmark = store.bookmarks.first else {
+            XCTFail("Store should have bookmarks"); return
+        }
         store.deleteBookmark(bookmark)
 
         XCTAssertEqual(store.bookmarks.count, 1)

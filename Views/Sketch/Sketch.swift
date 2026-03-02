@@ -1,6 +1,7 @@
 import SwiftUI
 import PDFKit
 import UniformTypeIdentifiers
+import os.log
 
 final class SketchWindow: NSObject, NSWindowDelegate {
 	private var window: NSWindow!
@@ -290,7 +291,13 @@ struct SketchView: View {
 		guard let pdfURL = pdfURL else { return }
 
 		// Encode strokes to JSON
-		let strokesData = try? JSONEncoder().encode(strokes)
+		let strokesData: Data?
+		do {
+			strokesData = try JSONEncoder().encode(strokes)
+		} catch {
+			os_log("Failed to encode sketch strokes: %{public}@", type: .error, error.localizedDescription)
+			strokesData = nil
+		}
 
 		// Render canvas image as TIFF data
 		let image = render()

@@ -77,8 +77,8 @@ final class ErrorRecoveryTests: XCTestCase {
         
         // Test with valid data
         let validCorruption = ErrorRecoveryService.detectDataCorruption(in: validData)
-        // Some environments may flag minimal PDFs; allow zero or benign warnings
-        XCTAssertTrue(validCorruption.isEmpty || validCorruption.count >= 0, "Detection should not crash")
+        // Minimal test PDF is only 14 bytes, so .tooSmall is expected; no .invalidHeader though
+        XCTAssertFalse(validCorruption.contains(.invalidHeader), "Valid PDF header should not be flagged")
         
         // Test with corrupted data
         let corruptedCorruption = ErrorRecoveryService.detectDataCorruption(in: corruptedData)

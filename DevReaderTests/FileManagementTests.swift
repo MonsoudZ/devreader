@@ -5,7 +5,7 @@ final class FileManagementTests: XCTestCase {
     
     override func tearDownWithError() throws {
         // Clean up test files
-        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
         let testPath = documentsPath.appendingPathComponent("DevReader/CodeFiles")
         
         if FileManager.default.fileExists(atPath: testPath.path) {
@@ -270,7 +270,8 @@ final class FileManagementTests: XCTestCase {
     // MARK: - File Management Tests
     
     func testRecentFilesManagement() {
-        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { XCTFail("No documents directory"); return }
+
         let codeFilesPath = documentsPath.appendingPathComponent("DevReader/CodeFiles")
         
         do {
@@ -302,7 +303,8 @@ final class FileManagementTests: XCTestCase {
     }
     
     func testFileDeletion() {
-        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { XCTFail("No documents directory"); return }
+
         let codeFilesPath = documentsPath.appendingPathComponent("DevReader/CodeFiles")
         
         do {

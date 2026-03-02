@@ -242,7 +242,7 @@ struct NotesPane: View {
 			
 			for (index, p) in pages.enumerated() {
 				let text = currentPageNotes[p]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-				let include = (allowedPages == nil) || allowedPages!.contains(p)
+				let include = allowedPages.map { $0.contains(p) } ?? true
 				if include, !text.isEmpty { 
 					md += "### Page \(p+1)\n\n\(text)\n\n" 
 				}
@@ -260,9 +260,9 @@ struct NotesPane: View {
 			
 			// Filter notes with tag/date/bookmark filters
 			let filteredItems = currentNotesItems.filter { item in
-				let tagOk = currentSelectedTag == nil || item.tags.contains(currentSelectedTag!)
+				let tagOk = currentSelectedTag.map { item.tags.contains($0) } ?? true
 				let dateOk = !currentUseDateFilter || (item.date >= Calendar.current.startOfDay(for: currentDateFrom) && item.date <= Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: currentDateTo)) ?? currentDateTo)
-				let bmOk = (allowedPages == nil) || allowedPages!.contains(item.pageIndex)
+				let bmOk = allowedPages.map { $0.contains(item.pageIndex) } ?? true
 				return tagOk && dateOk && bmOk
 			}
 			

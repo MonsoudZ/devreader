@@ -57,10 +57,17 @@ final class PDFController: ObservableObject {
 	private let annotationFolderName = "Annotations"
 	private var loadingTask: Task<Void, Never>?
 	private var isHandlingMemoryPressure = false
-	
-	init() { 
+	private var memoryPressureObserver: Any?
+
+	init() {
 		restore()
 		setupMemoryPressureHandler()
+	}
+
+	deinit {
+		if let observer = memoryPressureObserver {
+			NotificationCenter.default.removeObserver(observer)
+		}
 	}
 	
 	func load(url: URL) {
@@ -487,8 +494,7 @@ final class PDFController: ObservableObject {
 	}
 	
 	private func setupMemoryPressureHandler() {
-		// Listen for memory pressure notifications
-		NotificationCenter.default.addObserver(
+		memoryPressureObserver = NotificationCenter.default.addObserver(
 			forName: .memoryPressure,
 			object: nil,
 			queue: .main

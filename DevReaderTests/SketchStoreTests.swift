@@ -51,7 +51,9 @@ final class SketchStoreTests: XCTestCase {
 
     func testDeleteSketch() {
         store.createSketch(for: testPDFURL, pageIndex: 0)
-        let sketch = store.sketches.first!
+        guard let sketch = store.sketches.first else {
+            XCTFail("Store should have a sketch"); return
+        }
 
         store.deleteSketch(sketch)
 
