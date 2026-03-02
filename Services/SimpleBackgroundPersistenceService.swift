@@ -28,11 +28,7 @@ class SimpleBackgroundPersistenceService: ObservableObject {
         // Use background queue for large operations
         await Task.detached(priority: .utility) {
             let envelope = LibraryEnvelope(items: items)
-            let data = try? JSONEncoder().encode(envelope)
-            if let data = data {
-                let url = JSONStorageService.libraryPath()
-                try? data.write(to: url)
-            }
+            try? JSONStorageService.save(envelope, to: JSONStorageService.libraryPath())
         }.value
         
         // Complete

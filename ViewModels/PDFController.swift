@@ -824,13 +824,17 @@ final class PDFController: ObservableObject {
 	}
 	
 	private func getCurrentChapter() -> String? {
-		// Try to get chapter from outline
-		guard let outline = document?.outlineRoot else { return nil }
-		
-		// Find the chapter that contains the current page
-		// Note: PDFOutline doesn't have a direct children property
-		// This is a simplified implementation
-		return outline.label
+		// Look up current page in the outline map built by rebuildOutlineMap()
+		if let chapter = outlineMap[currentPageIndex] {
+			return chapter
+		}
+		// Walk backwards to find the nearest preceding chapter heading
+		for i in stride(from: currentPageIndex - 1, through: 0, by: -1) {
+			if let chapter = outlineMap[i] {
+				return chapter
+			}
+		}
+		return document?.outlineRoot?.label
 	}
 	
 	func addStickyNote() {

@@ -25,9 +25,9 @@ final class SketchWindow: NSObject, NSWindowDelegate {
 		window.center()
 		let vc = NSHostingView(rootView: SketchView(
 			size: size,
-			onInsert: { image in
+			onInsert: { [weak self] image in
 				onDone(image)
-				self.window.close()
+				self?.window.close()
 			},
 			pdfURL: pdfURL,
 			pageIndex: pageIndex

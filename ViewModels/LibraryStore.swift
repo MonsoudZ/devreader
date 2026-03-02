@@ -98,9 +98,10 @@ final class LibraryStore: ObservableObject {
 	}
 	
 	func refreshItem(_ item: LibraryItem) {
-		// Update item with current file information
+		// Update item with current file information, preserving identity
 		if let index = items.firstIndex(where: { $0.id == item.id }) {
 			let updatedItem = LibraryItem(
+				id: item.id,
 				url: item.url,
 				securityScopedBookmark: item.securityScopedBookmark,
 				title: item.title,

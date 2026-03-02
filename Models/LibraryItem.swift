@@ -40,8 +40,8 @@ struct LibraryItem: Identifiable, Codable, Hashable {
         return addedDate
     }
     
-    init(url: URL, securityScopedBookmark: Data? = nil, title: String = "", author: String? = nil, pageCount: Int = 0, fileSize: Int64 = 0, addedDate: Date = Date(), lastOpened: Date? = nil, tags: [String] = [], isPinned: Bool = false, thumbnailData: Data? = nil) {
-        self.id = UUID()
+    init(id: UUID = UUID(), url: URL, securityScopedBookmark: Data? = nil, title: String = "", author: String? = nil, pageCount: Int = 0, fileSize: Int64 = 0, addedDate: Date = Date(), lastOpened: Date? = nil, tags: [String] = [], isPinned: Bool = false, thumbnailData: Data? = nil) {
+        self.id = id
         self.url = url
         self.securityScopedBookmark = securityScopedBookmark
         self.title = title.isEmpty ? url.lastPathComponent : title
