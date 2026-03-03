@@ -246,6 +246,16 @@ struct ContentView: View {
             .sink { _ in appEnvironment.pdfController.addStickyNote() }
             .store(in: &cancellables)
 
+        NotificationCenter.default.publisher(for: .newSketchPage)
+            .sink { _ in
+                guard let url = appEnvironment.pdfController.currentPDFURL else { return }
+                appEnvironment.sketchStore.createSketch(
+                    for: url,
+                    pageIndex: appEnvironment.pdfController.currentPageIndex
+                )
+            }
+            .store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: .showHelp)
             .sink { _ in appEnvironment.openHelp() }
             .store(in: &cancellables)
