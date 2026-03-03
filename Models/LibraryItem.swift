@@ -57,11 +57,10 @@ nonisolated struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
     
     // MARK: - Security-Scoped Bookmark Support
     
-    /// Create a security-scoped bookmark for the URL
+    /// Create a security-scoped bookmark for the URL.
+    /// Note: startAccessingSecurityScopedResource is only needed when *reading*
+    /// a file from a resolved bookmark, not when *creating* bookmark data.
     func createSecurityScopedBookmark() -> Data? {
-        guard url.startAccessingSecurityScopedResource() else { return nil }
-        defer { url.stopAccessingSecurityScopedResource() }
-        
         do {
             return try url.bookmarkData(options: [.withSecurityScope], includingResourceValuesForKeys: nil, relativeTo: nil)
         } catch {
