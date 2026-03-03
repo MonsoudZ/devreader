@@ -197,14 +197,15 @@ struct MonacoWebEditor: View {
 
 	// MARK: - Helper Functions
 
-	private 	func executeCode() {
+	private func executeCode() {
 		isRunning = true
 		output = ""
 		LoadingStateManager.shared.startLoading(.general, message: "Running \(selectedLanguage.rawValue) code...")
-
-		DispatchQueue.global(qos: .userInitiated).async {
-			let result = Shell.runCode(selectedLanguage.rawValue, code: savedCode)
-			DispatchQueue.main.async {
+		let lang = selectedLanguage.rawValue
+		let source = savedCode
+		Task.detached(priority: .userInitiated) {
+			let result = Shell.runCode(lang, code: source)
+			await MainActor.run {
 				self.output = result
 				self.isRunning = false
 				LoadingStateManager.shared.stopLoading(.general)
