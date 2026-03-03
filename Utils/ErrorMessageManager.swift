@@ -12,7 +12,7 @@ class ErrorMessageManager: ObservableObject {
     @Published var currentError: UserFriendlyError?
     @Published var isShowingError = false
     
-    private let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "ErrorMessageManager")
+    private let logger = AppLog.app
     
     private init() {}
     

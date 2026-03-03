@@ -13,7 +13,7 @@ class LoadingStateManager: ObservableObject {
     @Published var loadingProgress: Double = 0.0
     @Published var loadingType: LoadingType = .general
 
-    private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "LoadingState")
+    private static let logger = AppLog.loading
     private static let safetyTimeoutSeconds: TimeInterval = 30
 
     private var loadingTasks: Set<String> = []

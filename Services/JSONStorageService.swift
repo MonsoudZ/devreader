@@ -3,7 +3,7 @@ import os.log
 
 /// Enhanced JSON file-based storage system for better performance and reliability
 nonisolated enum JSONStorageService {
-    private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "JSONStorage")
+    private static let logger = AppLog.persistence
     
     // MARK: - Storage Locations
     static var appSupportURL: URL {

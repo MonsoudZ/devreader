@@ -4,7 +4,7 @@ import os.log
 
 // Enhanced persistence service with JSON file-based storage
 nonisolated enum PersistenceService {
-    private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "Persistence")
+    private static let logger = AppLog.persistence
     // Thread-safe one-time migration using Swift's static let guarantee (dispatch_once)
     private static let _migration: Void = {
         JSONStorageService.migrateFromUserDefaults()

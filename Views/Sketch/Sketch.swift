@@ -310,7 +310,7 @@ struct SketchView: View {
 		do {
 			strokesData = try JSONEncoder().encode(strokes)
 		} catch {
-			os_log("Failed to encode sketch strokes: %{public}@", type: .error, error.localizedDescription)
+			logError(AppLog.sketch, "Failed to encode sketch strokes: \(error.localizedDescription)")
 			strokesData = nil
 		}
 

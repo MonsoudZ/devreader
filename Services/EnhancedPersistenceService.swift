@@ -7,7 +7,7 @@ import os.log
 class EnhancedPersistenceService: ObservableObject {
     static let shared = EnhancedPersistenceService()
 
-    private let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "EnhancedPersistence")
+    private let logger = AppLog.persistence
     private let fileManager = FileManager.default
 
     private init() {}

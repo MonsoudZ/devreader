@@ -6,7 +6,7 @@ import AppKit
 
 // Service for handling automatic retry mechanisms and error recovery
 nonisolated enum ErrorRecoveryService {
-    private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "ErrorRecovery")
+    private static let logger = AppLog.recovery
     
     // MARK: - Retry Configuration
     struct RetryConfig {

@@ -19,7 +19,7 @@ class PerformanceMonitor: ObservableObject {
     @Published var peakMemoryUsage: UInt64 = 0
     @Published var averageMemoryUsage: UInt64 = 0
 
-    private let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "Performance")
+    private let logger = AppLog.performance
     private var monitoringTimer: Timer?
     private var memoryHistory: [UInt64] = []
     private static let maxHistorySize = 50
