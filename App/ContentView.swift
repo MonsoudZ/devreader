@@ -8,12 +8,6 @@ import AppKit
 // Right panel tabs — raw values are stored by @AppStorage; do not rename without migration.
 enum RightTab: String {
     case notes, code, web
-
-    /// Resilient initializer: maps unknown stored values to `.notes` instead of nil,
-    /// preventing @AppStorage from silently discarding unrecognized persisted values.
-    init(fromStored rawValue: String) {
-        self = RightTab(rawValue: rawValue) ?? .notes
-    }
 }
 
 struct ContentView: View {
