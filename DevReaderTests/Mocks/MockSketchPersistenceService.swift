@@ -1,7 +1,8 @@
 import Foundation
 @testable import DevReader
 
-final class MockSketchPersistenceService: SketchPersistenceProtocol, @unchecked Sendable {
+@MainActor
+final class MockSketchPersistenceService: SketchPersistenceProtocol {
     var sketches: [SketchItem] = []
     var saveCallCount = 0
     var shouldThrowError = false
