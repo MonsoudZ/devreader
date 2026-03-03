@@ -10,6 +10,7 @@ struct LibraryPane: View {
     @State private var selection = Set<UUID>()
     @State private var sort: SortOption = .recent
     @State private var showingDeleteConfirmation = false
+    @State private var loadingItemID: UUID?
     @AppStorage("library.sortOrder") private var persistedSortOrder: String = "recent"
 	
 	var body: some View {
@@ -71,14 +72,21 @@ struct LibraryPane: View {
             } else {
                 List(selection: $selection) {
                     ForEach(sortedFiltered()) { item in
-                        Button(action: { open(item) }) {
+                        Button(action: {
+                            loadingItemID = item.id
+                            open(item)
+                        }) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(item.title)
                                     Text(item.url.lastPathComponent).font(.caption).foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                if isCurrentPDF(item) { Image(systemName: "checkmark.circle.fill").foregroundStyle(.blue) }
+                                if loadingItemID == item.id && !isCurrentPDF(item) {
+                                    ProgressView().controlSize(.small)
+                                } else if isCurrentPDF(item) {
+                                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.blue)
+                                }
                             }
                         }
                         .buttonStyle(.plain)
@@ -115,6 +123,9 @@ struct LibraryPane: View {
 		.onAppear {
 			// Load persisted sort order with resilient fallback
 			sort = SortOption(fromStored: persistedSortOrder)
+		}
+		.onChange(of: pdf.document) { _, _ in
+			loadingItemID = nil
 		}
 		.onChange(of: sort) { _, newSort in
 			// Persist sort order
