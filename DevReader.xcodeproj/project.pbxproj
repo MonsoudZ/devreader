@@ -44,19 +44,13 @@
 		A00100602F00000000000011 /* Services/NotesPersistenceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100612F00000000000012 /* Services/NotesPersistenceProtocol.swift */; };
 		A00100642F00000000000015 /* App/AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100652F00000000000016 /* App/AppEnvironment.swift */; };
 		A00100662F00000000000017 /* ViewModels/SketchStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100672F00000000000018 /* ViewModels/SketchStore.swift */; };
-		A00100682F00000000000019 /* ViewModels/CodeStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100692F00000000000020 /* ViewModels/CodeStore.swift */; };
-		A00100702F00000000000021 /* ViewModels/WebStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100712F00000000000022 /* ViewModels/WebStore.swift */; };
 		A00100742F00000000000025 /* Views/About/AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100752F00000000000026 /* Views/About/AboutView.swift */; };
 		B00100012F00000000000001 /* Utils/NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00100002F00000000000001 /* Utils/NotificationNames.swift */; };
 		B00100032F00000000000002 /* Utils/PerformanceMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00100022F00000000000002 /* Utils/PerformanceMonitor.swift */; };
 		B00100052F00000000000003 /* Utils/AppLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00100042F00000000000003 /* Utils/AppLog.swift */; };
 		B00100072F00000000000004 /* Services/ImageProcessingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00100062F00000000000004 /* Services/ImageProcessingService.swift */; };
-		B00100092F00000000000005 /* Models/WebBookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00100082F00000000000005 /* Models/WebBookmark.swift */; };
-		B001000B2F00000000000006 /* Models/CodeSnippet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B001000A2F00000000000006 /* Models/CodeSnippet.swift */; };
 		B001000D2F00000000000007 /* Models/SketchItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B001000C2F00000000000007 /* Models/SketchItem.swift */; };
 		B001000F2F00000000000008 /* Models/DevReaderData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B001000E2F00000000000008 /* Models/DevReaderData.swift */; };
-		B00100112F00000000000009 /* Services/WebPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00100102F00000000000009 /* Services/WebPersistenceService.swift */; };
-		B00100132F00000000000010 /* Services/CodePersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00100122F00000000000010 /* Services/CodePersistenceService.swift */; };
 		B00100152F00000000000011 /* Services/SketchPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00100142F00000000000011 /* Services/SketchPersistenceService.swift */; };
 /* End PBXBuildFile section */
 
@@ -119,19 +113,13 @@
 		A00100612F00000000000012 /* Services/NotesPersistenceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/NotesPersistenceProtocol.swift; sourceTree = "<group>"; };
 		A00100652F00000000000016 /* App/AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppEnvironment.swift; sourceTree = "<group>"; };
 		A00100672F00000000000018 /* ViewModels/SketchStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SketchStore.swift; sourceTree = "<group>"; };
-		A00100692F00000000000020 /* ViewModels/CodeStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/CodeStore.swift; sourceTree = "<group>"; };
-		A00100712F00000000000022 /* ViewModels/WebStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/WebStore.swift; sourceTree = "<group>"; };
 		A00100752F00000000000026 /* Views/About/AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/About/AboutView.swift; sourceTree = "<group>"; };
 		B00100002F00000000000001 /* Utils/NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/NotificationNames.swift; sourceTree = "<group>"; };
 		B00100022F00000000000002 /* Utils/PerformanceMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/PerformanceMonitor.swift; sourceTree = "<group>"; };
 		B00100042F00000000000003 /* Utils/AppLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/AppLog.swift; sourceTree = "<group>"; };
 		B00100062F00000000000004 /* Services/ImageProcessingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/ImageProcessingService.swift; sourceTree = "<group>"; };
-		B00100082F00000000000005 /* Models/WebBookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/WebBookmark.swift; sourceTree = "<group>"; };
-		B001000A2F00000000000006 /* Models/CodeSnippet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/CodeSnippet.swift; sourceTree = "<group>"; };
 		B001000C2F00000000000007 /* Models/SketchItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/SketchItem.swift; sourceTree = "<group>"; };
 		B001000E2F00000000000008 /* Models/DevReaderData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/DevReaderData.swift; sourceTree = "<group>"; };
-		B00100102F00000000000009 /* Services/WebPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/WebPersistenceService.swift; sourceTree = "<group>"; };
-		B00100122F00000000000010 /* Services/CodePersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CodePersistenceService.swift; sourceTree = "<group>"; };
 		B00100142F00000000000011 /* Services/SketchPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SketchPersistenceService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -192,8 +180,6 @@
 				A00100612F00000000000012 /* Services/NotesPersistenceProtocol.swift */,
 				A00100652F00000000000016 /* App/AppEnvironment.swift */,
 				A00100672F00000000000018 /* ViewModels/SketchStore.swift */,
-				A00100692F00000000000020 /* ViewModels/CodeStore.swift */,
-				A00100712F00000000000022 /* ViewModels/WebStore.swift */,
 				A00100752F00000000000026 /* Views/About/AboutView.swift */,
 			);
 			name = "Recovered References";
@@ -232,12 +218,8 @@
 				B00100022F00000000000002 /* Utils/PerformanceMonitor.swift */,
 				B00100042F00000000000003 /* Utils/AppLog.swift */,
 				B00100062F00000000000004 /* Services/ImageProcessingService.swift */,
-				B00100082F00000000000005 /* Models/WebBookmark.swift */,
-				B001000A2F00000000000006 /* Models/CodeSnippet.swift */,
 				B001000C2F00000000000007 /* Models/SketchItem.swift */,
 				B001000E2F00000000000008 /* Models/DevReaderData.swift */,
-				B00100102F00000000000009 /* Services/WebPersistenceService.swift */,
-				B00100122F00000000000010 /* Services/CodePersistenceService.swift */,
 				B00100142F00000000000011 /* Services/SketchPersistenceService.swift */,
 				A00100362F00000000000001 /* DevReader.entitlements */,
 				9932A80B2E823C66001C0FFE /* DevReader */,
@@ -440,19 +422,13 @@
 				A00100602F00000000000011 /* Services/NotesPersistenceProtocol.swift in Sources */,
 				A00100642F00000000000015 /* App/AppEnvironment.swift in Sources */,
 				A00100662F00000000000017 /* ViewModels/SketchStore.swift in Sources */,
-				A00100682F00000000000019 /* ViewModels/CodeStore.swift in Sources */,
-				A00100702F00000000000021 /* ViewModels/WebStore.swift in Sources */,
 				A00100742F00000000000025 /* Views/About/AboutView.swift in Sources */,
 				B00100012F00000000000001 /* Utils/NotificationNames.swift in Sources */,
 				B00100032F00000000000002 /* Utils/PerformanceMonitor.swift in Sources */,
 				B00100052F00000000000003 /* Utils/AppLog.swift in Sources */,
 				B00100072F00000000000004 /* Services/ImageProcessingService.swift in Sources */,
-				B00100092F00000000000005 /* Models/WebBookmark.swift in Sources */,
-				B001000B2F00000000000006 /* Models/CodeSnippet.swift in Sources */,
 				B001000D2F00000000000007 /* Models/SketchItem.swift in Sources */,
 				B001000F2F00000000000008 /* Models/DevReaderData.swift in Sources */,
-				B00100112F00000000000009 /* Services/WebPersistenceService.swift in Sources */,
-				B00100132F00000000000010 /* Services/CodePersistenceService.swift in Sources */,
 				B00100152F00000000000011 /* Services/SketchPersistenceService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
