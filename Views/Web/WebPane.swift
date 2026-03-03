@@ -152,7 +152,7 @@ struct WebView: NSViewRepresentable {
             view.load(request)
         }
     }
-    final class Coord: NSObject, WKNavigationDelegate {
+    @MainActor final class Coord: NSObject, WKNavigationDelegate {
         let onNavigated: (URL?) -> Void
         init(onNavigated: @escaping (URL?) -> Void) { self.onNavigated = onNavigated }
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

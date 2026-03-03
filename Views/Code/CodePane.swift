@@ -894,7 +894,7 @@ struct WebViewHTML: NSViewRepresentable {
             }
         }
     }
-    final class Coord: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
+    @MainActor final class Coord: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
         let onCodeChange: (String) -> Void
         let savedCode: String
         let onEditorReady: (() -> Void)?
