@@ -127,60 +127,55 @@ struct LibraryPane: View {
         }
         
         private func importURLs(_ urls: [URL]) {
-            var successCount = 0
-            var errorCount = 0
-            var errorMessages: [String] = []
-            
-            for url in urls {
-                do {
+            Task.detached(priority: .userInitiated) { @Sendable in
+                var validURLs: [URL] = []
+                var errorMessages: [String] = []
+
+                for url in urls {
                     // Validate that it's a PDF file
                     guard url.pathExtension.lowercased() == "pdf" else {
-                        errorCount += 1
                         errorMessages.append("\(url.lastPathComponent) is not a PDF file")
                         continue
                     }
-                    
+
                     // Check if file exists and is readable
                     guard FileManager.default.fileExists(atPath: url.path) else {
-                        errorCount += 1
                         errorMessages.append("\(url.lastPathComponent) not found")
                         continue
                     }
-                    
-                    // Try to create a PDFDocument to validate it's not corrupted
-                    if let _ = PDFDocument(url: url) {
-                        library.add(urls: [url])
-                        successCount += 1
+
+                    // Validate PDF off main thread (PDFDocument init can be slow for large files)
+                    if PDFDocument(url: url) != nil {
+                        validURLs.append(url)
                     } else {
-                        errorCount += 1
                         errorMessages.append("\(url.lastPathComponent) appears to be corrupted")
                     }
-                } catch {
-                    errorCount += 1
-                    errorMessages.append("\(url.lastPathComponent): \(error.localizedDescription)")
                 }
-            }
-            
-            // Show feedback to user
-            if successCount > 0 {
-                NotificationCenter.default.post(
-                    name: .showToast,
-                    object: ToastMessage(
-                        message: "Successfully imported \(successCount) PDF\(successCount == 1 ? "" : "s")",
-                        type: .success
-                    )
-                )
-            }
-            
-            if errorCount > 0 {
-                let errorMessage = errorMessages.joined(separator: "\n")
-                NotificationCenter.default.post(
-                    name: .showToast,
-                    object: ToastMessage(
-                        message: "Failed to import \(errorCount) file\(errorCount == 1 ? "" : "s"): \(errorMessage)",
-                        type: .error
-                    )
-                )
+
+                await MainActor.run {
+                    // Add validated PDFs to library on main thread
+                    if !validURLs.isEmpty {
+                        library.add(urls: validURLs)
+                        NotificationCenter.default.post(
+                            name: .showToast,
+                            object: ToastMessage(
+                                message: "Successfully imported \(validURLs.count) PDF\(validURLs.count == 1 ? "" : "s")",
+                                type: .success
+                            )
+                        )
+                    }
+
+                    if !errorMessages.isEmpty {
+                        let errorMessage = errorMessages.joined(separator: "\n")
+                        NotificationCenter.default.post(
+                            name: .showToast,
+                            object: ToastMessage(
+                                message: "Failed to import \(errorMessages.count) file\(errorMessages.count == 1 ? "" : "s"): \(errorMessage)",
+                                type: .error
+                            )
+                        )
+                    }
+                }
             }
         }
 	
