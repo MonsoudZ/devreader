@@ -20,12 +20,14 @@ struct LibraryPane: View {
                     .accessibilityIdentifier("librarySearchField")
                     .accessibilityLabel("Search library")
                     .accessibilityHint("Enter text to search your PDF library")
-                Menu("Sort") {
+                Menu {
                     Picker("Sort", selection: $sort) {
                         Text("Recently Added").tag(SortOption.recent)
                         Text("Title (A–Z)").tag(SortOption.titleAZ)
                         Text("Title (Z–A)").tag(SortOption.titleZA)
                     }
+                } label: {
+                    Label(sort.label, systemImage: "arrow.up.arrow.down")
                 }
                 .accessibilityIdentifier("librarySortMenu")
                 .accessibilityLabel("Sort library")
@@ -245,6 +247,14 @@ enum SortOption: String, CaseIterable {
     case recent = "recent"
     case titleAZ = "titleAZ"
     case titleZA = "titleZA"
+
+    var label: String {
+        switch self {
+        case .recent: return "Recent"
+        case .titleAZ: return "A–Z"
+        case .titleZA: return "Z–A"
+        }
+    }
 
     /// Resilient initializer for persisted values; defaults to `.recent` for unknown strings.
     init(fromStored rawValue: String) {
