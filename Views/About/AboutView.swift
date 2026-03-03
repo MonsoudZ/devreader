@@ -57,7 +57,8 @@ struct AboutView: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                
+                .accessibilityIdentifier("aboutPrivacyPolicy")
+
                 Button("Support") {
                     // Open support
                     if let url = URL(string: "https://devreader.app/support") {
@@ -65,11 +66,13 @@ struct AboutView: View {
                     }
                 }
                 .buttonStyle(.bordered)
-                
+                .accessibilityIdentifier("aboutSupport")
+
                 Button("Close") {
                     isPresented = false
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("aboutClose")
             }
         }
         .padding(32)

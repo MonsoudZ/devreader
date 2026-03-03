@@ -42,11 +42,13 @@ struct NoteRow: View {
 						Button("Save") { saveEdit() }
 							.buttonStyle(.bordered)
 							.controlSize(.small)
+							.accessibilityIdentifier("noteRowSave")
 							.accessibilityLabel("Save note changes")
 							.accessibilityHint("Save the edited note content and title")
 						Button("Cancel") { cancelEdit() }
 							.buttonStyle(.bordered)
 							.controlSize(.small)
+							.accessibilityIdentifier("noteRowCancel")
 							.accessibilityLabel("Cancel editing")
 							.accessibilityHint("Discard changes and exit edit mode")
 					}
@@ -55,11 +57,13 @@ struct NoteRow: View {
 						Button("Edit") { startEdit() }
 							.buttonStyle(.bordered)
 							.controlSize(.small)
+							.accessibilityIdentifier("noteRowEdit")
 							.accessibilityLabel("Edit note")
 							.accessibilityHint("Edit the note content and title")
 						Button("Go") { jump() }
 							.buttonStyle(.bordered)
 							.controlSize(.small)
+							.accessibilityIdentifier("noteRowGo")
 							.accessibilityLabel("Go to page")
 							.accessibilityHint("Jump to page \(item.pageIndex + 1) in the PDF")
 					}
@@ -73,11 +77,13 @@ struct NoteRow: View {
 						TextField("Add tag...", text: $newTag)
 							.textFieldStyle(.roundedBorder)
 							.onSubmit { addTag() }
+							.accessibilityIdentifier("noteRowTagField")
 							.accessibilityLabel("Add tag")
 							.accessibilityHint("Enter a new tag for this note")
 						Button("Add") { addTag() }
 							.buttonStyle(.bordered)
 							.controlSize(.small)
+							.accessibilityIdentifier("noteRowAddTag")
 							.accessibilityLabel("Add tag")
 							.accessibilityHint("Add the entered tag to this note")
 					}
@@ -112,6 +118,7 @@ struct NoteRow: View {
 							.font(.caption)
 							.buttonStyle(.bordered)
 							.controlSize(.small)
+							.accessibilityIdentifier("noteRowAddTagPrompt")
 							.accessibilityLabel("Add tag")
 							.accessibilityHint("Add a tag to this note")
 						Spacer()

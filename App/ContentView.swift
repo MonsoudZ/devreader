@@ -379,6 +379,7 @@ private struct PDFSearchBar: View {
                 .textFieldStyle(.plain)
                 .focused($isFocused)
                 .onSubmit { search() }
+                .accessibilityIdentifier("searchPDFField")
                 .accessibilityLabel("Search PDF")
 
             if !searchManager.searchResults.isEmpty {
@@ -398,6 +399,7 @@ private struct PDFSearchBar: View {
             }
             .buttonStyle(.borderless)
             .disabled(searchManager.searchResults.isEmpty)
+            .accessibilityIdentifier("searchPrevious")
             .accessibilityLabel("Previous result")
 
             Button {
@@ -407,6 +409,7 @@ private struct PDFSearchBar: View {
             }
             .buttonStyle(.borderless)
             .disabled(searchManager.searchResults.isEmpty)
+            .accessibilityIdentifier("searchNext")
             .accessibilityLabel("Next result")
 
             Button {
@@ -415,6 +418,7 @@ private struct PDFSearchBar: View {
                 Image(systemName: "xmark")
             }
             .buttonStyle(.borderless)
+            .accessibilityIdentifier("searchClose")
             .accessibilityLabel("Close search")
         }
         .padding(.horizontal, 12)

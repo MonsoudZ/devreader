@@ -161,26 +161,31 @@ struct SketchView: View {
                 Divider()
                 ColorPicker("Ink", selection: $penColor)
                     .labelsHidden()
+                    .accessibilityIdentifier("sketchColorPicker")
                     .accessibilityLabel("Pen Color")
                     .accessibilityHint("Choose the color for drawing strokes")
                 HStack { 
                     Text("Width")
                     Slider(value: $penWidth, in: 1...16, step: 1)
                         .frame(width: 140)
+                        .accessibilityIdentifier("sketchWidthSlider")
                         .accessibilityLabel("Pen Width")
                         .accessibilityValue("\(Int(penWidth)) pixels")
                     Text("\(Int(penWidth))") 
                 }
                 Divider()
                 Button("Undo") { undo() }
+                    .accessibilityIdentifier("sketchUndo")
                     .accessibilityLabel("Undo Last Stroke")
                     .accessibilityHint("Remove the most recent drawing stroke")
                     .disabled(strokes.isEmpty && undoStack.isEmpty)
                 Button("Redo") { redo() }
+                    .accessibilityIdentifier("sketchRedo")
                     .accessibilityLabel("Redo Stroke")
                     .accessibilityHint("Restore the most recently undone stroke")
                     .disabled(redoStack.isEmpty)
                 Button("Clear") { clearAll() }
+                    .accessibilityIdentifier("sketchClear")
                     .accessibilityLabel("Clear All Strokes")
                     .accessibilityHint("Remove all drawing strokes from the canvas")
                     .disabled(strokes.isEmpty)
@@ -190,6 +195,7 @@ struct SketchView: View {
                     Button("Save as PDF") { exportAsPDF() }
                     Button("Save to PDF Page") { saveToPDFPage() }
                 }
+                .accessibilityIdentifier("sketchExportMenu")
                 .accessibilityLabel("Export Options")
                 .accessibilityHint("Save the sketch as an image file")
                 Button("Insert") { 
@@ -197,6 +203,7 @@ struct SketchView: View {
                     onInsert(img)
                     saveSketch()
                 }
+                .accessibilityIdentifier("sketchInsert")
                 .accessibilityLabel("Insert Sketch")
                 .accessibilityHint("Insert the sketch into the current document")
             }.padding(8)

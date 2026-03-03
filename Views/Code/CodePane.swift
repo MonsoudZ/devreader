@@ -12,6 +12,7 @@ struct CodePane: View {
 			}
 			.pickerStyle(.segmented)
 			.padding(8)
+			.accessibilityIdentifier("codeModePicker")
 			.accessibilityLabel("Editor mode")
 			.accessibilityHint("Switch between scratchpad and Monaco editor")
 			Divider()
@@ -74,6 +75,7 @@ struct ScratchRunner: View {
 				}
 				.pickerStyle(.menu)
 				.frame(maxWidth: 150)
+				.accessibilityIdentifier("scratchLanguagePicker")
 				.accessibilityLabel("Programming language")
 				.accessibilityHint("Select the programming language for code execution")
 
@@ -82,6 +84,7 @@ struct ScratchRunner: View {
 					.buttonStyle(.borderedProminent)
 					.controlSize(.small)
 					.disabled(isRunning)
+					.accessibilityIdentifier("scratchRunButton")
 					.accessibilityLabel("Run code")
 					.accessibilityHint("Execute the code in the editor")
 			}.padding(8)
@@ -271,6 +274,7 @@ struct MonacoWebEditor: View {
 				}
 				.pickerStyle(.menu)
 				.frame(maxWidth: 120)
+				.accessibilityIdentifier("monacoLanguagePicker")
 				.accessibilityLabel("Programming language")
 				.accessibilityHint("Select the programming language for the editor")
 
@@ -278,6 +282,7 @@ struct MonacoWebEditor: View {
 					.buttonStyle(.borderedProminent)
 					.controlSize(.small)
 					.disabled(isRunning)
+					.accessibilityIdentifier("monacoRunButton")
 					.accessibilityLabel("Run code")
 					.accessibilityHint("Execute the code in the editor")
 
@@ -288,6 +293,7 @@ struct MonacoWebEditor: View {
 				}
 				.buttonStyle(.bordered)
 				.controlSize(.small)
+				.accessibilityIdentifier("monacoSaveButton")
 				.accessibilityLabel("Save file")
 				.accessibilityHint("Save the current code to a file")
 
@@ -298,6 +304,7 @@ struct MonacoWebEditor: View {
 				}
 				.buttonStyle(.bordered)
 				.controlSize(.small)
+				.accessibilityIdentifier("monacoLoadButton")
 				.accessibilityLabel("Load file")
 				.accessibilityHint("Open the file manager to load a file")
 
@@ -308,6 +315,7 @@ struct MonacoWebEditor: View {
 				}
 				.buttonStyle(.bordered)
 				.controlSize(.small)
+				.accessibilityIdentifier("monacoExportButton")
 				.accessibilityLabel("Export code")
 				.accessibilityHint("Export code to various editor formats")
 
@@ -367,6 +375,7 @@ struct MonacoWebEditor: View {
 						Button("Clear") { output = "" }
 							.font(.caption)
 							.padding(.horizontal, 8)
+							.accessibilityIdentifier("monacoClearOutput")
 							.accessibilityLabel("Clear output")
 							.accessibilityHint("Clear the code execution output")
 					}
@@ -466,6 +475,7 @@ struct FileManagerView: View {
 					.font(.headline)
 				Spacer()
 				Button("Close") { dismiss() }
+					.accessibilityIdentifier("fileManagerClose")
 					.accessibilityLabel("Close file manager")
 					.accessibilityHint("Close the file manager window")
 			}
@@ -495,13 +505,16 @@ struct FileManagerView: View {
 				// File Actions
 				VStack {
 					Button("Open File...") { openFile() }
+						.accessibilityIdentifier("fileManagerOpen")
 						.accessibilityLabel("Open file")
 						.accessibilityHint("Browse and open a file from disk")
 					Button("New File") { newFile() }
+						.accessibilityIdentifier("fileManagerNew")
 						.accessibilityLabel("New file")
 						.accessibilityHint("Create a new empty file")
 					Button("Delete Selected") { deleteFile() }
 						.disabled(selectedFile == nil)
+						.accessibilityIdentifier("fileManagerDelete")
 						.accessibilityLabel("Delete selected file")
 						.accessibilityHint("Delete the currently selected file")
 				}
@@ -589,24 +602,30 @@ struct ExportOptionsView: View {
 			
 			VStack(alignment: .leading, spacing: 15) {
 				Button("Export to VSCode Project") { exportToVSCode() }
+					.accessibilityIdentifier("exportToVSCode")
 					.accessibilityLabel("Export to VSCode")
 					.accessibilityHint("Create a VSCode project with the current code")
 				Button("Export to Vim Configuration") { exportToVim() }
+					.accessibilityIdentifier("exportToVim")
 					.accessibilityLabel("Export to Vim")
 					.accessibilityHint("Export code as a Vim configuration file")
 				Button("Export to Emacs Configuration") { exportToEmacs() }
+					.accessibilityIdentifier("exportToEmacs")
 					.accessibilityLabel("Export to Emacs")
 					.accessibilityHint("Export code as an Emacs configuration file")
 				Button("Export to JetBrains Project") { exportToJetBrains() }
+					.accessibilityIdentifier("exportToJetBrains")
 					.accessibilityLabel("Export to JetBrains")
 					.accessibilityHint("Create a JetBrains project with the current code")
 				Button("Export as Standalone File") { exportAsFile() }
+					.accessibilityIdentifier("exportAsFile")
 					.accessibilityLabel("Export as standalone file")
 					.accessibilityHint("Save the code as a standalone source file")
 			}
 
 			HStack {
 				Button("Cancel") { dismiss() }
+					.accessibilityIdentifier("exportCancel")
 					.accessibilityLabel("Cancel export")
 					.accessibilityHint("Close the export options without exporting")
 				Spacer()
@@ -810,6 +829,7 @@ struct FallbackCodeEditor: View {
 				if let retry = onRetryMonaco {
 					Button("Retry Monaco") { retry() }
 						.font(.caption)
+						.accessibilityIdentifier("retryMonaco")
 						.accessibilityLabel("Retry Monaco editor")
 						.accessibilityHint("Attempt to reload the Monaco editor")
 				}

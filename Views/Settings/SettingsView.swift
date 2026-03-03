@@ -24,6 +24,7 @@ struct SettingsView: View {
 				Button("Done") { dismiss() }
 					.buttonStyle(.borderedProminent)
 					.controlSize(.small)
+					.accessibilityIdentifier("settingsDone")
 					.accessibilityLabel("Done")
 					.accessibilityHint("Close the settings window")
 			}
@@ -40,6 +41,7 @@ struct SettingsView: View {
 						Text("Dark").tag("dark")
 					}
 					.pickerStyle(.segmented)
+					.accessibilityIdentifier("themePicker")
 					.accessibilityLabel("App theme")
 					.accessibilityHint("Choose between system, light, or dark appearance")
 				}
@@ -52,12 +54,14 @@ struct SettingsView: View {
 						Text("Pink").tag("pink")
 					}
 					.pickerStyle(.segmented)
+					.accessibilityIdentifier("highlightColorPicker")
 					.accessibilityLabel("Highlight color")
 					.accessibilityHint("Select the color used for PDF highlights")
 					HStack {
 						Text("Default Zoom")
 						Spacer()
 						Slider(value: $defaultZoom, in: 0.5...3.0, step: 0.1)
+							.accessibilityIdentifier("zoomSlider")
 							.accessibilityLabel("Default zoom level")
 							.accessibilityHint("Adjust the default zoom level for PDFs")
 							.accessibilityValue("\(Int(defaultZoom * 100)) percent")
@@ -66,6 +70,7 @@ struct SettingsView: View {
 				}
 				Section("Data") {
 					Toggle("Auto-save Notes", isOn: $autoSave)
+					.accessibilityIdentifier("autoSaveToggle")
 					.accessibilityLabel("Auto-save notes")
 					.accessibilityHint("Automatically save notes at regular intervals")
 					HStack {
@@ -79,6 +84,7 @@ struct SettingsView: View {
 						}
 						.pickerStyle(.segmented)
 						.frame(width: 260)
+						.accessibilityIdentifier("autosaveIntervalPicker")
 						.accessibilityLabel("Autosave interval")
 						.accessibilityHint("Choose how often notes are automatically saved")
 					}
@@ -118,6 +124,7 @@ struct SettingsView: View {
 					}
 					.buttonStyle(.bordered)
 					.controlSize(.small)
+					.accessibilityIdentifier("exportPerformanceReport")
 					.accessibilityLabel("Export performance report")
 					.accessibilityHint("Export a performance report for large PDF loading")
 				}
@@ -142,6 +149,7 @@ struct SettingsView: View {
 						}
 						.buttonStyle(.bordered)
 						.controlSize(.small)
+						.accessibilityIdentifier("createBackup")
 						.accessibilityLabel("Create backup")
 						.accessibilityHint("Create a backup of all app data")
 
@@ -150,6 +158,7 @@ struct SettingsView: View {
 						}
 						.buttonStyle(.bordered)
 						.controlSize(.small)
+						.accessibilityIdentifier("validateData")
 						.accessibilityLabel("Validate data")
 						.accessibilityHint("Check all data files for corruption or integrity issues")
 					}

@@ -11,7 +11,7 @@ struct WebPane: View {
 	@State private var bookmarks: [URL] = []
 
 	private let bookmarksKey = "DevReader.Web.Bookmarks.v1"
-	
+
 	var body: some View {
 		VStack(spacing: 0) {
 			HStack(spacing: 6) {
@@ -24,6 +24,7 @@ struct WebPane: View {
 				.buttonStyle(.bordered)
 				.controlSize(.small)
 				.disabled(!canGoBack)
+				.accessibilityIdentifier("webBack")
 
 				Button {
 					goForward()
@@ -34,12 +35,15 @@ struct WebPane: View {
 				.buttonStyle(.bordered)
 				.controlSize(.small)
 				.disabled(!canGoForward)
+				.accessibilityIdentifier("webForward")
 
 				TextField("Enter URL…", text: $urlString).onSubmit { loadURL() }
+					.accessibilityIdentifier("webURLField")
 
 				Button("Go") { loadURL() }
 					.buttonStyle(.bordered)
 					.controlSize(.small)
+					.accessibilityIdentifier("webGoButton")
 
 				Menu {
 					ForEach(bookmarks, id: \.self) { u in Button(u.absoluteString) { openURL(u) } }
@@ -48,12 +52,14 @@ struct WebPane: View {
 				} label: {
 					Label("Bookmarks", systemImage: "bookmark")
 				}
+				.accessibilityIdentifier("webBookmarks")
 
 				Menu {
 					ForEach(history, id: \.self) { u in Button(u.absoluteString) { openURL(u) } }
 				} label: {
 					Label("History", systemImage: "clock")
 				}
+				.accessibilityIdentifier("webHistory")
 
 				Button {
 					if let u = currentURL { NSWorkspace.shared.open(u) }
@@ -64,20 +70,21 @@ struct WebPane: View {
 				.buttonStyle(.bordered)
 				.controlSize(.small)
 				.disabled(currentURL == nil)
+				.accessibilityIdentifier("webOpenInBrowser")
 			}.padding(8)
 			Divider()
 			WebView(url: currentURL) { newURL in onNavigated(newURL) }
 		}
 		.onAppear { loadBookmarks(); if let u = URL(string: urlString) { openURL(u, record: true) } }
 	}
-	
+
 	private var canGoBack: Bool { historyIndex > 0 }
 	private var canGoForward: Bool { historyIndex >= 0 && historyIndex < history.count - 1 }
-	private func loadURL() { 
-		if let url = URL(string: urlString) { 
+	private func loadURL() {
+		if let url = URL(string: urlString) {
 			LoadingStateManager.shared.startWebLoading("Loading webpage...")
-			openURL(url, record: true) 
-		} 
+			openURL(url, record: true)
+		}
 	}
 	private func openURL(_ url: URL, record: Bool = false) {
 		currentURL = url
@@ -117,40 +124,40 @@ struct WebView: NSViewRepresentable {
     func makeCoordinator() -> Coord { Coord(onNavigated: onNavigated) }
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
-        
+
         // Configure JavaScript settings (modern API)
         config.preferences.javaScriptCanOpenWindowsAutomatically = false
-        
+
         // Configure website data store
         config.websiteDataStore = WKWebsiteDataStore.default()
-        
+
         // Process pool is no longer needed in modern WebKit
-        
+
         // Set user agent
         config.applicationNameForUserAgent = "DevReader/1.0"
-        
+
         let v = WKWebView(frame: .zero, configuration: config)
         v.navigationDelegate = context.coordinator
         v.customUserAgent = "DevReader/1.0"
-        
+
         // Set accessibility
         v.setAccessibilityLabel("Web Browser")
         v.setAccessibilityRole(.group)
-        
+
         return v
     }
-    func updateNSView(_ view: WKWebView, context: Context) { 
-        if let u = url, view.url != u { 
+    func updateNSView(_ view: WKWebView, context: Context) {
+        if let u = url, view.url != u {
             let request = URLRequest(url: u)
-            view.load(request) 
-        } 
+            view.load(request)
+        }
     }
     final class Coord: NSObject, WKNavigationDelegate {
         let onNavigated: (URL?) -> Void
         init(onNavigated: @escaping (URL?) -> Void) { self.onNavigated = onNavigated }
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { 
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             LoadingStateManager.shared.stopWebLoading()
-            onNavigated(webView.url) 
+            onNavigated(webView.url)
         }
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             LoadingStateManager.shared.stopWebLoading()

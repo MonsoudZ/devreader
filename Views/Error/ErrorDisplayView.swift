@@ -81,14 +81,15 @@ struct ErrorDisplayView: View {
                             Text("Technical Details")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
-                            
+
                             Spacer()
-                            
+
                             Image(systemName: showingDetails ? "chevron.up" : "chevron.down")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
                     }
+                    .accessibilityIdentifier("errorTechnicalDetails")
                     
                     if showingDetails {
                         Text(error.technicalDetails ?? "")
@@ -112,6 +113,7 @@ struct ErrorDisplayView: View {
                 }
                 .font(.body)
                 .foregroundColor(.secondary)
+                .accessibilityIdentifier("errorDismiss")
             }
         }
         .padding(20)

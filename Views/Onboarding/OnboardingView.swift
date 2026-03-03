@@ -71,6 +71,7 @@ struct OnboardingView: View {
 						}
 						.buttonStyle(.bordered)
 						.controlSize(.large)
+						.accessibilityIdentifier("onboardingBack")
 						.accessibilityLabel("Go to previous step")
 						.accessibilityHint("Return to the previous onboarding step")
 					}
@@ -85,6 +86,7 @@ struct OnboardingView: View {
 						}
 						.buttonStyle(.borderedProminent)
 						.controlSize(.large)
+						.accessibilityIdentifier("onboardingNext")
 						.accessibilityLabel("Go to next step")
 						.accessibilityHint("Continue to the next onboarding step")
 					} else {
@@ -94,6 +96,7 @@ struct OnboardingView: View {
 						}
 						.buttonStyle(.borderedProminent)
 						.controlSize(.large)
+						.accessibilityIdentifier("onboardingGetStarted")
 						.accessibilityLabel("Complete onboarding")
 						.accessibilityHint("Finish the onboarding process and start using DevReader")
 					}

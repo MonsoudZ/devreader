@@ -32,12 +32,14 @@ struct NotesPane: View {
 		VStack(spacing: 0) {
 			HStack(spacing: 6) {
 				TextField("Filter notes…", text: $filter)
+					.accessibilityIdentifier("notesFilterField")
 					.accessibilityLabel("Filter notes")
 					.accessibilityHint("Enter text to filter notes by content")
 				Spacer()
 				Button("Add Note") { addCustomNote() }
 					.buttonStyle(.borderedProminent)
 					.controlSize(.small)
+					.accessibilityIdentifier("addNoteButton")
 					.accessibilityLabel("Add Note")
 					.accessibilityHint("Create a new note")
 				Button {
@@ -51,6 +53,7 @@ struct NotesPane: View {
 				.popover(isPresented: $showingFilterPopover) {
 					filterPopoverContent
 				}
+				.accessibilityIdentifier("notesFilterOptions")
 				.accessibilityLabel("Filter options")
 				.accessibilityHint("Show export and filter options")
 				Button {
@@ -60,6 +63,7 @@ struct NotesPane: View {
 				}
 				.buttonStyle(.bordered)
 				.controlSize(.small)
+				.accessibilityIdentifier("exportMarkdown")
 				.accessibilityLabel("Export Markdown")
 				.accessibilityHint("Export notes to Markdown format")
 				.disabled(isExporting)
@@ -146,16 +150,19 @@ struct NotesPane: View {
 					Text(selectedTag ?? "All Tags")
 				}
 			}
+			.accessibilityIdentifier("tagFilterMenu")
 			.accessibilityLabel("Filter by tag")
 			.accessibilityHint("Select a tag to filter notes, or choose All Tags to show all notes")
 
 			Toggle("Bookmarks only", isOn: $filterBookmarks)
 				.toggleStyle(.switch)
+				.accessibilityIdentifier("bookmarksOnlyToggle")
 				.accessibilityLabel("Filter bookmarks")
 				.accessibilityHint("Show only notes from bookmarked pages")
 
 			Toggle("Date Range", isOn: $useDateFilter)
 				.toggleStyle(.switch)
+				.accessibilityIdentifier("dateRangeToggle")
 				.accessibilityLabel("Filter by date range")
 				.accessibilityHint("Show only notes within the specified date range")
 
@@ -185,6 +192,7 @@ struct NotesPane: View {
 					}
 				}
 			}
+			.accessibilityIdentifier("presetsMenu")
 			.accessibilityLabel("Export presets")
 			.accessibilityHint("Save, load, or delete export filter presets")
 		}
@@ -410,6 +418,7 @@ struct PresetSaveSheet: View {
             
             TextField("Preset name", text: $presetName)
                 .textFieldStyle(.roundedBorder)
+                .accessibilityIdentifier("presetNameField")
                 .accessibilityLabel("Preset name")
                 .accessibilityHint("Enter a name for the export filter preset")
             
@@ -418,6 +427,7 @@ struct PresetSaveSheet: View {
                     isPresented = false
                 }
                 .buttonStyle(.bordered)
+                .accessibilityIdentifier("presetCancel")
                 .accessibilityLabel("Cancel")
                 .accessibilityHint("Cancel saving the preset")
                 
@@ -427,6 +437,7 @@ struct PresetSaveSheet: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(presetName.trimmingCharacters(in: .whitespaces).isEmpty)
+                .accessibilityIdentifier("presetSave")
                 .accessibilityLabel("Save preset")
                 .accessibilityHint("Save the export filter preset with the entered name")
             }

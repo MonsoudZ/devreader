@@ -53,6 +53,7 @@ struct HelpView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Done") { dismiss() }
+                    .accessibilityIdentifier("helpDone")
             }
         }
     }

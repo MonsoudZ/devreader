@@ -16,6 +16,7 @@ struct LibraryPane: View {
 		VStack(spacing: 0) {
             HStack {
                 TextField("Search library…", text: $filter)
+                    .accessibilityIdentifier("librarySearchField")
                     .accessibilityLabel("Search library")
                     .accessibilityHint("Enter text to search your PDF library")
                 Menu("Sort") {
@@ -25,11 +26,13 @@ struct LibraryPane: View {
                         Text("Title (Z–A)").tag(SortOption.titleZA)
                     }
                 }
+                .accessibilityIdentifier("librarySortMenu")
                 .accessibilityLabel("Sort library")
                 .accessibilityHint("Choose how to sort your PDF library")
                 Button(action: { importFromFinder() }) { Image(systemName: "plus") }
                     .buttonStyle(.borderless)
                     .help("Import PDFs…")
+                    .accessibilityIdentifier("libraryImportButton")
                     .accessibilityLabel("Import PDFs")
                     .accessibilityHint("Import new PDF files into your library")
                 if !selection.isEmpty {
@@ -39,6 +42,7 @@ struct LibraryPane: View {
                         Label("Remove Selected", systemImage: "trash") 
                     }
                     .help("Remove selected from Library")
+                    .accessibilityIdentifier("libraryRemoveSelected")
                     .accessibilityLabel("Remove selected items")
                     .accessibilityHint("Remove selected PDFs from library")
                 }

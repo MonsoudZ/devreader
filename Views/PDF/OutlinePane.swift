@@ -60,6 +60,7 @@ struct OutlinePane: View {
                         .foregroundStyle(.secondary)
                     TextField("Search outline...", text: $searchText)
                         .textFieldStyle(.roundedBorder)
+                        .accessibilityIdentifier("outlineSearchField")
                 }
                 .padding(.horizontal, 8)
                 .padding(.bottom, 4)
