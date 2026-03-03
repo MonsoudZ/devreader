@@ -21,6 +21,7 @@ struct ContentView: View {
     // MARK: - Local UI State
     @AppStorage("ui.rightTab") private var rightTab: RightTab = .notes
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var showingSearch = false
 
     // Autosave timer: we recreate it whenever the interval changes
     @State private var autosaveCancellable: AnyCancellable?
@@ -58,10 +59,26 @@ struct ContentView: View {
                 .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
             } detail: {
                 // Center: PDF viewer
-                PDFViewRepresentable(pdf: appEnvironment.pdfController)
-                    .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
-                    .background(Color(NSColor.textBackgroundColor))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                ZStack(alignment: .top) {
+                    PDFViewRepresentable(pdf: appEnvironment.pdfController)
+                        .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
+                        .background(Color(NSColor.textBackgroundColor))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                    if showingSearch {
+                        PDFSearchBar(
+                            searchManager: appEnvironment.pdfController.searchManager,
+                            document: appEnvironment.pdfController.document,
+                            isLargePDF: appEnvironment.pdfController.isLargePDF,
+                            onDismiss: {
+                                showingSearch = false
+                                appEnvironment.pdfController.searchManager.clearSearch()
+                            }
+                        )
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: showingSearch)
                     .navigationTitle(documentTitle)
                     .navigationSubtitle(pageInfo)
                     // Right: Tools inspector
@@ -202,8 +219,16 @@ struct ContentView: View {
             }
             .store(in: &cancellables)
 
-        // TODO: Search toggle is not yet implemented — the Cmd+F menu item
-        // posts .toggleSearch but there is no search panel to show/hide yet.
+        NotificationCenter.default.publisher(for: .toggleSearch)
+            .sink { _ in
+                withAnimation {
+                    showingSearch.toggle()
+                }
+                if !showingSearch {
+                    appEnvironment.pdfController.searchManager.clearSearch()
+                }
+            }
+            .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .captureHighlight)
             .sink { _ in appEnvironment.pdfController.captureHighlightToNotes() }
@@ -331,5 +356,83 @@ struct ContentView: View {
             }
         }
         return true
+    }
+}
+
+// MARK: - PDF Search Bar
+
+private struct PDFSearchBar: View {
+    @ObservedObject var searchManager: PDFSearchManager
+    var document: PDFDocument?
+    var isLargePDF: Bool
+    var onDismiss: () -> Void
+
+    @State private var query: String = ""
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.secondary)
+
+            TextField("Search in PDF…", text: $query)
+                .textFieldStyle(.plain)
+                .focused($isFocused)
+                .onSubmit { search() }
+                .accessibilityLabel("Search PDF")
+
+            if !searchManager.searchResults.isEmpty {
+                Text("\(searchManager.searchIndex + 1) of \(searchManager.searchResults.count)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .monospacedDigit()
+            } else if searchManager.isSearching {
+                ProgressView()
+                    .controlSize(.small)
+            }
+
+            Button {
+                searchManager.previousSearchResult(in: document)
+            } label: {
+                Image(systemName: "chevron.up")
+            }
+            .buttonStyle(.borderless)
+            .disabled(searchManager.searchResults.isEmpty)
+            .accessibilityLabel("Previous result")
+
+            Button {
+                searchManager.nextSearchResult(in: document)
+            } label: {
+                Image(systemName: "chevron.down")
+            }
+            .buttonStyle(.borderless)
+            .disabled(searchManager.searchResults.isEmpty)
+            .accessibilityLabel("Next result")
+
+            Button {
+                onDismiss()
+            } label: {
+                Image(systemName: "xmark")
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel("Close search")
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+        .padding(.horizontal, 40)
+        .padding(.top, 8)
+        .onAppear { isFocused = true }
+        .onDisappear { query = "" }
+    }
+
+    private func search() {
+        if isLargePDF {
+            searchManager.performSearchOptimized(query, in: document)
+        } else {
+            searchManager.performSearch(query, in: document)
+        }
     }
 }
