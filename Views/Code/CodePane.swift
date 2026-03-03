@@ -108,10 +108,12 @@ struct ScratchRunner: View {
 	func run() {
 		isRunning = true; output = ""
 		LoadingStateManager.shared.startLoading(.general, message: "Running \(language.rawValue) code...")
-		DispatchQueue.global(qos: .userInitiated).async {
-			let result = Shell.runCode(language.rawValue, code: code)
-			DispatchQueue.main.async { 
-				self.output = result; 
+		let lang = language.rawValue
+		let source = code
+		Task.detached(priority: .userInitiated) {
+			let result = Shell.runCode(lang, code: source)
+			await MainActor.run {
+				self.output = result
 				self.isRunning = false
 				LoadingStateManager.shared.stopLoading(.general)
 			}
