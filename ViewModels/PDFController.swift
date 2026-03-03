@@ -437,8 +437,17 @@ final class PDFController: ObservableObject {
 
 	func captureHighlightToNotes() {
 		guard currentPDFURL != nil else { return }
+		let selectedText = PDFSelectionBridge.shared.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard let text = selectedText, !text.isEmpty else {
+			NotificationCenter.default.post(
+				name: .showToast,
+				object: ToastMessage(message: "Select text in the PDF first", type: .warning)
+			)
+			return
+		}
 		let note = NoteItem(
-			text: "Highlighted content from page \(currentPageIndex + 1)",
+			title: "Highlight from page \(currentPageIndex + 1)",
+			text: text,
 			pageIndex: currentPageIndex,
 			chapter: getCurrentChapter() ?? "Unknown Chapter"
 		)
