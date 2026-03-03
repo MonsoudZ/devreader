@@ -12,6 +12,7 @@ final class AppEnvironment: ObservableObject {
     let pdfController: PDFController
     let libraryStore: LibraryStore
     let notesStore: NotesStore
+    let sketchStore: SketchStore
 
     // MARK: - UI Services
     let enhancedToastCenter: EnhancedToastCenter
@@ -31,6 +32,7 @@ final class AppEnvironment: ObservableObject {
         self.pdfController = pdf
         self.libraryStore = library
         self.notesStore = notes
+        self.sketchStore = SketchStore()
         self.enhancedToastCenter = EnhancedToastCenter()
         self.errorMessageManager = ErrorMessageManager.shared
 

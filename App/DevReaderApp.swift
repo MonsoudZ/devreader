@@ -172,6 +172,7 @@ struct DevReaderApp: App {
                 appEnvironment.pdfController.flushPendingPersistence()
                 appEnvironment.libraryStore.flushPendingPersistence()
                 appEnvironment.notesStore.flushPendingPersistence()
+                appEnvironment.sketchStore.flushPendingPersistence()
             @unknown default:
                 break
             }

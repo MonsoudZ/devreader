@@ -147,6 +147,7 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertNotNil(env.pdfController, "PDFController should be initialized")
         XCTAssertNotNil(env.libraryStore, "LibraryStore should be initialized")
         XCTAssertNotNil(env.notesStore, "NotesStore should be initialized")
+        XCTAssertNotNil(env.sketchStore, "SketchStore should be initialized")
         XCTAssertNotNil(env.enhancedToastCenter, "EnhancedToastCenter should be initialized")
         XCTAssertNotNil(env.errorMessageManager, "ErrorMessageManager should be initialized")
     }
@@ -163,10 +164,11 @@ final class AppEnvironmentTests: XCTestCase {
     func testFlushPendingPersistenceDoesNotCrash() {
         let env = AppEnvironment.shared
 
-        // Verify all three flush methods can be called without crashing
+        // Verify all four flush methods can be called without crashing
         env.pdfController.flushPendingPersistence()
         env.libraryStore.flushPendingPersistence()
         env.notesStore.flushPendingPersistence()
+        env.sketchStore.flushPendingPersistence()
     }
 
     // MARK: - PDF Load Error Notification

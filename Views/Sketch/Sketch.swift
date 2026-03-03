@@ -151,8 +151,16 @@ struct SketchView: View {
 	@State private var undoStack: [[Stroke]] = []
 	@State private var redoStack: [[Stroke]] = []
 	
-	// Persistence
-	@StateObject private var sketchStore = SketchStore()
+	// Persistence — use shared store from AppEnvironment for lifecycle flush support
+	@ObservedObject private var sketchStore: SketchStore
+
+	init(size: CGSize, onInsert: @escaping (NSImage) -> Void, pdfURL: URL? = nil, pageIndex: Int = 0, sketchStore: SketchStore? = nil) {
+		self.size = size
+		self.onInsert = onInsert
+		self.pdfURL = pdfURL
+		self.pageIndex = pageIndex
+		self.sketchStore = sketchStore ?? AppEnvironment.shared.sketchStore
+	}
 	
 	var body: some View {
         VStack(spacing: 0) {
