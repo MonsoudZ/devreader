@@ -17,6 +17,8 @@ final class AppEnvironment: ObservableObject {
     // MARK: - UI Services
     let enhancedToastCenter: EnhancedToastCenter
     let errorMessageManager: ErrorMessageManager
+    let loadingStateManager: LoadingStateManager
+    let performanceMonitor: PerformanceMonitor
 
     // MARK: - Sheet Toggles
     @Published var isShowingOnboarding = false
@@ -36,6 +38,8 @@ final class AppEnvironment: ObservableObject {
         self.sketchStore = SketchStore()
         self.enhancedToastCenter = EnhancedToastCenter()
         self.errorMessageManager = ErrorMessageManager.shared
+        self.loadingStateManager = LoadingStateManager.shared
+        self.performanceMonitor = PerformanceMonitor.shared
 
         // Wire PDF changes to notes store
         pdf.onPDFChanged = { [weak notes] url in
