@@ -88,6 +88,7 @@ build_and_test() {
     
     # Create build directory
     mkdir -p build
+    rm -rf build/TestResults build/TestResults.xcresult
     
     # Run tests with coverage
     if xcodebuild -project "$PROJECT" -scheme "$SCHEME" -destination "$DEST" \
@@ -101,16 +102,11 @@ build_and_test() {
         exit 1
     fi
     
-    # Verify test results
-    if [ -f "build/TestResults/Info.plist" ]; then
-        if grep -q "TEST SUCCEEDED" build/TestResults/Info.plist 2>/dev/null; then
-            echo -e "${GREEN}✓ All tests passed${NC}"
-        else
-            echo -e "${RED}❌ Tests did not succeed${NC}"
-            exit 1
-        fi
+    # Verify result bundle exists. xcodebuild exit status above is the source of truth.
+    if [ -d "build/TestResults" ] || [ -d "build/TestResults.xcresult" ]; then
+        echo -e "${GREEN}✓ Test result bundle generated${NC}"
     else
-        echo -e "${YELLOW}⚠ Test results not found; assuming tests passed${NC}"
+        echo -e "${YELLOW}⚠ Test result bundle not found${NC}"
     fi
     
     echo ""
@@ -191,9 +187,16 @@ verify_app() {
 # Run basic functionality test
 test_basic_functionality() {
     echo -e "${BLUE}==> Testing basic functionality${NC}"
+
+    # CI runners are often headless; skip GUI launch checks there.
+    if [ "${CI:-}" = "true" ]; then
+        echo -e "${YELLOW}⚠ Skipping GUI launch test in CI environment${NC}"
+        echo ""
+        return 0
+    fi
     
-    # Launch app in background
-    open "$APP_PATH" &
+    # Launch app binary directly so PID belongs to the app process.
+    "$APP_PATH/Contents/MacOS/DevReader" >/dev/null 2>&1 &
     APP_PID=$!
     
     # Wait for app to launch

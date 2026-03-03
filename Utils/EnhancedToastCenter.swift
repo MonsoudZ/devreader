@@ -13,7 +13,11 @@ final class EnhancedToastCenter: ObservableObject {
         let category: ToastCategory
         let duration: TimeInterval
         let timestamp = Date()
-        
+
+        static func == (lhs: EnhancedToast, rhs: EnhancedToast) -> Bool {
+            lhs.id == rhs.id
+        }
+
         enum Style: CaseIterable {
             case info, success, warning, error, critical
             

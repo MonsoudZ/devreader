@@ -1,6 +1,6 @@
 import Foundation
 
-enum Shell {
+nonisolated enum Shell {
     /// Default execution timeout in seconds
     private static let executionTimeout: TimeInterval = 30
 
@@ -39,11 +39,13 @@ enum Shell {
         }
 
         // Wait with timeout to prevent infinite hangs
-        let deadline = Date().addingTimeInterval(executionTimeout)
-        while p.isRunning && Date() < deadline {
-            Thread.sleep(forTimeInterval: 0.1)
+        let waitGroup = DispatchGroup()
+        waitGroup.enter()
+        DispatchQueue.global(qos: .utility).async {
+            p.waitUntilExit()
+            waitGroup.leave()
         }
-        if p.isRunning {
+        if waitGroup.wait(timeout: .now() + executionTimeout) == .timedOut {
             p.terminate()
             return "[Execution timed out after \(Int(executionTimeout))s]"
         }
@@ -82,11 +84,13 @@ enum Shell {
             errGroup.leave()
         }
 
-        let deadline = Date().addingTimeInterval(executionTimeout)
-        while p.isRunning && Date() < deadline {
-            Thread.sleep(forTimeInterval: 0.1)
+        let waitGroup = DispatchGroup()
+        waitGroup.enter()
+        DispatchQueue.global(qos: .utility).async {
+            p.waitUntilExit()
+            waitGroup.leave()
         }
-        if p.isRunning {
+        if waitGroup.wait(timeout: .now() + executionTimeout) == .timedOut {
             p.terminate()
             return RunResult(output: "[Execution timed out after \(Int(executionTimeout))s]", exitCode: -1)
         }
@@ -145,11 +149,13 @@ enum Shell {
             group.leave()
         }
 
-        let deadline = Date().addingTimeInterval(executionTimeout)
-        while process.isRunning && Date() < deadline {
-            Thread.sleep(forTimeInterval: 0.1)
+        let waitGroup = DispatchGroup()
+        waitGroup.enter()
+        DispatchQueue.global(qos: .utility).async {
+            process.waitUntilExit()
+            waitGroup.leave()
         }
-        if process.isRunning {
+        if waitGroup.wait(timeout: .now() + executionTimeout) == .timedOut {
             process.terminate()
             return RunResult(output: "[Execution timed out after \(Int(executionTimeout))s]", exitCode: -1)
         }
@@ -210,11 +216,13 @@ enum Shell {
             group.leave()
         }
 
-        let deadline = Date().addingTimeInterval(executionTimeout)
-        while process.isRunning && Date() < deadline {
-            Thread.sleep(forTimeInterval: 0.1)
+        let waitGroup = DispatchGroup()
+        waitGroup.enter()
+        DispatchQueue.global(qos: .utility).async {
+            process.waitUntilExit()
+            waitGroup.leave()
         }
-        if process.isRunning {
+        if waitGroup.wait(timeout: .now() + executionTimeout) == .timedOut {
             process.terminate()
             return "[Execution timed out after \(Int(executionTimeout))s]"
         }
@@ -277,28 +285,13 @@ enum Shell {
             case "sql":
                 result = runWithFallback("/usr/bin/sqlite3", fallback: "sqlite3", args: [":memory:", ".read", tempFile.path])
             default:
-                result = runDirect(language: language, code: code)
+                result = "Unsupported language: \(language)"
             }
 
             return result
 
         } catch {
             return "Failed to create temp file: \(error.localizedDescription)"
-        }
-    }
-
-    private static func runDirect(language: String, code: String) -> String {
-        switch language.lowercased() {
-        case "python", "python3":
-            return run("/usr/bin/python3", args: ["-c"], stdin: code)
-        case "ruby":
-            return run("/usr/bin/ruby", args: ["-e"], stdin: code)
-        case "node", "node.js", "javascript":
-            return run("/usr/bin/node", args: ["-e"], stdin: code)
-        case "bash", "sh":
-            return run("/bin/bash", args: ["-c"], stdin: code)
-        default:
-            return "Unsupported language: \(language)"
         }
     }
 

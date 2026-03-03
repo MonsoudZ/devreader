@@ -1,12 +1,12 @@
 import Foundation
 
-protocol CodePersistenceProtocol {
+protocol CodePersistenceProtocol: Sendable {
     func saveCodeSnippets(_ snippets: [CodeSnippet]) throws
     func loadCodeSnippets() -> [CodeSnippet]
     func clearAllData()
 }
 
-class CodePersistenceService: CodePersistenceProtocol {
+final class CodePersistenceService: CodePersistenceProtocol, @unchecked Sendable {
     private let persistenceService = EnhancedPersistenceService.shared
     private let codeSnippetsKey = "DevReader.CodeSnippets.v1"
 

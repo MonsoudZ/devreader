@@ -8,14 +8,42 @@ struct SettingsView: View {
 	@AppStorage("defaultZoom") private var defaultZoom = 1.0
 	@AppStorage("autoSave") private var autoSave = true
 	@AppStorage("autosaveIntervalSeconds") private var autosaveIntervalSeconds: Double = 30
+	@AppStorage("appAppearance") private var appAppearance: String = "system"
 	@StateObject private var performanceMonitor = PerformanceMonitor.shared
 	@State private var alertMessage = ""
 	@State private var alertTitle = ""
 	@State private var showingAlert = false
-	
+
 	var body: some View {
-		NavigationView {
+		VStack(spacing: 0) {
+			// Title bar
+			HStack {
+				Text("Settings")
+					.font(.headline)
+				Spacer()
+				Button("Done") { dismiss() }
+					.buttonStyle(.borderedProminent)
+					.controlSize(.small)
+					.accessibilityLabel("Done")
+					.accessibilityHint("Close the settings window")
+			}
+			.padding(.horizontal, 20)
+			.padding(.vertical, 12)
+
+			Divider()
+
 			Form {
+				Section("Appearance") {
+					Picker("Theme", selection: $appAppearance) {
+						Text("System").tag("system")
+						Text("Light").tag("light")
+						Text("Dark").tag("dark")
+					}
+					.pickerStyle(.segmented)
+					.accessibilityLabel("App theme")
+					.accessibilityHint("Choose between system, light, or dark appearance")
+				}
+
 				Section("PDF Display") {
 					Picker("Highlight Color", selection: $highlightColor) {
 						Text("Yellow").tag("yellow")
@@ -69,7 +97,7 @@ struct SettingsView: View {
 						Spacer()
 						Text(performanceMonitor.getMemoryPressure())
 							.font(.caption)
-							.foregroundStyle(performanceMonitor.getMemoryPressure() == "Critical" ? .red : 
+							.foregroundStyle(performanceMonitor.getMemoryPressure() == "Critical" ? .red :
 											performanceMonitor.getMemoryPressure() == "Warning" ? .orange : .green)
 					}
 					HStack {
@@ -80,7 +108,7 @@ struct SettingsView: View {
 							.foregroundStyle(performanceMonitor.isMonitoring ? .green : .secondary)
 					}
 				}
-				
+
 				Section("Large PDF Performance") {
 					Text("Large PDF performance monitoring will be available in a future update.")
 						.font(.caption)
@@ -89,29 +117,31 @@ struct SettingsView: View {
 						exportPerformanceReport()
 					}
 					.buttonStyle(.bordered)
+					.controlSize(.small)
 					.accessibilityLabel("Export performance report")
 					.accessibilityHint("Export a performance report for large PDF loading")
 				}
-				
+
 				Section("Data Management") {
 					Text("Data is stored in JSON files for better performance:")
 						.font(.caption)
 						.foregroundStyle(.secondary)
-					Text("• Library & Settings: ~/Library/Application Support/DevReader/Data/")
+					Text("\u{2022} Library & Settings: ~/Library/Application Support/DevReader/Data/")
 						.font(.caption)
 						.foregroundStyle(.secondary)
-					Text("• Annotated PDFs: ~/Library/Application Support/DevReader/Annotations/")
+					Text("\u{2022} Annotated PDFs: ~/Library/Application Support/DevReader/Annotations/")
 						.font(.caption)
 						.foregroundStyle(.secondary)
-					Text("• Backups: ~/Library/Application Support/DevReader/Backups/")
+					Text("\u{2022} Backups: ~/Library/Application Support/DevReader/Backups/")
 						.font(.caption)
 						.foregroundStyle(.secondary)
-					
+
 					HStack(spacing: 12) {
 						Button("Create Backup") {
 							createBackup()
 						}
 						.buttonStyle(.bordered)
+						.controlSize(.small)
 						.accessibilityLabel("Create backup")
 						.accessibilityHint("Create a backup of all app data")
 
@@ -119,27 +149,26 @@ struct SettingsView: View {
 							validateData()
 						}
 						.buttonStyle(.bordered)
+						.controlSize(.small)
 						.accessibilityLabel("Validate data")
 						.accessibilityHint("Check all data files for corruption or integrity issues")
 					}
 					.padding(.top, 4)
 				}
-				Section("Keyboard Shortcuts") { VStack(alignment: .leading, spacing: 4) { Text("⌘⇧H - Highlight → Note"); Text("⌘⇧S - Add Sticky Note"); Text("⌘⇧N - New Sketch Page") } .font(.caption).foregroundStyle(.secondary) }
+				Section("Keyboard Shortcuts") { VStack(alignment: .leading, spacing: 4) { Text("\u{2318}\u{21e7}H - Highlight \u{2192} Note"); Text("\u{2318}\u{21e7}S - Add Sticky Note"); Text("\u{2318}\u{21e7}N - New Sketch Page") } .font(.caption).foregroundStyle(.secondary) }
 			}
-			.navigationTitle("Settings")
-			.frame(width: 400, height: 300)
-			.toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() }.accessibilityLabel("Done").accessibilityHint("Close the settings window") } }
-			.alert(alertTitle, isPresented: $showingAlert) {
-				Button("OK") { }
-			} message: {
-				Text(alertMessage)
-			}
+			.formStyle(.grouped)
+		}
+		.alert(alertTitle, isPresented: $showingAlert) {
+			Button("OK") { }
+		} message: {
+			Text(alertMessage)
 		}
 	}
-	
+
 	private func createBackup() {
 		LoadingStateManager.shared.startBackup("Creating backup...")
-		
+
 		Task {
 			do {
 				let backupURL = try PersistenceService.createBackup()
@@ -159,10 +188,10 @@ struct SettingsView: View {
 			}
 		}
 	}
-	
+
 	private func validateData() {
 		LoadingStateManager.shared.startLoading(.general, message: "Validating data integrity...")
-		
+
 		Task {
 			let issues = PersistenceService.validateDataIntegrity()
 			await MainActor.run {
@@ -178,7 +207,7 @@ struct SettingsView: View {
 			}
 		}
 	}
-	
+
 	private func exportPerformanceReport() {
 		alertTitle = "Feature Coming Soon"
 		alertMessage = "Performance report export will be available in a future update."

@@ -34,12 +34,14 @@ class WebStore: ObservableObject {
     }
     
     func addBookmark(title: String, url: String) {
+        guard !bookmarks.contains(where: { $0.url == url }) else { return }
+
         let bookmark = WebBookmark(
             title: title,
             url: url,
             createdDate: Date()
         )
-        
+
         bookmarks.append(bookmark)
         saveBookmarks()
     }

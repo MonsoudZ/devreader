@@ -25,6 +25,7 @@ final class PDFBookmarkManager: ObservableObject {
     }
 
     func loadBookmarks(for url: URL?) {
+        bookmarks.removeAll()
         guard let url = url else { return }
         let key = PersistenceService.key(bookmarksKey, for: url)
         if let arr: [Int] = PersistenceService.loadCodable([Int].self, forKey: key) {
@@ -39,11 +40,22 @@ final class PDFBookmarkManager: ObservableObject {
     }
 
     func loadRecents() {
-        if let arr: [URL] = PersistenceService.loadCodable([URL].self, forKey: recentsKey) {
-            recentDocuments = arr.filter { FileManager.default.fileExists(atPath: $0.path) }
-        }
-        if let pins: [URL] = PersistenceService.loadCodable([URL].self, forKey: pinnedKey) {
-            pinnedDocuments = pins.filter { FileManager.default.fileExists(atPath: $0.path) }
+        let rawRecents: [URL]? = PersistenceService.loadCodable([URL].self, forKey: recentsKey)
+        let rawPinned: [URL]? = PersistenceService.loadCodable([URL].self, forKey: pinnedKey)
+
+        // Show immediately, then filter stale entries off main thread
+        if let arr = rawRecents { recentDocuments = arr }
+        if let pins = rawPinned { pinnedDocuments = pins }
+
+        Task.detached(priority: .utility) { [recents = rawRecents, pinned = rawPinned] in
+            let fm = FileManager.default
+            let filteredRecents = recents?.filter { fm.fileExists(atPath: $0.path) }
+            let filteredPinned = pinned?.filter { fm.fileExists(atPath: $0.path) }
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                if let r = filteredRecents { self.recentDocuments = r }
+                if let p = filteredPinned { self.pinnedDocuments = p }
+            }
         }
     }
 
@@ -92,5 +104,6 @@ final class PDFBookmarkManager: ObservableObject {
         bookmarks.removeAll()
         recentDocuments.removeAll()
         pinnedDocuments.removeAll()
+        saveRecents()
     }
 }

@@ -58,6 +58,8 @@ struct NoteRow: View {
 							.accessibilityLabel("Edit note")
 							.accessibilityHint("Edit the note content and title")
 						Button("Go") { jump() }
+							.buttonStyle(.bordered)
+							.controlSize(.small)
 							.accessibilityLabel("Go to page")
 							.accessibilityHint("Jump to page \(item.pageIndex + 1) in the PDF")
 					}

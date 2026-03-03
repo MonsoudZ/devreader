@@ -72,6 +72,7 @@ final class NotesStore: ObservableObject {
 
 	func addTag(_ tag: String, to note: NoteItem) {
 		if let index = items.firstIndex(where: { $0.id == note.id }) {
+			guard !items[index].tags.contains(tag) else { return }
 			items[index].tags.append(tag)
 			availableTags.insert(tag)
 			schedulePersist()
@@ -87,10 +88,20 @@ final class NotesStore: ObservableObject {
 
 	func notesWithTag(_ tag: String) -> [NoteItem] { items.filter { $0.tags.contains(tag) } }
 
+	/// Immediately flush any pending debounced persistence (call on lifecycle events).
+	func flushPendingPersistence() {
+		if let workItem = persistWorkItem {
+			workItem.cancel()
+			persistWorkItem = nil
+			guard let url = currentPDFURL else { return }
+			persistForPDF(url)
+		}
+	}
+
 	private func schedulePersist() {
 		guard !isLoading else { return }
 		persistWorkItem?.cancel()
-		let workItem = DispatchWorkItem { [weak self] in
+		let workItem = DispatchWorkItem { @Sendable [weak self] in
 			Task { @MainActor in
 				guard let self = self, let url = self.currentPDFURL else { return }
 				self.persistForPDF(url)

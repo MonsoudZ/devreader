@@ -289,7 +289,7 @@ struct RecoveryAction: Identifiable {
     let id = UUID()
     let title: String
     let style: RecoveryActionStyle
-    let action: () -> Void
+    let action: @MainActor () -> Void
     
     enum RecoveryActionStyle {
         case primary

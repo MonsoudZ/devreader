@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct NoteItem: Identifiable, Hashable, Codable, Sendable {
+nonisolated struct NoteItem: Identifiable, Hashable, Codable, Sendable {
     let id: UUID
     var title: String
     var text: String

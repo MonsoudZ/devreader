@@ -55,10 +55,10 @@ final class LargePDFTests: XCTestCase {
 
         let loadTime = CFAbsoluteTimeGetCurrent() - startTime
         let endMemory = getCurrentMemoryUsage()
-        let memoryIncrease = endMemory - startMemory
+        let memoryIncrease = signedMemoryDelta(after: endMemory, before: startMemory)
 
         XCTAssertLessThan(loadTime, 10.0, "Large PDF should load within 10 seconds")
-        XCTAssertLessThan(memoryIncrease, 500 * 1024 * 1024, "Memory increase should be less than 500MB")
+        XCTAssertLessThan(memoryIncrease, Int64(500 * 1024 * 1024), "Memory increase should be less than 500MB")
         XCTAssertNotNil(pdfController.document)
         XCTAssertTrue(pdfController.isLargePDF)
         XCTAssertGreaterThanOrEqual(pdfController.document?.pageCount ?? 0, 500)
@@ -78,7 +78,7 @@ final class LargePDFTests: XCTestCase {
         await waitForLoad(pdfController)
 
         let loadedMemory = getCurrentMemoryUsage()
-        let memoryIncrease = loadedMemory - initialMemory
+        let memoryIncrease = signedMemoryDelta(after: loadedMemory, before: initialMemory)
 
         // Navigate through several pages
         let navigationStartMemory = getCurrentMemoryUsage()
@@ -87,10 +87,10 @@ final class LargePDFTests: XCTestCase {
             try await Task.sleep(nanoseconds: 10_000_000) // 10ms
         }
         let navigationEndMemory = getCurrentMemoryUsage()
-        let navigationMemoryIncrease = navigationEndMemory - navigationStartMemory
+        let navigationMemoryIncrease = signedMemoryDelta(after: navigationEndMemory, before: navigationStartMemory)
 
-        XCTAssertLessThan(memoryIncrease, 400 * 1024 * 1024, "Initial load memory increase should be reasonable")
-        XCTAssertLessThan(navigationMemoryIncrease, 50 * 1024 * 1024, "Navigation should not significantly increase memory")
+        XCTAssertLessThan(memoryIncrease, Int64(400 * 1024 * 1024), "Initial load memory increase should be reasonable")
+        XCTAssertLessThan(navigationMemoryIncrease, Int64(50 * 1024 * 1024), "Navigation should not significantly increase memory")
     }
 
     // MARK: - Search Performance Tests
@@ -221,10 +221,10 @@ final class LargePDFTests: XCTestCase {
 
         let totalTime = CFAbsoluteTimeGetCurrent() - startTime
         let endMemory = getCurrentMemoryUsage()
-        let memoryIncrease = endMemory - startMemory
+        let memoryIncrease = signedMemoryDelta(after: endMemory, before: startMemory)
 
         XCTAssertLessThan(totalTime, 30.0, "Stress test should complete within 30 seconds")
-        XCTAssertLessThan(memoryIncrease, 200 * 1024 * 1024, "Memory should not leak significantly")
+        XCTAssertLessThan(memoryIncrease, Int64(200 * 1024 * 1024), "Memory should not leak significantly")
     }
 
     // MARK: - Helper Methods
@@ -279,6 +279,13 @@ final class LargePDFTests: XCTestCase {
             return info.resident_size
         }
         return 0
+    }
+
+    private func signedMemoryDelta(after: UInt64, before: UInt64) -> Int64 {
+        if after >= before {
+            return Int64(after - before)
+        }
+        return -Int64(before - after)
     }
 
     private func formatBytes(_ bytes: UInt64) -> String {

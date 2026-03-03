@@ -1,7 +1,7 @@
 import Foundation
 
 /// Schema versioning and migration support for library data
-struct LibraryEnvelope: Codable, Sendable {
+nonisolated struct LibraryEnvelope: Codable, Sendable {
     let schemaVersion: String
     let createdDate: Date
     let lastModified: Date
@@ -26,7 +26,7 @@ struct LibraryEnvelope: Codable, Sendable {
 
 // MARK: - Schema Migration
 
-struct LibraryMigration {
+nonisolated struct LibraryMigration {
     static func migrateLibraryData(_ data: Data) throws -> LibraryEnvelope {
         // Try to decode as new format first
         if let envelope = try? JSONDecoder().decode(LibraryEnvelope.self, from: data) {
@@ -48,7 +48,7 @@ struct LibraryMigration {
     }
 }
 
-enum MigrationError: LocalizedError {
+nonisolated enum MigrationError: LocalizedError {
     case unsupportedFormat
     case corruptedData
     

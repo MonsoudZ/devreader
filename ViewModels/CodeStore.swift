@@ -9,7 +9,8 @@ class CodeStore: ObservableObject {
     @Published var currentSnippet: CodeSnippet?
     
     private let persistenceService: CodePersistenceProtocol
-    
+    private var persistWorkItem: DispatchWorkItem?
+
     init(persistenceService: CodePersistenceProtocol? = nil) {
         self.persistenceService = persistenceService ?? CodePersistenceService()
         loadCodeSnippets()
@@ -33,14 +34,14 @@ class CodeStore: ObservableObject {
     
     func updateCurrentSnippet(_ content: String) {
         guard var snippet = currentSnippet else { return }
-        
+
         snippet.content = content
         snippet.lastModified = Date()
-        
+
         if let index = codeSnippets.firstIndex(where: { $0.id == snippet.id }) {
             codeSnippets[index] = snippet
             currentSnippet = snippet
-            saveCodeSnippets()
+            schedulePersist()
         }
     }
     
@@ -52,9 +53,16 @@ class CodeStore: ObservableObject {
         saveCodeSnippets()
     }
     
+    private func sanitizedFilename(_ name: String) -> String {
+        let invalidChars = CharacterSet(charactersIn: "/\\:*?\"<>|")
+        let sanitized = name.unicodeScalars.filter { !invalidChars.contains($0) }
+        let result = String(String.UnicodeScalarView(sanitized))
+        return result.isEmpty ? "untitled" : result
+    }
+
     func exportSnippet(_ snippet: CodeSnippet) -> URL? {
         let exportURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("\(snippet.title).\(snippet.language)")
+            .appendingPathComponent("\(sanitizedFilename(snippet.title)).\(snippet.language)")
 
         do {
             try snippet.content.write(to: exportURL, atomically: true, encoding: .utf8)
@@ -66,7 +74,26 @@ class CodeStore: ObservableObject {
     }
     
     // MARK: - Persistence
-    
+
+    private func schedulePersist() {
+        persistWorkItem?.cancel()
+        let workItem = DispatchWorkItem { @Sendable [weak self] in
+            Task { @MainActor in
+                self?.saveCodeSnippets()
+            }
+        }
+        persistWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+    }
+
+    func flushPendingPersistence() {
+        if let workItem = persistWorkItem {
+            workItem.cancel()
+            persistWorkItem = nil
+            saveCodeSnippets()
+        }
+    }
+
     private func saveCodeSnippets() {
         do {
             try persistenceService.saveCodeSnippets(codeSnippets)

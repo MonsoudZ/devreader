@@ -131,7 +131,7 @@ final class LibraryStore: ObservableObject {
 	private func schedulePersist() {
 		guard !isRestoring else { return }
 		persistWorkItem?.cancel()
-		let workItem = DispatchWorkItem { [weak self] in
+		let workItem = DispatchWorkItem { @Sendable [weak self] in
 			Task { @MainActor in
 				guard let self = self else { return }
 				self.persistNow()
@@ -178,6 +178,14 @@ final class LibraryStore: ObservableObject {
 			items = oldItems
 			// Migrate to new format
 			let envelope = LibraryEnvelope(items: oldItems)
+			PersistenceService.saveCodable(envelope, forKey: key)
+			return
+		}
+
+		// Fallback: check JSONStorageService path (used by background service for large datasets)
+		if let envelope = JSONStorageService.loadOptional(LibraryEnvelope.self, from: JSONStorageService.libraryPath()) {
+			items = envelope.items
+			// Migrate back to PersistenceService so future restores find it immediately
 			PersistenceService.saveCodable(envelope, forKey: key)
 		}
 	}

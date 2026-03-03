@@ -139,27 +139,27 @@ final class JSONStorageTests: XCTestCase {
     }
     
     func testRestoreFromBackup() throws {
-        let testData = "Restore Test Data"
-        let url = JSONStorageService.dataDirectory.appendingPathComponent("test_restore.json")
-        
-        // Save test data
-        try JSONStorageService.save(testData, to: url)
-        
+        // Seed library data so the backup has something to restore
+        let seedItems: [DevReader.LibraryItem] = []
+        try JSONStorageService.save(seedItems, to: JSONStorageService.libraryPath())
+
         // Create backup
         let backupURL = try JSONStorageService.createBackup()
-        
-        // Delete original data
-        JSONStorageService.delete(url: url)
-        
+
+        // Delete library
+        JSONStorageService.delete(url: JSONStorageService.libraryPath())
+        XCTAssertFalse(FileManager.default.fileExists(atPath: JSONStorageService.libraryPath().path))
+
         // Restore from backup
         try JSONStorageService.restoreFromBackup(backupURL)
-        
-        // Verify some data files exist after restore (we can't guarantee arbitrary test file is included)
+
+        // Verify library file was recreated
         let libraryExists = FileManager.default.fileExists(atPath: JSONStorageService.libraryPath().path)
         XCTAssertTrue(libraryExists, "Library file should exist after restore")
-        
+
         // Clean up
         try? FileManager.default.removeItem(at: backupURL)
+        JSONStorageService.delete(url: JSONStorageService.libraryPath())
     }
     
     // MARK: - Export and Import Tests

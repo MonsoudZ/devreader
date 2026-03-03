@@ -1,7 +1,7 @@
 import Foundation
 @testable import DevReader
 
-class MockCodePersistenceService: CodePersistenceProtocol {
+final class MockCodePersistenceService: CodePersistenceProtocol, @unchecked Sendable {
     var snippets: [CodeSnippet] = []
     var saveCallCount = 0
     var shouldThrowError = false

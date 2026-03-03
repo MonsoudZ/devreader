@@ -1,7 +1,7 @@
 import Foundation
 @testable import DevReader
 
-class MockWebPersistenceService: WebPersistenceProtocol {
+final class MockWebPersistenceService: WebPersistenceProtocol, @unchecked Sendable {
     var bookmarks: [WebBookmark] = []
     var saveCallCount = 0
     var shouldThrowError = false

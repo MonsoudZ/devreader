@@ -79,6 +79,8 @@ struct ScratchRunner: View {
 
 				Spacer()
 				Button(isRunning ? "Running…" : "Run") { run() }
+					.buttonStyle(.borderedProminent)
+					.controlSize(.small)
 					.disabled(isRunning)
 					.accessibilityLabel("Run code")
 					.accessibilityHint("Execute the code in the editor")
@@ -114,7 +116,7 @@ struct ScratchRunner: View {
 	}
 }
 
-enum CodeLang: String, CaseIterable {
+nonisolated enum CodeLang: String, CaseIterable, Sendable {
 	case python = "Python"
 	case ruby = "Ruby"
 	case node = "Node.js"
@@ -212,6 +214,7 @@ enum CodeLang: String, CaseIterable {
 }
 
 struct MonacoWebEditor: View {
+	@Environment(\.colorScheme) private var colorScheme
 	@AppStorage("monacoCode") private var savedCode: String = ""
 	@State private var useFallback = false
 	@State private var isMonacoLoaded = false
@@ -238,7 +241,7 @@ struct MonacoWebEditor: View {
 		    value: window._code,
 		    language: window._language,
 		    automaticLayout: true,
-		    theme: 'vs-dark',
+		    theme: '\(colorScheme == .dark ? "vs-dark" : "vs")',
 		    minimap: { enabled: true },
 		    wordWrap: 'on',
 		    lineNumbers: 'on',
@@ -272,21 +275,41 @@ struct MonacoWebEditor: View {
 				.accessibilityHint("Select the programming language for the editor")
 
 				Button("Run") { executeCode() }
+					.buttonStyle(.borderedProminent)
+					.controlSize(.small)
 					.disabled(isRunning)
 					.accessibilityLabel("Run code")
 					.accessibilityHint("Execute the code in the editor")
 
-				Button("Save") { saveFile() }
-					.accessibilityLabel("Save file")
-					.accessibilityHint("Save the current code to a file")
+				Button {
+					saveFile()
+				} label: {
+					Label("Save", systemImage: "square.and.arrow.down")
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.accessibilityLabel("Save file")
+				.accessibilityHint("Save the current code to a file")
 
-				Button("Load") { showFileManager = true }
-					.accessibilityLabel("Load file")
-					.accessibilityHint("Open the file manager to load a file")
+				Button {
+					showFileManager = true
+				} label: {
+					Label("Load", systemImage: "folder")
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.accessibilityLabel("Load file")
+				.accessibilityHint("Open the file manager to load a file")
 
-				Button("Export") { showExportOptions = true }
-					.accessibilityLabel("Export code")
-					.accessibilityHint("Export code to various editor formats")
+				Button {
+					showExportOptions = true
+				} label: {
+					Label("Export", systemImage: "square.and.arrow.up")
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.accessibilityLabel("Export code")
+				.accessibilityHint("Export code to various editor formats")
 
 				Spacer()
 
@@ -309,7 +332,7 @@ struct MonacoWebEditor: View {
 							isMonacoLoaded = false
 						})
 					} else {
-						WebViewHTML(html: html(savedCode), savedCode: savedCode, language: selectedLanguage.monacoLanguage, onCodeChange: { newCode in
+						WebViewHTML(html: html(savedCode), savedCode: savedCode, language: selectedLanguage.monacoLanguage, theme: colorScheme == .dark ? "vs-dark" : "vs", onCodeChange: { newCode in
 							savedCode = newCode
 						}, onEditorReady: {
 							isMonacoLoaded = true
@@ -804,9 +827,10 @@ struct WebViewHTML: NSViewRepresentable {
     var html: String
     var savedCode: String
     var language: String
+    var theme: String
     var onCodeChange: (String) -> Void
     var onEditorReady: (() -> Void)?
-    func makeCoordinator() -> Coord { Coord(onCodeChange: onCodeChange, savedCode: savedCode, onEditorReady: onEditorReady) }
+    func makeCoordinator() -> Coord { Coord(onCodeChange: onCodeChange, savedCode: savedCode, theme: theme, onEditorReady: onEditorReady) }
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         
@@ -843,11 +867,19 @@ struct WebViewHTML: NSViewRepresentable {
         if view.url == nil {
             view.loadHTMLString(html, baseURL: URL(string: "https://cdn.jsdelivr.net"))
             context.coordinator.currentLanguage = language
-        } else if context.coordinator.currentLanguage != language {
-            context.coordinator.currentLanguage = language
-            let escaped = language.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
-            let js = "if (window.editor) { monaco.editor.setModelLanguage(window.editor.getModel(), '\(escaped)'); }"
-            view.evaluateJavaScript(js, completionHandler: nil)
+            context.coordinator.currentTheme = theme
+        } else {
+            if context.coordinator.currentLanguage != language {
+                context.coordinator.currentLanguage = language
+                let escaped = language.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
+                let js = "if (window.editor) { monaco.editor.setModelLanguage(window.editor.getModel(), '\(escaped)'); }"
+                view.evaluateJavaScript(js, completionHandler: nil)
+            }
+            if context.coordinator.currentTheme != theme {
+                context.coordinator.currentTheme = theme
+                let js = "if (window.monaco) { monaco.editor.setTheme('\(theme)'); }"
+                view.evaluateJavaScript(js, completionHandler: nil)
+            }
         }
     }
     final class Coord: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
@@ -855,9 +887,11 @@ struct WebViewHTML: NSViewRepresentable {
         let savedCode: String
         let onEditorReady: (() -> Void)?
         var currentLanguage: String = ""
-        init(onCodeChange: @escaping (String) -> Void, savedCode: String, onEditorReady: (() -> Void)? = nil) {
+        var currentTheme: String = ""
+        init(onCodeChange: @escaping (String) -> Void, savedCode: String, theme: String = "vs-dark", onEditorReady: (() -> Void)? = nil) {
             self.onCodeChange = onCodeChange
             self.savedCode = savedCode
+            self.currentTheme = theme
             self.onEditorReady = onEditorReady
         }
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {

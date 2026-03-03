@@ -2,7 +2,7 @@ import Foundation
 import os.log
 
 /// Enhanced JSON file-based storage system for better performance and reliability
-enum JSONStorageService {
+nonisolated enum JSONStorageService {
     private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "JSONStorage")
     
     // MARK: - Storage Locations

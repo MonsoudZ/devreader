@@ -57,7 +57,7 @@
 
 ## 7) Release steps (repeatable)
 - [ ] Tag RC: `git tag -a v1.0.0-rc.1 -m "RC1"`; push.
-- [ ] Run `scripts/smoke.sh` (below) — green.
+- [ ] Run `Scripts/smoke.sh` (below) — green.
 - [ ] Notarize build; attach to draft GitHub release.
 - [ ] Staged rollout to 20–50 users for 48–72h; watch crash-free %.
 - [ ] Promote to `v1.0.0`.

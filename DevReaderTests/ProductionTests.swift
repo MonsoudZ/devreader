@@ -54,10 +54,10 @@ final class ProductionTests: XCTestCase {
 
         // Get memory usage after loading
         let finalMemory = getMemoryUsage()
-        let memoryIncrease = finalMemory - initialMemory
+        let memoryIncrease = signedMemoryDelta(after: finalMemory, before: initialMemory)
 
         // Memory increase should be reasonable (less than 1GB)
-        XCTAssertLessThan(memoryIncrease, 1_000_000_000, "Memory usage should be reasonable")
+        XCTAssertLessThan(memoryIncrease, Int64(1_000_000_000), "Memory usage should be reasonable")
 
         // Clean up
         try? FileManager.default.removeItem(at: testURL)
@@ -376,5 +376,12 @@ final class ProductionTests: XCTestCase {
         } else {
             return 0
         }
+    }
+
+    private func signedMemoryDelta(after: UInt64, before: UInt64) -> Int64 {
+        if after >= before {
+            return Int64(after - before)
+        }
+        return -Int64(before - after)
     }
 }

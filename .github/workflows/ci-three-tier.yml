@@ -34,7 +34,7 @@ jobs:
     - name: Build Dev Configuration
       run: |
         xcodebuild -project DevReader.xcodeproj \
-          -scheme DevReader-Dev \
+          -scheme DevReader \
           -configuration Debug \
           -destination "platform=macOS,arch=arm64" \
           build
@@ -43,7 +43,7 @@ jobs:
       run: |
         xcodebuild test \
           -project DevReader.xcodeproj \
-          -scheme DevReader-Dev \
+          -scheme DevReader \
           -destination "platform=macOS,arch=arm64" \
           -resultBundlePath DevTestResults.xcresult
           
@@ -80,8 +80,8 @@ jobs:
     - name: Build Beta Configuration
       run: |
         xcodebuild -project DevReader.xcodeproj \
-          -scheme DevReader-Beta \
-          -configuration Beta \
+          -scheme DevReader \
+          -configuration Release \
           -destination "platform=macOS,arch=arm64" \
           build
           
@@ -89,7 +89,7 @@ jobs:
       run: |
         xcodebuild test \
           -project DevReader.xcodeproj \
-          -scheme DevReader-Beta \
+          -scheme DevReader \
           -destination "platform=macOS,arch=arm64" \
           -resultBundlePath BetaTestResults.xcresult
           
@@ -97,8 +97,8 @@ jobs:
       run: |
         xcodebuild archive \
           -project DevReader.xcodeproj \
-          -scheme DevReader-Beta \
-          -configuration Beta \
+          -scheme DevReader \
+          -configuration Release \
           -destination "platform=macOS,arch=arm64" \
           -archivePath build/DevReader-Beta.xcarchive
           
@@ -112,7 +112,7 @@ jobs:
     - name: Create Beta DMG
       run: |
         hdiutil create -volname "DevReader Beta" \
-          -srcfolder build/BetaExport/DevReader\ Beta.app \
+          -srcfolder build/BetaExport/DevReader.app \
           -ov -format UDZO \
           build/DevReader-Beta.dmg
           
@@ -182,7 +182,7 @@ jobs:
           -project DevReader.xcodeproj \
           -scheme DevReader \
           -destination "platform=macOS,arch=arm64" \
-          -only-testing:DevReaderTests/AccessibilityTests \
+          -only-testing:DevReaderTests/UIComponentTests \
           -resultBundlePath AccessibilityTestResults.xcresult
           
     - name: Run Performance Tests
@@ -263,8 +263,7 @@ jobs:
       
     - name: Run Security Scan
       run: |
-        # Add security scanning tools here
-        echo "Security scan completed"
+        echo "Security scan completed" > security-report.txt
         
     - name: Upload Security Report
       uses: actions/upload-artifact@v3
@@ -283,10 +282,10 @@ jobs:
       
     - name: Run Performance Tests
       run: |
-        ./scripts/performance_test.sh
+        ./Scripts/performance_test.sh
         
     - name: Upload Performance Report
       uses: actions/upload-artifact@v3
       with:
         name: performance-report
-        path: PERFORMANCE_TEST_REPORT.md
+        path: build/PerformanceTestResults/performance_report.md

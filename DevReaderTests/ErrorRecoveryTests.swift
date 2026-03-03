@@ -71,7 +71,7 @@ final class ErrorRecoveryTests: XCTestCase {
     
     // MARK: - Data Corruption Detection Tests
     
-    @MainActor func testDetectDataCorruption() {
+    func testDetectDataCorruption() {
         let validData = "%PDF-1.4\n%%EOF".data(using: .utf8)!
         let corruptedData = Data([0x00, 0x01, 0x02, 0x03])
         
@@ -87,7 +87,7 @@ final class ErrorRecoveryTests: XCTestCase {
     
     // MARK: - PDF Data Sanitization Tests
     
-    @MainActor func testSanitizePDFData() {
+    func testSanitizePDFData() {
         let validData = "%PDF-1.4\n%%EOF".data(using: .utf8)!
         let corruptedData = Data([0x00, 0x01, 0x02, 0x03])
         

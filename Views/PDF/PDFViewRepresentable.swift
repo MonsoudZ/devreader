@@ -1,7 +1,6 @@
 import SwiftUI
 import PDFKit
 import Combine
-import os.log
 
 final class PDFSelectionBridge {
 	static let shared = PDFSelectionBridge()
@@ -57,8 +56,10 @@ struct PDFViewRepresentable: NSViewRepresentable {
 
 	func updateNSView(_ nsView: PDFView, context: Context) {
 		// Only update document if it actually changed
-		if nsView.document !== pdf.document {
+		let documentChanged = nsView.document !== pdf.document
+		if documentChanged {
 			nsView.document = pdf.document
+			context.coordinator.hasSetInitialZoom = false
 		}
 
 		// Only navigate to page if it's different and valid (with safety checks)
@@ -70,10 +71,14 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			nsView.go(to: targetPage)
 		}
 
-		// Only update zoom if it changed significantly and is within safe bounds
-		let safeZoom = max(0.3, min(defaultZoom, 2.0))
-		if safeZoom > 0, abs(nsView.scaleFactor - safeZoom) > 0.01 {
-			nsView.scaleFactor = safeZoom
+		// Only set zoom when the document changes, not on every update
+		// This prevents overriding the user's manual pinch-zoom
+		if !context.coordinator.hasSetInitialZoom, pdf.document != nil {
+			let safeZoom = max(0.3, min(defaultZoom, 2.0))
+			if safeZoom > 0 {
+				nsView.scaleFactor = safeZoom
+			}
+			context.coordinator.hasSetInitialZoom = true
 		}
 	}
 
@@ -81,6 +86,7 @@ struct PDFViewRepresentable: NSViewRepresentable {
 
 	final class Coord: NSObject, PDFViewDelegate {
 		let parent: PDFViewRepresentable
+		var hasSetInitialZoom = false
 
 		init(parent: PDFViewRepresentable) {
 			self.parent = parent
@@ -92,56 +98,6 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			let idx = doc.index(for: page)
 			if idx != parent.pdf.currentPageIndex && idx >= 0 && idx < doc.pageCount {
 				parent.pdf.didScrollToPage(idx)
-			}
-		}
-
-		// Handle PDF loading errors gracefully
-		func pdfView(_ sender: PDFView, didFailToLoadWithError error: Error) {
-			logError(AppLog.pdf, "PDFView failed to load: \(error.localizedDescription)")
-			NotificationCenter.default.post(name: .pdfLoadError, object: sender.document?.documentURL)
-		}
-
-		// Handle document loading completion
-		func pdfViewDidChangeDocument(_ sender: PDFView) {
-			guard let doc = sender.document else { return }
-
-			// Validate document integrity
-			if doc.pageCount == 0 {
-				logError(AppLog.pdf, "Document has no pages")
-				NotificationCenter.default.post(name: .pdfLoadError, object: doc.documentURL)
-				return
-			}
-
-			// Check for corrupted pages with better error handling
-			var corruptedPages: [Int] = []
-			for i in 0..<min(doc.pageCount, 10) {
-				if let page = doc.page(at: i) {
-					let bounds = page.bounds(for: .mediaBox)
-					if bounds.width <= 0 || bounds.height <= 0 {
-						corruptedPages.append(i)
-					}
-				}
-			}
-
-			if !corruptedPages.isEmpty {
-				logError(AppLog.pdf, "Found corrupted pages: \(corruptedPages) - continuing with graceful degradation")
-			} else {
-				log(AppLog.pdf, "Document loaded successfully with \(doc.pageCount) pages")
-			}
-		}
-
-		func pdfViewWillDraw(_ sender: PDFView) {
-			guard let page = sender.currentPage else { return }
-
-			// Check for memory pressure and optimize accordingly
-			if ProcessInfo.processInfo.isLowPowerModeEnabled {
-				sender.interpolationQuality = .low
-			}
-
-			// Try to get a thumbnail with error handling
-			let probe = page.thumbnail(of: CGSize(width: 24, height: 24), for: .mediaBox)
-			if probe.size == .zero {
-				_ = ImageProcessingService.rasterize(page: page, into: CGSize(width: 160, height: 200))
 			}
 		}
 

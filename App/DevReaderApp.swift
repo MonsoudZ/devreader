@@ -11,40 +11,15 @@ import PDFKit
 import Combine
 import AppKit
 
-// MARK: - Lightweight DI Container
-// Keeps your "static service" pattern, but allows test overrides when needed.
-final class AppDependencies: ObservableObject {
-    let objectWillChange = PassthroughSubject<Void, Never>()
-
-    // Services are enums/singletons with static APIs in this codebase.
-    // Expose the types so views can call e.g. deps.persistence.someFunc(...)
-    let persistence = PersistenceService.self
-    let file        = FileService.self
-
-    init() {}
-
-    static func forTesting() -> AppDependencies { AppDependencies() }
-}
-
-// MARK: - EnvironmentKey bridge for deps
-private struct DependenciesKey: EnvironmentKey {
-    static let defaultValue = AppDependencies()
-}
-
-extension EnvironmentValues {
-    var deps: AppDependencies {
-        get { self[DependenciesKey.self] }
-        set { self[DependenciesKey.self] = newValue }
-    }
-}
-
 // MARK: - App
 @main
 struct DevReaderApp: App {
     // Shared app-wide state (stores, controllers, services)
-    @StateObject private var deps           = AppDependencies()
     @StateObject private var appEnvironment = AppEnvironment.shared        // central hub
     // Legacy ToastCenter removed — all toasts now use EnhancedToastCenter
+
+    // App appearance
+    @AppStorage("appAppearance") private var appAppearance: String = "system"
 
     // Init error surfacing
     @State private var initializationError: String?
@@ -64,20 +39,14 @@ struct DevReaderApp: App {
         WindowGroup {
             // Root view
             ContentView()
-                // DI + shared state
-                .environment(\.deps, deps)
+                // Shared state
                 .environmentObject(appEnvironment)
-                // .environmentObject(toastCenter) — removed, using EnhancedToastCenter
 
-                // Global overlays (non-blocking toast + error overlay)
-                // Enhanced, categorized toasts:
-                .enhancedToastOverlay(appEnvironment.enhancedToastCenter)
-                // User-friendly error panels/snackbars:
-                .errorOverlay(appEnvironment.errorMessageManager)
-                .errorToastOverlay(appEnvironment.errorMessageManager)
+                // App-wide appearance based on user preference
+                .preferredColorScheme(preferredScheme)
 
                 // Window sizing baseline (macOS)
-                .frame(minWidth: 900, minHeight: 650)
+                .frame(minWidth: 780, minHeight: 520)
 
                 // First appearance: show any init error we captured in init()
                 .onAppear(perform: checkInitializationError)
@@ -111,6 +80,7 @@ struct DevReaderApp: App {
                 }
         }
         .windowStyle(.titleBar)
+        .windowToolbarStyle(.unified)
 
         // MARK: - App-wide Commands (Menus)
         .commands {
@@ -192,7 +162,7 @@ struct DevReaderApp: App {
             }
         }
         // MARK: - Lifecycle Hooks
-        .onChange(of: scenePhase) { phase in
+        .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
                 // Good place to refresh transient permissions or resume tasks
@@ -201,9 +171,19 @@ struct DevReaderApp: App {
                 // Flush any pending debounced persistence
                 appEnvironment.pdfController.flushPendingPersistence()
                 appEnvironment.libraryStore.flushPendingPersistence()
+                appEnvironment.notesStore.flushPendingPersistence()
             @unknown default:
                 break
             }
+        }
+    }
+
+    // MARK: - Appearance
+    private var preferredScheme: ColorScheme? {
+        switch appAppearance {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
         }
     }
 

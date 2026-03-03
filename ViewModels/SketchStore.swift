@@ -10,7 +10,8 @@ class SketchStore: ObservableObject {
     @Published var currentSketch: SketchItem?
     
     private let persistenceService: SketchPersistenceProtocol
-    
+    private var persistWorkItem: DispatchWorkItem?
+
     init(persistenceService: SketchPersistenceProtocol? = nil) {
         self.persistenceService = persistenceService ?? SketchPersistenceService()
         loadSketches()
@@ -42,14 +43,14 @@ class SketchStore: ObservableObject {
     
     func updateCurrentSketch(_ canvasData: Data) {
         guard var sketch = currentSketch else { return }
-        
+
         sketch.canvasData = canvasData
         sketch.lastModified = Date()
-        
+
         if let index = sketches.firstIndex(where: { $0.id == sketch.id }) {
             sketches[index] = sketch
             currentSketch = sketch
-            saveSketches()
+            schedulePersist()
         }
     }
     
@@ -61,11 +62,18 @@ class SketchStore: ObservableObject {
         saveSketches()
     }
     
+    private func sanitizedFilename(_ name: String) -> String {
+        let invalidChars = CharacterSet(charactersIn: "/\\:*?\"<>|")
+        let sanitized = name.unicodeScalars.filter { !invalidChars.contains($0) }
+        let result = String(String.UnicodeScalarView(sanitized))
+        return result.isEmpty ? "untitled" : result
+    }
+
     func exportSketch(_ sketch: SketchItem) -> URL? {
         guard let image = NSImage(data: sketch.canvasData) else { return nil }
 
         let exportURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("\(sketch.title).png")
+            .appendingPathComponent("\(sanitizedFilename(sketch.title)).png")
 
         guard let tiffData = image.tiffRepresentation,
               let bitmapRep = NSBitmapImageRep(data: tiffData),
@@ -91,7 +99,26 @@ class SketchStore: ObservableObject {
     }
     
     // MARK: - Persistence
-    
+
+    private func schedulePersist() {
+        persistWorkItem?.cancel()
+        let workItem = DispatchWorkItem { @Sendable [weak self] in
+            Task { @MainActor in
+                self?.saveSketches()
+            }
+        }
+        persistWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+    }
+
+    func flushPendingPersistence() {
+        if let workItem = persistWorkItem {
+            workItem.cancel()
+            persistWorkItem = nil
+            saveSketches()
+        }
+    }
+
     private func saveSketches() {
         do {
             try persistenceService.saveSketches(sketches)

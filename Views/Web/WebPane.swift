@@ -14,22 +14,56 @@ struct WebPane: View {
 	
 	var body: some View {
 		VStack(spacing: 0) {
-			HStack {
-				Button("Back") { goBack() }.disabled(!canGoBack)
-				Button("Forward") { goForward() }.disabled(!canGoForward)
-				Divider()
+			HStack(spacing: 6) {
+				Button {
+					goBack()
+				} label: {
+					Label("Back", systemImage: "chevron.left")
+						.labelStyle(.iconOnly)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.disabled(!canGoBack)
+
+				Button {
+					goForward()
+				} label: {
+					Label("Forward", systemImage: "chevron.right")
+						.labelStyle(.iconOnly)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.disabled(!canGoForward)
+
 				TextField("Enter URL…", text: $urlString).onSubmit { loadURL() }
+
 				Button("Go") { loadURL() }
-				Divider()
-				Menu("Bookmarks") {
+					.buttonStyle(.bordered)
+					.controlSize(.small)
+
+				Menu {
 					ForEach(bookmarks, id: \.self) { u in Button(u.absoluteString) { openURL(u) } }
 					Divider()
 					Button(isBookmarked(currentURL) ? "Remove Bookmark" : "Add Bookmark") { toggleBookmark() }.disabled(currentURL == nil)
+				} label: {
+					Label("Bookmarks", systemImage: "bookmark")
 				}
-				Menu("History") {
+
+				Menu {
 					ForEach(history, id: \.self) { u in Button(u.absoluteString) { openURL(u) } }
+				} label: {
+					Label("History", systemImage: "clock")
 				}
-				Button("Open in Browser") { if let u = currentURL { NSWorkspace.shared.open(u) } }.disabled(currentURL == nil)
+
+				Button {
+					if let u = currentURL { NSWorkspace.shared.open(u) }
+				} label: {
+					Label("Open in Browser", systemImage: "safari")
+						.labelStyle(.iconOnly)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.disabled(currentURL == nil)
 			}.padding(8)
 			Divider()
 			WebView(url: currentURL) { newURL in onNavigated(newURL) }

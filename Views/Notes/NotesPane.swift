@@ -22,77 +22,48 @@ struct NotesPane: View {
 	@State private var showingPresetSheet = false
 	@State private var presetName = ""
 	
+	@State private var showingFilterPopover = false
+
+	private var hasActiveFilters: Bool {
+		selectedTag != nil || filterBookmarks || useDateFilter
+	}
+
 	var body: some View {
 		VStack(spacing: 0) {
-            HStack {
+			HStack(spacing: 6) {
 				TextField("Filter notes…", text: $filter)
 					.accessibilityLabel("Filter notes")
 					.accessibilityHint("Enter text to filter notes by content")
 				Spacer()
-				Button("Add Note") { addCustomNote() }.buttonStyle(.bordered)
+				Button("Add Note") { addCustomNote() }
+					.buttonStyle(.borderedProminent)
+					.controlSize(.small)
 					.accessibilityLabel("Add Note")
 					.accessibilityHint("Create a new note")
-                Button("Export MD") { 
-					Task { await exportMarkdownAsync() }
+				Button {
+					showingFilterPopover.toggle()
+				} label: {
+					Label("Filter", systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+						.labelStyle(.iconOnly)
 				}
-					.accessibilityLabel("Export Markdown")
-					.accessibilityHint("Export notes to Markdown format")
-					.disabled(isExporting)
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.popover(isPresented: $showingFilterPopover) {
+					filterPopoverContent
+				}
+				.accessibilityLabel("Filter options")
+				.accessibilityHint("Show export and filter options")
+				Button {
+					Task { await exportMarkdownAsync() }
+				} label: {
+					Label("Export MD", systemImage: "square.and.arrow.up")
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.accessibilityLabel("Export Markdown")
+				.accessibilityHint("Export notes to Markdown format")
+				.disabled(isExporting)
 			}.padding(8)
-
-            // Export filters UI
-            HStack(spacing: 12) {
-                // Tag filter
-                Menu {
-                    Button("All Tags") { selectedTag = nil }
-                    ForEach(Array(notes.availableTags).sorted(), id: \.self) { tag in
-                        Button(tag) { selectedTag = tag }
-                    }
-                } label: {
-                    HStack {
-                        Image(systemName: "tag")
-                        Text(selectedTag ?? "All Tags")
-                    }
-                }
-                .accessibilityLabel("Filter by tag")
-                .accessibilityHint("Select a tag to filter notes, or choose All Tags to show all notes")
-                Toggle("Bookmarks", isOn: $filterBookmarks)
-                    .toggleStyle(.switch)
-                    .accessibilityLabel("Filter bookmarks")
-                    .accessibilityHint("Show only notes from bookmarked pages")
-                Toggle("Date Range", isOn: $useDateFilter)
-                    .toggleStyle(.switch)
-                    .accessibilityLabel("Filter by date range")
-                    .accessibilityHint("Show only notes within the specified date range")
-                if useDateFilter {
-                    DatePicker("From", selection: $dateFrom, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                    DatePicker("To", selection: $dateTo, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                }
-                Spacer()
-                Menu("Presets") {
-                    Button("Save as Preset…") { 
-                        presetName = ""
-                        showingPresetSheet = true
-                    }
-                    let presets = loadPresets()
-                    if presets.isEmpty { Text("No presets").foregroundStyle(.secondary) }
-                    ForEach(presets, id: \.name) { preset in
-                        Button(preset.name) { applyPreset(preset) }
-                    }
-                    if !presets.isEmpty {
-                        Divider()
-                        ForEach(loadPresets(), id: \.name) { preset in
-                            Button("Delete '\(preset.name)'") { deletePreset(named: preset.name) }
-                        }
-                    }
-                }
-                .accessibilityLabel("Export presets")
-                .accessibilityHint("Save, load, or delete export filter presets")
-			}
-			.padding(.horizontal, 8)
-			.padding(.bottom, 4)
 			
 			// Export progress indicator
 			if isExporting {
@@ -159,6 +130,68 @@ struct NotesPane: View {
 		}
 	}
 	
+	private var filterPopoverContent: some View {
+		VStack(alignment: .leading, spacing: 12) {
+			Text("Export Filters")
+				.font(.headline)
+
+			Menu {
+				Button("All Tags") { selectedTag = nil }
+				ForEach(Array(notes.availableTags).sorted(), id: \.self) { tag in
+					Button(tag) { selectedTag = tag }
+				}
+			} label: {
+				HStack {
+					Image(systemName: "tag")
+					Text(selectedTag ?? "All Tags")
+				}
+			}
+			.accessibilityLabel("Filter by tag")
+			.accessibilityHint("Select a tag to filter notes, or choose All Tags to show all notes")
+
+			Toggle("Bookmarks only", isOn: $filterBookmarks)
+				.toggleStyle(.switch)
+				.accessibilityLabel("Filter bookmarks")
+				.accessibilityHint("Show only notes from bookmarked pages")
+
+			Toggle("Date Range", isOn: $useDateFilter)
+				.toggleStyle(.switch)
+				.accessibilityLabel("Filter by date range")
+				.accessibilityHint("Show only notes within the specified date range")
+
+			if useDateFilter {
+				DatePicker("From", selection: $dateFrom, displayedComponents: .date)
+					.datePickerStyle(.compact)
+				DatePicker("To", selection: $dateTo, displayedComponents: .date)
+					.datePickerStyle(.compact)
+			}
+
+			Divider()
+
+			Menu("Presets") {
+				Button("Save as Preset\u{2026}") {
+					presetName = ""
+					showingPresetSheet = true
+				}
+				let presets = loadPresets()
+				if presets.isEmpty { Text("No presets").foregroundStyle(.secondary) }
+				ForEach(presets, id: \.name) { preset in
+					Button(preset.name) { applyPreset(preset) }
+				}
+				if !presets.isEmpty {
+					Divider()
+					ForEach(loadPresets(), id: \.name) { preset in
+						Button("Delete '\(preset.name)'") { deletePreset(named: preset.name) }
+					}
+				}
+			}
+			.accessibilityLabel("Export presets")
+			.accessibilityHint("Save, load, or delete export filter presets")
+		}
+		.padding(16)
+		.frame(width: 280)
+	}
+
 	private var filteredGroups: [(key: String, value: [NoteItem])] {
 		let groups = notes.groupedByChapter().map { (key: $0.key, value: $0.value.filter { filter.isEmpty || $0.text.localizedCaseInsensitiveContains(filter) }) }
 		return groups.filter { !$0.value.isEmpty }
@@ -308,7 +341,7 @@ struct NotesPane: View {
 				await MainActor.run {
 					exportProgress = 1.0
 					exportStatus = "Export completed successfully!"
-					
+
 					// Show success toast
 					NotificationCenter.default.post(
 						name: .showToast,
@@ -317,22 +350,22 @@ struct NotesPane: View {
 							type: .success
 						)
 					)
-					
-					// Reset after delay
-					DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-						isExporting = false
-						exportProgress = 0.0
-						exportStatus = ""
-					}
+				}
+				try? await Task.sleep(nanoseconds: 2_000_000_000)
+				await MainActor.run {
+					isExporting = false
+					exportProgress = 0.0
+					exportStatus = ""
 				}
 			} else {
 				await MainActor.run {
 					exportStatus = "Export failed - could not save file"
-					DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-						isExporting = false
-						exportProgress = 0.0
-						exportStatus = ""
-					}
+				}
+				try? await Task.sleep(nanoseconds: 2_000_000_000)
+				await MainActor.run {
+					isExporting = false
+					exportProgress = 0.0
+					exportStatus = ""
 				}
 			}
 		}.value

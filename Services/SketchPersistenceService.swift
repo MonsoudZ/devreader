@@ -1,12 +1,12 @@
 import Foundation
 
-protocol SketchPersistenceProtocol {
+protocol SketchPersistenceProtocol: Sendable {
     func saveSketches(_ sketches: [SketchItem]) throws
     func loadSketches() -> [SketchItem]
     func clearAllData()
 }
 
-class SketchPersistenceService: SketchPersistenceProtocol {
+final class SketchPersistenceService: SketchPersistenceProtocol, @unchecked Sendable {
     private let persistenceService = EnhancedPersistenceService.shared
     private let sketchesKey = "DevReader.Sketches.v1"
 

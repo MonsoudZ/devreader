@@ -8,7 +8,7 @@
 import Foundation
 
 /// Enhanced LibraryItem with stable identity and security-scoped bookmarks
-struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
+nonisolated struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
     let id: UUID
     let url: URL
     let securityScopedBookmark: Data?

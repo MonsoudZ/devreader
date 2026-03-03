@@ -11,9 +11,6 @@ enum RightTab: String { case notes, code, web }
 struct ContentView: View {
     // MARK: - Environment & App Config
     @EnvironmentObject private var appEnvironment: AppEnvironment
-    // Legacy ToastCenter removed — all toasts now use EnhancedToastCenter via appEnvironment
-    @AppStorage("defaultZoom") private var defaultZoom: Double = 1.0
-    @AppStorage("highlightColor") private var highlightColor: String = "yellow"
     @AppStorage("autoSave") private var autoSave: Bool = true
     @AppStorage("autosaveIntervalSeconds") private var autosaveIntervalSeconds: Double = 30
 
@@ -23,139 +20,137 @@ struct ContentView: View {
 
     // MARK: - Local UI State
     @AppStorage("ui.rightTab") private var rightTab: RightTab = .notes
-    @State private var showingAlert = false
-    @State private var alertTitle = ""
-    @State private var alertMessage = ""
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     // Autosave timer: we recreate it whenever the interval changes
     @State private var autosaveCancellable: AnyCancellable?
     @State private var cancellables = Set<AnyCancellable>()
 
+    // MARK: - Computed Properties
+
+    private var documentTitle: String {
+        guard let doc = appEnvironment.pdfController.document,
+              let url = doc.documentURL else {
+            return "DevReader"
+        }
+        return url.deletingPathExtension().lastPathComponent
+    }
+
+    private var pageInfo: String {
+        guard let doc = appEnvironment.pdfController.document, doc.pageCount > 0 else {
+            return ""
+        }
+        return "Page \(appEnvironment.pdfController.currentPageIndex + 1) of \(doc.pageCount)"
+    }
+
     var body: some View {
         ZStack {
-            // ===== Main split layout =====
-            HStack(spacing: 0) {
-                // Left: Library list (optional)
-                if showingLibrary {
-                    LibraryPane(
-                        library: appEnvironment.libraryStore,
-                        pdf: appEnvironment.pdfController,
-                        open: { item in
-                            appEnvironment.pdfController.open(url: item.url)
-                            NotificationCenter.default.post(name: .currentPDFURLDidChange, object: nil, userInfo: ["url": item.url])
+            NavigationSplitView(columnVisibility: $columnVisibility) {
+                // Left: Library sidebar
+                LibraryPane(
+                    library: appEnvironment.libraryStore,
+                    pdf: appEnvironment.pdfController,
+                    open: { item in
+                        appEnvironment.pdfController.open(url: item.url)
+                        NotificationCenter.default.post(name: .currentPDFURLDidChange, object: nil, userInfo: ["url": item.url])
+                    }
+                )
+                .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
+            } detail: {
+                // Center: PDF viewer
+                PDFViewRepresentable(pdf: appEnvironment.pdfController)
+                    .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
+                    .background(Color(NSColor.textBackgroundColor))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .navigationTitle(documentTitle)
+                    .navigationSubtitle(pageInfo)
+                    // Right: Tools inspector
+                    .inspector(isPresented: $showingRightPanel) {
+                        rightSidebar
+                            .inspectorColumnWidth(min: 300, ideal: 360, max: 480)
+                    }
+                    // Native macOS toolbar
+                    .toolbar {
+                        ToolbarItemGroup(placement: .navigation) {
+                            Button {
+                                openPDF()
+                            } label: {
+                                Label("Open", systemImage: "folder")
+                            }
+                            .accessibilityIdentifier("openPDFButton")
+
+                            Button {
+                                importPDFs()
+                            } label: {
+                                Label("Import", systemImage: "tray.and.arrow.down")
+                            }
+                            .accessibilityIdentifier("importPDFButton")
                         }
-                    )
-                    .frame(minWidth: 260, idealWidth: 300, maxWidth: 360)
-                    .overlay(dividerVertical, alignment: .trailing)
-                }
 
-                // Center: PDF + header
-                VStack(spacing: 0) {
-                    // Header bar with common actions (optional polish; use your existing header if desired)
-                    headerBar
+                        ToolbarItemGroup(placement: .primaryAction) {
+                            Button {
+                                withAnimation {
+                                    showingLibrary.toggle()
+                                }
+                            } label: {
+                                Label("Library", systemImage: "books.vertical")
+                            }
+                            .help("Toggle Library")
+                            .accessibilityIdentifier("toggleLibrary")
 
-                    // The PDF view
-                    PDFViewRepresentable(pdf: appEnvironment.pdfController)
-                        .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
-                        .background(Color(NSColor.textBackgroundColor))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .frame(minWidth: 600, maxWidth: .infinity, maxHeight: .infinity)
-                .overlay(dividerVertical, alignment: .trailing)
-
-                // Right: Tools (Notes / Code / Web)
-                if showingRightPanel {
-                    rightSidebar
-                        .frame(minWidth: 320, idealWidth: 360, maxWidth: 420)
-                }
+                            Button {
+                                withAnimation {
+                                    showingRightPanel.toggle()
+                                }
+                            } label: {
+                                Label("Tools", systemImage: "sidebar.right")
+                            }
+                            .help("Toggle Tools")
+                            .accessibilityIdentifier("toggleTools")
+                        }
+                    }
             }
-            .frame(minHeight: 400)
 
             // ===== Global UX overlays =====
-            LoadingOverlay() // unified loading spinner layer
-            // Enhanced error overlay (modal-style)
-            // (kept non-intrusive; shows when ErrorMessageManager has an error)
-            // .errorOverlay is defined in Views/Error/ErrorDisplayView.swift
-            .errorOverlay(appEnvironment.errorMessageManager)
+            LoadingOverlay()
+                .errorOverlay(appEnvironment.errorMessageManager)
         }
         // Toasts (enhanced, non-modal)
         .enhancedToastOverlay(appEnvironment.enhancedToastCenter)
 
         // ===== Lifecycle =====
         .onAppear {
+            columnVisibility = showingLibrary ? .all : .detailOnly
             setupAutosaveTimer()
             wireMenuNotifications()
         }
-        .onChange(of: autosaveIntervalSeconds) { _ in
-            // Rebuild timer when the interval changes
+        .onChange(of: showingLibrary) { _, newValue in
+            withAnimation {
+                columnVisibility = newValue ? .all : .detailOnly
+            }
+        }
+        .onChange(of: columnVisibility) { _, newValue in
+            showingLibrary = (newValue != .detailOnly)
+        }
+        .onChange(of: autosaveIntervalSeconds) { _, _ in
             setupAutosaveTimer()
         }
-        .onChange(of: autoSave) { _ in
-            // If autosave was disabled/enabled, rebuild to honor new state
+        .onChange(of: autoSave) { _, _ in
             setupAutosaveTimer()
         }
-
-        // ===== Alerts =====
-        .alert(alertTitle, isPresented: $showingAlert) {
-            Button("OK", role: .cancel) { showingAlert = false }
-        } message: {
-            Text(alertMessage)
-        }
-    }
-
-    // MARK: - Header Bar
-    private var headerBar: some View {
-        HStack(spacing: 8) {
-            Button {
-                openPDF()
-            } label: {
-                Label("Open", systemImage: "folder")
-            }
-            .accessibilityIdentifier("openPDFButton")
-
-            Button {
-                importPDFs()
-            } label: {
-                Label("Import", systemImage: "tray.and.arrow.down")
-            }
-            .accessibilityIdentifier("importPDFButton")
-
-            Spacer()
-
-            // Library toggle
-            Toggle(isOn: $showingLibrary) {
-                Image(systemName: "books.vertical")
-                    .help("Toggle Library")
-            }
-            .toggleStyle(.button)
-            .accessibilityIdentifier("toggleLibrary")
-
-            // Right pane toggle
-            Toggle(isOn: $showingRightPanel) {
-                Image(systemName: "sidebar.right")
-                    .help("Toggle Tools")
-            }
-            .toggleStyle(.button)
-            .accessibilityIdentifier("toggleTools")
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(.bar)
-        .overlay(dividerHorizontal, alignment: .bottom)
     }
 
     // MARK: - Right Sidebar (Notes / Code / Web)
     private var rightSidebar: some View {
         VStack(spacing: 0) {
-            // Segmented control for tabs
+            // Segmented control with SF Symbol icons
             Picker("", selection: $rightTab) {
-                Text("Notes").tag(RightTab.notes)
-                Text("Code").tag(RightTab.code)
-                Text("Web").tag(RightTab.web)
+                Label("Notes", systemImage: "note.text").tag(RightTab.notes)
+                Label("Code", systemImage: "chevron.left.forwardslash.chevron.right").tag(RightTab.code)
+                Label("Web", systemImage: "globe").tag(RightTab.web)
             }
             .pickerStyle(.segmented)
-            .padding(8)
-            .overlay(dividerHorizontal, alignment: .bottom)
+            .padding(12)
             .accessibilityIdentifier("rightTabPicker")
 
             // Tab content
@@ -175,7 +170,7 @@ struct ContentView: View {
     }
 
     // MARK: - Menu Notification Wiring
-    /// Subscribes to the command notifications posted by DevReaderApp’s .commands
+    /// Subscribes to the command notifications posted by DevReaderApp's .commands
     private func wireMenuNotifications() {
         guard cancellables.isEmpty else { return }
         NotificationCenter.default.publisher(for: .openPDF)
@@ -191,23 +186,24 @@ struct ContentView: View {
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .toggleLibrary)
-            .sink { _ in showingLibrary.toggle() }
+            .sink { _ in
+                withAnimation {
+                    showingLibrary.toggle()
+                }
+            }
             .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .toggleNotes)
             .sink { _ in
-                showingRightPanel = true
+                withAnimation {
+                    showingRightPanel = true
+                }
                 rightTab = .notes
             }
             .store(in: &cancellables)
 
-        NotificationCenter.default.publisher(for: .toggleSearch)
-            .sink { _ in
-                // If you have a Search panel view, toggle it here.
-                // For now, we surface a toast for UX feedback.
-                appEnvironment.enhancedToastCenter.showInfo("Search", "Press ⌘F to search within the PDF.")
-            }
-            .store(in: &cancellables)
+        // TODO: Search toggle is not yet implemented — the Cmd+F menu item
+        // posts .toggleSearch but there is no search panel to show/hide yet.
 
         NotificationCenter.default.publisher(for: .captureHighlight)
             .sink { _ in appEnvironment.pdfController.captureHighlightToNotes() }
@@ -269,14 +265,11 @@ struct ContentView: View {
         autosaveCancellable?.cancel()
         guard autoSave, autosaveIntervalSeconds > 0.5 else { return }
 
-        // Recreate a timer publisher with the current interval
         autosaveCancellable = Timer
             .publish(every: autosaveIntervalSeconds, on: .main, in: .common)
             .autoconnect()
             .sink { _ in
                 Task { @MainActor in
-                    // Notes: NotesStore persists on mutations; this is a “checkpoint” hook.
-                    // Library: do a background save so large libraries don’t block UI.
                     await LibraryPersistenceService.shared.saveLibraryItems(appEnvironment.libraryStore.items)
                 }
             }
@@ -290,7 +283,6 @@ struct ContentView: View {
         panel.allowsMultipleSelection = false
         panel.canChooseDirectories = false
         panel.begin { resp in
-            // Ensure we're on the main thread for @MainActor state access
             DispatchQueue.main.async {
                 guard resp == .OK, let url = panel.url else { return }
                 appEnvironment.pdfController.open(url: url)
@@ -311,7 +303,7 @@ struct ContentView: View {
                 guard resp == .OK else { return }
                 let urls = panel.urls
                 Task { @MainActor in
-                    LoadingStateManager.shared.startImport("Importing PDFs…")
+                    LoadingStateManager.shared.startImport("Importing PDFs\u{2026}")
                     defer { LoadingStateManager.shared.stopImport() }
                     _ = await LibraryPersistenceService.shared.importPDFs(urls)
                     appEnvironment.libraryStore.add(urls: urls)
@@ -340,19 +332,4 @@ struct ContentView: View {
         }
         return true
     }
-
-    // MARK: - Separators
-    private var dividerVertical: some View {
-        Rectangle()
-            .fill(Color(NSColor.separatorColor))
-            .frame(width: 1)
-    }
-
-    private var dividerHorizontal: some View {
-        Rectangle()
-            .fill(Color(NSColor.separatorColor))
-            .frame(height: 1)
-    }
 }
-
-// Notification.Name definitions live in Utils/Extensions.swift (single source of truth).

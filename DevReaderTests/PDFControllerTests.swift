@@ -13,11 +13,10 @@ final class PDFControllerTests: XCTestCase {
 
     override func tearDown() {
         ctrl = nil
-        // Clear all DevReader keys to prevent test interference
-        let defaults = UserDefaults.standard
-        for key in defaults.dictionaryRepresentation().keys where key.hasPrefix("DevReader.") {
-            defaults.removeObject(forKey: key)
-        }
+        // Clear JSON storage data to prevent test interference
+        let dataDir = JSONStorageService.dataDirectory
+        try? FileManager.default.removeItem(at: dataDir)
+        JSONStorageService.ensureDirectories()
         super.tearDown()
     }
 

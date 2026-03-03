@@ -27,7 +27,9 @@ struct LibraryPane: View {
                 }
                 .accessibilityLabel("Sort library")
                 .accessibilityHint("Choose how to sort your PDF library")
-                Button(action: { importFromFinder() }) { Image(systemName: "plus") }.help("Import PDFs…")
+                Button(action: { importFromFinder() }) { Image(systemName: "plus") }
+                    .buttonStyle(.borderless)
+                    .help("Import PDFs…")
                     .accessibilityLabel("Import PDFs")
                     .accessibilityHint("Import new PDF files into your library")
                 if !selection.isEmpty {
@@ -181,17 +183,20 @@ struct LibraryPane: View {
 	func loadDropped(providers: [NSItemProvider]) -> Bool {
 		var any = false
 		let group = DispatchGroup()
+		let collectQueue = DispatchQueue(label: "devreader.drop-collect")
 		var urls: [URL] = []
 		for p in providers where p.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
 			group.enter()
 			p.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { (data, _) in
 				defer { group.leave() }
-				if let url = data as? URL { urls.append(url) }
+				if let url = data as? URL {
+					collectQueue.sync { urls.append(url) }
+				}
 			}
 			any = true
 		}
-		group.notify(queue: .main) { 
-			if !urls.isEmpty { 
+		group.notify(queue: .main) {
+			if !urls.isEmpty {
 				importURLs(urls)
 			}
 		}

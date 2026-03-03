@@ -101,15 +101,6 @@ class EnhancedPersistenceService: ObservableObject {
         }
     }
     
-    // MARK: - Transactional Operations
-    
-    /// Performs multiple operations atomically
-    func performTransaction<T>(_ operations: () throws -> T) throws -> T {
-        // This could be enhanced with a proper transaction log
-        // For now, we rely on individual atomic operations
-        return try operations()
-    }
-    
     // MARK: - Data Validation
     
     /// Validates data integrity

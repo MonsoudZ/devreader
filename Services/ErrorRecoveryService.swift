@@ -1,11 +1,11 @@
 import Foundation
 import os.log
 import CoreGraphics
-import PDFKit
+@preconcurrency import PDFKit
 import AppKit
 
 // Service for handling automatic retry mechanisms and error recovery
-enum ErrorRecoveryService {
+nonisolated enum ErrorRecoveryService {
     private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "ErrorRecovery")
     
     // MARK: - Retry Configuration
@@ -15,7 +15,7 @@ enum ErrorRecoveryService {
         let maxDelay: TimeInterval
         let backoffMultiplier: Double
         
-        nonisolated static let `default` = RetryConfig(
+        static let `default` = RetryConfig(
             maxAttempts: 3,
             baseDelay: 0.1,
             maxDelay: 2.0,
@@ -162,7 +162,7 @@ enum ErrorRecoveryService {
         for index in 0..<pageCount {
             guard let page = source.page(at: index) else { continue }
             let bounds = page.bounds(for: .mediaBox)
-            var box = bounds
+            let box = bounds
             context.beginPDFPage([kCGPDFContextMediaBox as String: box] as CFDictionary)
             // Flip context to match PDFKit coordinate system
             context.saveGState()
@@ -217,7 +217,7 @@ enum ErrorRecoveryService {
 }
 
 // MARK: - Corruption Types
-enum CorruptionType: String, CaseIterable {
+nonisolated enum CorruptionType: String, CaseIterable, Sendable {
     case empty = "Empty file"
     case invalidHeader = "Invalid PDF header"
     case tooSmall = "File too small"

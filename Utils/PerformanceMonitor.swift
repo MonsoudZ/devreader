@@ -42,7 +42,7 @@ class PerformanceMonitor: ObservableObject {
 
         monitoringTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
-                await self?.updateMemoryUsage()
+                self?.updateMemoryUsage()
             }
         }
 
@@ -57,7 +57,7 @@ class PerformanceMonitor: ObservableObject {
         os_log("Performance monitoring stopped", log: logger, type: .info)
     }
 
-    private func updateMemoryUsage() async {
+    private func updateMemoryUsage() {
         let usage = getCurrentMemoryUsage()
         memoryUsage = usage
 
@@ -74,31 +74,15 @@ class PerformanceMonitor: ObservableObject {
 
         if usage > criticalThreshold {
             memoryPressure = .critical
-            await handleCriticalMemoryPressure()
+            os_log("Critical memory pressure - aggressive optimization", log: logger, type: .error)
+            URLCache.shared.removeAllCachedResponses()
         } else if usage > memoryThreshold {
             memoryPressure = .warning
-            await handleMemoryWarning()
+            os_log("Memory warning - starting optimization", log: logger, type: .info)
+            URLCache.shared.removeAllCachedResponses()
         } else {
             memoryPressure = .normal
         }
-
-        if Int(Date().timeIntervalSince1970) % 30 == 0 {
-            os_log("Memory usage: %{public}@", log: logger, type: .info, formatBytes(usage))
-        }
-    }
-
-    private func handleMemoryWarning() async {
-        os_log("Memory warning - starting optimization", log: logger, type: .info)
-        await optimizeMemoryUsage()
-    }
-
-    private func handleCriticalMemoryPressure() async {
-        os_log("Critical memory pressure - aggressive optimization", log: logger, type: .error)
-        await optimizeMemoryUsage()
-    }
-
-    private func optimizeMemoryUsage() async {
-        URLCache.shared.removeAllCachedResponses()
     }
 
     // MARK: - Performance Tracking

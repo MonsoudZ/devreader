@@ -1,7 +1,7 @@
 import Foundation
 
 /// Protocol for notes persistence to enable dependency injection and testing
-protocol NotesPersistenceProtocol {
+protocol NotesPersistenceProtocol: Sendable {
     func saveNotes(_ notes: [NoteItem], for url: URL) throws
     func loadNotes(for url: URL) -> [NoteItem]
     

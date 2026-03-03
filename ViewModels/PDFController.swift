@@ -1,5 +1,5 @@
 import Foundation
-import PDFKit
+@preconcurrency import PDFKit
 import Combine
 import AppKit
 
@@ -48,6 +48,7 @@ final class PDFController: ObservableObject {
 
     private let sessionKey = "DevReader.Session.v1"
 	private var loadingTask: Task<Void, Never>?
+	private var outlineTask: Task<Void, Never>?
 	private var isHandlingMemoryPressure = false
 	private var memoryPressureObserver: Any?
 	private var persistPageWorkItem: DispatchWorkItem?
@@ -61,14 +62,7 @@ final class PDFController: ObservableObject {
 		bookmarkManager.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &managerCancellables)
 		outlineManager.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &managerCancellables)
 
-		restore()
 		setupMemoryPressureHandler()
-	}
-
-	deinit {
-		if let observer = memoryPressureObserver {
-			NotificationCenter.default.removeObserver(observer)
-		}
 	}
 
 	func load(url: URL) {
@@ -87,16 +81,22 @@ final class PDFController: ObservableObject {
 
 	private func cleanupCurrentPDF() async {
 		document = nil
+		currentPDFURL = nil
 		currentPageIndex = 0
 		readingProgress = 0.0
 		searchManager.clearSearch()
 		outlineManager.clear()
 		loadingTask?.cancel()
 		loadingTask = nil
+		outlineTask?.cancel()
+		outlineTask = nil
 	}
 
 	private func loadAsync(url: URL) async {
-        guard currentPDFURL != url else { return }
+        // Allow reload of same URL (e.g. after partial failure)
+        if currentPDFURL == url && document != nil {
+            return
+        }
         flushPendingPersistence()
         await cleanupCurrentPDF()
 
@@ -116,94 +116,73 @@ final class PDFController: ObservableObject {
 			return
 		}
 
-		var chosenURL: URL? = nil
-		var loadingError: Error? = nil
+		// Load the PDF document once and keep it
+		var doc: PDFDocument?
 
-		// Strategy 1: Try loading the original PDF
-		if chosenURL == nil {
-			do {
-				applyAggressiveMemoryOptimizations()
-				if let doc = try await loadPDFWithRetry(url: url), doc.pageCount > 0 {
-					chosenURL = url
-					log(AppLog.pdf, "Successfully loaded original PDF: \(url.lastPathComponent)")
-				}
-			} catch {
-				loadingError = error
-				logError(AppLog.pdf, "Failed to load original PDF: \(error.localizedDescription)")
-			}
-		}
+		// Strategy 1: Load directly (fast path for normal PDFs)
+		doc = await loadPDFOffMainThread(url: url)
 
-		// Strategy 2: Try to repair corrupted PDF
-		if chosenURL == nil {
+		// Strategy 2: Try repair only if direct load failed
+		if doc == nil {
+			log(AppLog.pdf, "Direct load failed, attempting repair for: \(url.lastPathComponent)")
 			if let repairedURL = await tryRepairPDF(url: url) {
-				do {
-					if let doc = try await loadPDFWithRetry(url: repairedURL), doc.pageCount > 0 {
-						chosenURL = repairedURL
-						log(AppLog.pdf, "Successfully loaded repaired PDF: \(repairedURL.lastPathComponent)")
-					}
-				} catch {
-					logError(AppLog.pdf, "Failed to load repaired PDF: \(error.localizedDescription)")
-				}
+				doc = await loadPDFOffMainThread(url: repairedURL)
 			}
 		}
 
-		// Fallback: Try direct PDF loading
-		if chosenURL == nil {
-			if let directDoc = PDFDocument(url: url), directDoc.pageCount > 0 {
-				chosenURL = url
-			}
-		}
-
-		if let sourceURL = chosenURL, let doc = PDFDocument(url: sourceURL) {
-			guard validateDocument(doc) else {
-				logError(AppLog.pdf, "PDF document failed integrity check")
-				NotificationCenter.default.post(name: .pdfLoadError, object: url)
-				return
-			}
-
-			let pageCount = doc.pageCount
-			isLargePDF = pageCount >= 500
-
-			let memoryPressure = ProcessInfo.processInfo.physicalMemory
-			let isLowMemory = memoryPressure < 8_000_000_000
-
-			if isLargePDF || isLowMemory {
-				log(AppLog.pdf, "Large PDF or low memory detected: \(pageCount) pages, \(memoryPressure / 1_000_000_000)GB RAM - applying aggressive optimizations")
-				estimatedLoadTime = estimateLoadTime(for: pageCount)
-				updateMemoryUsage()
-				LoadingStateManager.shared.updatePDFProgress(0.5, message: "Processing large PDF (\(pageCount) pages)...")
-				applyAggressiveMemoryOptimizations()
-			}
-
-			self.document = doc
-			self.currentPDFURL = url
-
-			PersistenceService.saveCodable(url, forKey: lastOpenedPDFKey)
-
-			if isLargePDF {
-				LoadingStateManager.shared.updatePDFProgress(0.8, message: "Building outline for large PDF...")
-				Task {
-					await outlineManager.rebuildOutlineMapAsync(from: document, isLargePDF: isLargePDF)
-				}
-			} else {
-				outlineManager.rebuildOutlineMap(from: document)
-			}
-
-			loadPageForPDF(url)
-			updateReadingProgress()
-			bookmarkManager.loadBookmarks(for: currentPDFURL)
-			bookmarkManager.loadRecents()
-			bookmarkManager.addRecent(url)
-			onPDFChanged?(url)
-
-			log(AppLog.pdf, "PDF loaded successfully: \(url.lastPathComponent) (\(doc.pageCount) pages)")
-		} else {
+		guard let loadedDoc = doc else {
 			logError(AppLog.pdf, "All PDF loading strategies failed for: \(url.path)")
-			if let error = loadingError {
-				logError(AppLog.pdf, "Last error: \(error.localizedDescription)")
-			}
 			NotificationCenter.default.post(name: .pdfLoadError, object: url)
+			return
 		}
+
+		guard validateDocument(loadedDoc) else {
+			logError(AppLog.pdf, "PDF document failed integrity check")
+			NotificationCenter.default.post(name: .pdfLoadError, object: url)
+			return
+		}
+
+		let pageCount = loadedDoc.pageCount
+		isLargePDF = pageCount >= 500
+
+		if isLargePDF {
+			estimatedLoadTime = estimateLoadTime(for: pageCount)
+			updateMemoryUsage()
+			LoadingStateManager.shared.updatePDFProgress(0.5, message: "Processing large PDF (\(pageCount) pages)...")
+		}
+
+		self.document = loadedDoc
+		self.currentPDFURL = url
+
+		PersistenceService.saveCodable(url, forKey: lastOpenedPDFKey)
+
+		if isLargePDF {
+			LoadingStateManager.shared.updatePDFProgress(0.8, message: "Building outline for large PDF...")
+			outlineTask = Task {
+				await outlineManager.rebuildOutlineMapAsync(from: document, isLargePDF: isLargePDF)
+			}
+		} else {
+			outlineManager.rebuildOutlineMap(from: document)
+		}
+
+		loadPageForPDF(url)
+		updateReadingProgress()
+		bookmarkManager.loadBookmarks(for: currentPDFURL)
+		bookmarkManager.loadRecents()
+		bookmarkManager.addRecent(url)
+		onPDFChanged?(url)
+
+		log(AppLog.pdf, "PDF loaded successfully: \(url.lastPathComponent) (\(loadedDoc.pageCount) pages)")
+	}
+
+	/// Loads a PDFDocument off the main thread, returning nil on failure.
+	private func loadPDFOffMainThread(url: URL) async -> PDFDocument? {
+		await Task.detached(priority: .userInitiated) {
+			guard let doc = PDFDocument(url: url), doc.pageCount > 0 else {
+				return nil
+			}
+			return doc
+		}.value
 	}
 
 	func clearSession() {
@@ -248,7 +227,7 @@ final class PDFController: ObservableObject {
 	private func schedulePersistPage() {
 		guard !isRestoringPage else { return }
 		persistPageWorkItem?.cancel()
-		let workItem = DispatchWorkItem { [weak self] in
+		let workItem = DispatchWorkItem { @Sendable [weak self] in
 			Task { @MainActor in
 				guard let self = self, let url = self.currentPDFURL else { return }
 				self.savePageForPDF(url)
@@ -287,16 +266,6 @@ final class PDFController: ObservableObject {
 		updateReadingProgress()
 	}
 
-	private func restore() {
-		Task {
-			await restoreAsync()
-		}
-	}
-
-	private func restoreAsync() async {
-		log(AppLog.pdf, "No previous session found")
-	}
-
 	private func setupMemoryPressureHandler() {
 		memoryPressureObserver = NotificationCenter.default.addObserver(
 			forName: .memoryPressure,
@@ -314,71 +283,14 @@ final class PDFController: ObservableObject {
 	private func handleMemoryPressure() {
 		guard !isHandlingMemoryPressure else { return }
 		isHandlingMemoryPressure = true
-		logError(AppLog.pdf, "Critical memory pressure - aggressive optimization")
-		clearImageCaches()
-		applyAggressiveMemoryOptimizations()
-		if let doc = document {
-			for i in 0..<min(doc.pageCount, 10) {
-				if let page = doc.page(at: i) {
-					page.thumbnail(of: CGSize(width: 1, height: 1), for: .mediaBox)
-				}
-			}
-		}
+		logError(AppLog.pdf, "Critical memory pressure - clearing caches")
+		URLCache.shared.removeAllCachedResponses()
 		DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
 			self?.isHandlingMemoryPressure = false
 		}
 	}
 
-	// MARK: - Error Recovery Methods
-
-	private func loadPDFWithRetry(url: URL, maxRetries: Int = 3) async throws -> PDFDocument? {
-		var lastError: Error = PDFError.invalidDocument
-
-		for attempt in 1...maxRetries {
-			do {
-				let doc: PDFDocument? = try await withCheckedThrowingContinuation { continuation in
-					Task.detached(priority: .userInitiated) {
-						guard let doc = PDFDocument(url: url) else {
-							continuation.resume(throwing: PDFError.invalidDocument)
-							return
-						}
-						guard doc.pageCount > 0 else {
-							continuation.resume(throwing: PDFError.emptyDocument)
-							return
-						}
-						continuation.resume(returning: doc)
-					}
-				}
-				if let doc = doc {
-					return doc
-				}
-			} catch {
-				lastError = error
-				if attempt < maxRetries {
-					log(AppLog.pdf, "PDF load attempt \(attempt)/\(maxRetries) failed, retrying...")
-					try? await Task.sleep(nanoseconds: UInt64(attempt) * 500_000_000)
-				}
-			}
-		}
-		throw lastError
-	}
-
-	private func applyAggressiveMemoryOptimizations() {
-		autoreleasepool {
-			clearImageCaches()
-		}
-	}
-
-	private func clearImageCaches() {
-		CIContext().clearCaches()
-		if let doc = document {
-			for i in 0..<min(doc.pageCount, 10) {
-				if let page = doc.page(at: i) {
-					_ = page.thumbnail(of: CGSize(width: 1, height: 1), for: .mediaBox)
-				}
-			}
-		}
-	}
+	// MARK: - PDF Repair
 
 	private func tryRepairPDF(url: URL) async -> URL? {
 		do {
@@ -431,7 +343,6 @@ final class PDFController: ObservableObject {
 			guard let page = doc.page(at: i) else { return false }
 			guard page.bounds(for: .mediaBox).width > 0 && page.bounds(for: .mediaBox).height > 0 else { return false }
 		}
-		guard doc.documentURL != nil else { return false }
 		return true
 	}
 

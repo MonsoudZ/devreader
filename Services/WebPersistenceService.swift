@@ -1,12 +1,12 @@
 import Foundation
 
-protocol WebPersistenceProtocol {
+protocol WebPersistenceProtocol: Sendable {
     func saveBookmarks(_ bookmarks: [WebBookmark]) throws
     func loadBookmarks() -> [WebBookmark]
     func clearAllData()
 }
 
-class WebPersistenceService: WebPersistenceProtocol {
+final class WebPersistenceService: WebPersistenceProtocol, @unchecked Sendable {
     private let persistenceService = EnhancedPersistenceService.shared
     private let bookmarksKey = "DevReader.WebBookmarks.v1"
 

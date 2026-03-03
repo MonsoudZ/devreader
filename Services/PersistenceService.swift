@@ -3,9 +3,9 @@ import CryptoKit
 import os.log
 
 // Enhanced persistence service with JSON file-based storage
-enum PersistenceService {
+nonisolated enum PersistenceService {
     private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "Persistence")
-    private static var hasMigrated = false
+    nonisolated(unsafe) private static var hasMigrated = false
 
     /// Deterministic hash of a URL path using SHA256. Stable across app launches.
     static func stableHash(for url: URL) -> String {

@@ -1,6 +1,6 @@
 # Privacy Policy
 
-**Last updated: December 1, 2024**
+**Last updated: March 2, 2026**
 
 ## Overview
 
@@ -9,16 +9,18 @@ DevReader is committed to protecting your privacy. This privacy policy explains 
 ## Data Collection
 
 ### What We Collect
-DevReader is designed with privacy in mind. We collect **no personal information** and **no usage data**.
+DevReader is designed with privacy in mind. The app itself does **not collect personal information** and does **not send telemetry/analytics**.
 
 ### What We Don't Collect
 - ❌ Personal information (name, email, etc.)
 - ❌ Usage analytics or telemetry
 - ❌ PDF content or annotations
 - ❌ Code you write in the editor
-- ❌ Web browsing history
-- ❌ Notes or highlights
-- ❌ Any data that leaves your device
+- ❌ Notes or highlights for external analytics or tracking
+- ❌ Any background data export by DevReader for ads or profiling
+
+### Web Browsing Data
+The built-in web pane makes normal web requests to sites you visit. Those sites may receive standard request metadata (for example IP address and user agent), just like a normal browser session.
 
 ## Data Storage
 
@@ -28,6 +30,7 @@ All your data is stored locally on your Mac:
 - **Notes & Annotations**: Stored in `~/Library/Application Support/DevReader/`
 - **Settings**: Stored in `~/Library/Preferences/`
 - **Code Files**: Stored in `~/Documents/DevReader/CodeFiles/`
+- **Web bookmarks/history**: Stored locally by the app
 
 ### No Cloud Sync
 DevReader does not sync any data to external servers. All your work remains on your device.
@@ -37,17 +40,16 @@ DevReader does not sync any data to external servers. All your work remains on y
 ### Sandboxing
 DevReader runs in a sandboxed environment that:
 - Limits file access to user-selected files only
-- Prevents unauthorized network access
+- Restricts access to declared macOS entitlements
 - Isolates code execution from your system
 - Protects your data from malicious code
 
 ### Code Execution Safety
 When you run code in DevReader:
 - Code executes in an isolated sandbox
-- No network access is permitted
-- File system access is limited
+- Network/file access is subject to macOS sandbox and system permissions
 - Resource usage is monitored and limited
-- No data can be transmitted externally
+- DevReader does not add telemetry or hidden uploads
 
 ## Third-Party Services
 
@@ -70,7 +72,7 @@ DevReader uses only Apple's built-in frameworks:
 - ❌ We don't analyze your usage patterns
 
 ### Your Data Stays Local
-All your PDFs, notes, annotations, and code remain on your device and are never transmitted anywhere.
+DevReader stores your PDFs, notes, annotations, and code locally. When you use the built-in web browser, network traffic is sent to websites you open.
 
 ## Data Deletion
 
@@ -91,7 +93,7 @@ DevReader requests file access only when you:
 - Choose to open files
 
 ### Network Access
-DevReader has no network permissions and cannot access the internet.
+DevReader has outbound network permission for the built-in web browser and related web content loading.
 
 ## Updates to This Policy
 

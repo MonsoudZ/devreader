@@ -1,7 +1,7 @@
 import Foundation
 @testable import DevReader
 
-class MockNotesPersistenceService: NotesPersistenceProtocol {
+final class MockNotesPersistenceService: NotesPersistenceProtocol, @unchecked Sendable {
     var notes: [URL: [NoteItem]] = [:]
     var pageNotes: [URL: [Int: String]] = [:]
     var tags: [URL: Set<String>] = [:]
