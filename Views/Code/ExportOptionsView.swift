@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import AppKit
+import os.log
 
 struct ExportOptionsView: View {
 	let code: String
@@ -88,7 +89,7 @@ struct ExportOptionsView: View {
 
 			dismiss()
 		} catch {
-			print("Error creating VSCode project: \(error)")
+			logError(AppLog.code, "Error creating VSCode project: \(error)")
 		}
 	}
 
@@ -151,7 +152,7 @@ struct ExportOptionsView: View {
 
 			dismiss()
 		} catch {
-			print("Error creating JetBrains project: \(error)")
+			logError(AppLog.code, "Error creating JetBrains project: \(error)")
 		}
 	}
 
@@ -166,7 +167,7 @@ struct ExportOptionsView: View {
 					try code.write(to: url, atomically: true, encoding: .utf8)
 					dismiss()
 				} catch {
-					print("Error saving file: \(error)")
+					logError(AppLog.code, "Error saving file: \(error)")
 				}
 			}
 		}
@@ -183,7 +184,7 @@ struct ExportOptionsView: View {
 					try content.write(to: url, atomically: true, encoding: .utf8)
 					dismiss()
 				} catch {
-					print("Error saving export file: \(error)")
+					logError(AppLog.code, "Error saving export file: \(error)")
 				}
 			}
 		}

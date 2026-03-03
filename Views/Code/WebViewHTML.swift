@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import os.log
 
 struct WebViewHTML: NSViewRepresentable {
     var html: String
@@ -78,10 +79,10 @@ struct WebViewHTML: NSViewRepresentable {
                 }
             case "editorError":
                 if let error = message.body as? String {
-                    print("Monaco Editor Error: \(error)")
+                    logError(AppLog.code, "Monaco Editor Error: \(error)")
                 }
             case "editorReady":
-                print("Monaco Editor Ready")
+                log(AppLog.code, "Monaco Editor Ready")
                 LoadingStateManager.shared.stopMonacoLoading()
                 onEditorReady?()
             default:
@@ -101,20 +102,20 @@ struct WebViewHTML: NSViewRepresentable {
                 let js = "if (window.editor) { window.editor.setValue('\(escaped)'); } else { window._code = '\(escaped)'; }"
                 webView.evaluateJavaScript(js) { result, error in
                     if let error = error {
-                        print("JavaScript evaluation failed: \(error.localizedDescription)")
+                        logError(AppLog.code, "JavaScript evaluation failed: \(error.localizedDescription)")
                     }
                 }
             }
         }
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-            print("Monaco WebView navigation failed: \(error.localizedDescription)")
+            logError(AppLog.code, "Monaco WebView navigation failed: \(error.localizedDescription)")
             // Try to reload with fallback content
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 webView.loadHTMLString("<html><body><h1>Editor Loading Failed</h1><p>Please try refreshing the editor.</p></body></html>", baseURL: nil)
             }
         }
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-            print("Monaco WebView provisional navigation failed: \(error.localizedDescription)")
+            logError(AppLog.code, "Monaco WebView provisional navigation failed: \(error.localizedDescription)")
             // Try to reload with fallback content
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 webView.loadHTMLString("<html><body><h1>Editor Loading Failed</h1><p>Please try refreshing the editor.</p></body></html>", baseURL: nil)

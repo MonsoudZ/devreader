@@ -2,6 +2,7 @@ import SwiftUI
 import WebKit
 import AppKit
 import Foundation
+import os.log
 
 struct WebPane: View {
 	@State private var urlString: String = "https://developer.apple.com/documentation/pdfkit"
@@ -161,11 +162,11 @@ struct WebView: NSViewRepresentable {
         }
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             LoadingStateManager.shared.stopWebLoading()
-            print("WebView navigation failed: \(error.localizedDescription)")
+            logError(AppLog.web, "WebView navigation failed: \(error.localizedDescription)")
         }
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
             LoadingStateManager.shared.stopWebLoading()
-            print("WebView provisional navigation failed: \(error.localizedDescription)")
+            logError(AppLog.web, "WebView provisional navigation failed: \(error.localizedDescription)")
         }
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
             if let url = navigationAction.request.url, let scheme = url.scheme?.lowercased(),

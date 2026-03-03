@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import os.log
 
 struct FileManagerView: View {
 	@Binding var selectedLanguage: CodeLang
@@ -108,7 +109,7 @@ struct FileManagerView: View {
 
 			dismiss()
 		} catch {
-			print("Error loading file: \(error)")
+			logError(AppLog.code, "Error loading file: \(error)")
 		}
 	}
 
@@ -125,7 +126,7 @@ struct FileManagerView: View {
 			try FileManager.default.removeItem(at: file)
 			loadRecentFiles()
 		} catch {
-			print("Error deleting file: \(error)")
+			logError(AppLog.code, "Error deleting file: \(error)")
 		}
 	}
 }

@@ -6,6 +6,8 @@ enum AppLog {
     private static let subsystem = Bundle.main.bundleIdentifier ?? "DevReader"
     static let pdf = OSLog(subsystem: subsystem, category: "PDF")
     static let notes = OSLog(subsystem: subsystem, category: "Notes")
+    static let code = OSLog(subsystem: subsystem, category: "Code")
+    static let web = OSLog(subsystem: subsystem, category: "Web")
     static let app = OSLog(subsystem: subsystem, category: "App")
 }
 
