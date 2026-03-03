@@ -2,6 +2,7 @@ import SwiftUI
 import PDFKit
 import Combine
 
+@MainActor
 final class PDFSelectionBridge {
 	static let shared = PDFSelectionBridge()
 	weak var pdfView: PDFView?
