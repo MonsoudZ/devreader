@@ -96,6 +96,23 @@ struct NotesPane: View {
 			}
 			
 			Divider()
+			if pdf.document == nil {
+				VStack(spacing: 12) {
+					Spacer()
+					Image(systemName: "note.text")
+						.font(.system(size: 40))
+						.foregroundStyle(.secondary)
+					Text("No PDF Open")
+						.font(.headline)
+						.foregroundStyle(.secondary)
+					Text("Open a PDF to start taking notes")
+						.font(.caption)
+						.foregroundStyle(.tertiary)
+					Spacer()
+				}
+				.frame(maxWidth: .infinity)
+				.accessibilityElement(children: .combine)
+			} else {
 			ScrollView {
 				LazyVStack(alignment: .leading, spacing: 12) {
 					if showPageNotes { pageNotesEditor }
@@ -130,9 +147,10 @@ struct NotesPane: View {
 					}
 				}
 			}
+			} // else pdf.document != nil
 		}
 	}
-	
+
 	private var filterPopoverContent: some View {
 		VStack(alignment: .leading, spacing: 12) {
 			Text("Export Filters")
