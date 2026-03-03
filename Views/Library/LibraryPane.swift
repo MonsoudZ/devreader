@@ -49,39 +49,60 @@ struct LibraryPane: View {
             }
 			.padding(8)
 			Divider()
-            List(selection: $selection) {
-                ForEach(sortedFiltered()) { item in
-					Button(action: { open(item) }) {
-						HStack {
-							VStack(alignment: .leading, spacing: 2) {
-								Text(item.title)
-								Text(item.url.lastPathComponent).font(.caption).foregroundStyle(.secondary)
-							}
-							Spacer()
-							if isCurrentPDF(item) { Image(systemName: "checkmark.circle.fill").foregroundStyle(.blue) }
-						}
-					}
-					.buttonStyle(.plain)
-					.accessibilityLabel("PDF: \(item.title)")
-					.accessibilityHint("Added on \(DateFormatter.localizedString(from: item.addedAt, dateStyle: .short, timeStyle: .none)). Tap to open this PDF")
-					.accessibilityAddTraits(isCurrentPDF(item) ? [.isSelected] : [])
-					.contextMenu {
-						Button("Reveal in Finder") { 
-							NSWorkspace.shared.activateFileViewerSelecting([item.url]) 
-						}
-						.accessibilityLabel("Reveal in Finder")
-						.accessibilityHint("Show this PDF file in Finder")
-						
-						Button("Remove from Library") { 
-							library.remove(item) 
-						}
-						.accessibilityLabel("Remove from Library")
-						.accessibilityHint("Remove this PDF from your library")
-					}
-                    .onDrag { NSItemProvider(object: item.url as NSURL) }
-				}
-			}
-			.onDrop(of: [.fileURL], isTargeted: nil) { providers in loadDropped(providers: providers) }
+            if library.items.isEmpty {
+                VStack(spacing: 12) {
+                    Spacer()
+                    Image(systemName: "books.vertical")
+                        .font(.system(size: 40))
+                        .foregroundStyle(.secondary)
+                    Text("No PDFs in Library")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                    Text("Import PDFs to get started")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                    Button("Import PDFs...") { importFromFinder() }
+                        .buttonStyle(.bordered)
+                        .accessibilityIdentifier("libraryEmptyImport")
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity)
+                .accessibilityElement(children: .combine)
+            } else {
+                List(selection: $selection) {
+                    ForEach(sortedFiltered()) { item in
+                        Button(action: { open(item) }) {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(item.title)
+                                    Text(item.url.lastPathComponent).font(.caption).foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                if isCurrentPDF(item) { Image(systemName: "checkmark.circle.fill").foregroundStyle(.blue) }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("PDF: \(item.title)")
+                        .accessibilityHint("Added on \(DateFormatter.localizedString(from: item.addedAt, dateStyle: .short, timeStyle: .none)). Tap to open this PDF")
+                        .accessibilityAddTraits(isCurrentPDF(item) ? [.isSelected] : [])
+                        .contextMenu {
+                            Button("Reveal in Finder") {
+                                NSWorkspace.shared.activateFileViewerSelecting([item.url])
+                            }
+                            .accessibilityLabel("Reveal in Finder")
+                            .accessibilityHint("Show this PDF file in Finder")
+
+                            Button("Remove from Library") {
+                                library.remove(item)
+                            }
+                            .accessibilityLabel("Remove from Library")
+                            .accessibilityHint("Remove this PDF from your library")
+                        }
+                        .onDrag { NSItemProvider(object: item.url as NSURL) }
+                    }
+                }
+                .onDrop(of: [.fileURL], isTargeted: nil) { providers in loadDropped(providers: providers) }
+            }
 		}
 		.alert("Remove Selected Items", isPresented: $showingDeleteConfirmation) {
 			Button("Cancel", role: .cancel) { }
