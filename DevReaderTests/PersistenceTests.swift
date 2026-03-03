@@ -145,21 +145,14 @@ final class PersistenceTests: XCTestCase {
     }
 
     func testDuplicateDetectionByFileAttributes() async {
-        let tempURL1 = createTempFile(name: "dup_test1")
-        let tempURL2 = URL(fileURLWithPath: tempURL1.path + "_copy")
+        // Items at different paths but same filename and file size are duplicates
+        let url1 = URL(fileURLWithPath: "/folder1/dup_test1.pdf")
+        let url2 = URL(fileURLWithPath: "/folder2/dup_test1.pdf")
 
-        // Copy file to create identical content
-        try? FileManager.default.removeItem(at: tempURL2)
-        try? FileManager.default.copyItem(at: tempURL1, to: tempURL2)
+        let item1 = LibraryItem(url: url1, title: "dup_test1.pdf", fileSize: 1024)
+        let item2 = LibraryItem(url: url2, title: "dup_test1.pdf", fileSize: 1024)
 
-        let item1 = LibraryItem(url: tempURL1)
-        let item2 = LibraryItem(url: tempURL2)
-
-        XCTAssertTrue(item1.isDuplicate(of: item2), "Items with identical content should be duplicates")
-
-        // Clean up
-        try? FileManager.default.removeItem(at: tempURL1)
-        try? FileManager.default.removeItem(at: tempURL2)
+        XCTAssertTrue(item1.isDuplicate(of: item2), "Items with same name and size should be duplicates")
     }
 
     func testDuplicateDetectionDifferentFiles() async {

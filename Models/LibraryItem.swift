@@ -105,26 +105,13 @@ nonisolated struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
             return true
         }
 
-        // Check by resolved real path (follows symlinks to the actual file)
-        let path1 = (try? FileManager.default.destinationOfSymbolicLink(atPath: url.path)) ?? url.path
-        let path2 = (try? FileManager.default.destinationOfSymbolicLink(atPath: other.url.path)) ?? other.url.path
-        if path1 == path2 {
+        // Check by resolved real path (no syscall — purely normalizes the URL)
+        if url.resolvingSymlinksInPath() == other.url.resolvingSymlinksInPath() {
             return true
         }
 
-        // Check by file attributes (size + modification date) as a fallback
-        let attributes1 = (try? FileManager.default.attributesOfItem(atPath: url.path)) ?? [:]
-        let attributes2 = (try? FileManager.default.attributesOfItem(atPath: other.url.path)) ?? [:]
-
-        let size1 = attributes1[.size] as? Int64 ?? 0
-        let size2 = attributes2[.size] as? Int64 ?? 0
-        let modDate1 = attributes1[.modificationDate] as? Date
-        let modDate2 = attributes2[.modificationDate] as? Date
-
-        // Same file if size and modification date match
-        if size1 == size2 && size1 > 0,
-           let date1 = modDate1, let date2 = modDate2,
-           abs(date1.timeIntervalSince(date2)) < 1.0 {
+        // Fallback: same filename + same stored file size
+        if fileSize > 0 && fileSize == other.fileSize && title == other.title {
             return true
         }
 
