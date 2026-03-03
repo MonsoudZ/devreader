@@ -89,19 +89,19 @@ struct DevReaderApp: App {
         .commands {
             // File Menu
             CommandGroup(after: .newItem) {
-                Button("Open PDF…") { NotificationCenter.default.post(name: .openPDF, object: nil) }
+                Button("Open PDF…") { appEnvironment.commandOpenPDF() }
                     .keyboardShortcut("o", modifiers: [.command])
                     .accessibilityLabel("Open PDF")
                     .accessibilityHint("Open an existing PDF file")
 
-                Button("Import PDFs…") { NotificationCenter.default.post(name: .importPDFs, object: nil) }
+                Button("Import PDFs…") { appEnvironment.commandImportPDFs() }
                     .keyboardShortcut("i", modifiers: [.command])
                     .accessibilityLabel("Import PDFs")
                     .accessibilityHint("Import multiple PDF files into your library")
 
                 Divider()
 
-                Button("New Sketch Page") { NotificationCenter.default.post(name: .newSketchPage, object: nil) }
+                Button("New Sketch Page") { appEnvironment.commandNewSketchPage() }
                     .keyboardShortcut("n", modifiers: [.command, .shift])
                     .accessibilityLabel("New Sketch Page")
                     .accessibilityHint("Create a new sketch page for the current PDF")
@@ -109,12 +109,12 @@ struct DevReaderApp: App {
 
             // Edit Menu
             CommandGroup(after: .textEditing) {
-                Button("Highlight → Note") { NotificationCenter.default.post(name: .captureHighlight, object: nil) }
+                Button("Highlight → Note") { appEnvironment.commandCaptureHighlight() }
                     .keyboardShortcut("h", modifiers: [.command, .shift])
                     .accessibilityLabel("Capture Highlight to Note")
                     .accessibilityHint("Convert selected text to a note")
 
-                Button("Add Sticky Note") { NotificationCenter.default.post(name: .addStickyNote, object: nil) }
+                Button("Add Sticky Note") { appEnvironment.commandAddStickyNote() }
                     .keyboardShortcut("s", modifiers: [.command, .shift])
                     .accessibilityLabel("Add Sticky Note")
                     .accessibilityHint("Add a sticky note to the current page")
@@ -122,24 +122,24 @@ struct DevReaderApp: App {
 
             // View Menu
             CommandGroup(after: .appVisibility) {
-                Button("Toggle Search") { NotificationCenter.default.post(name: .toggleSearch, object: nil) }
+                Button("Toggle Search") { appEnvironment.commandToggleSearch() }
                     .keyboardShortcut("f", modifiers: [.command])
                     .accessibilityLabel("Toggle Search")
                     .accessibilityHint("Show or hide the search panel")
 
-                Button("Toggle Library") { NotificationCenter.default.post(name: .toggleLibrary, object: nil) }
+                Button("Toggle Library") { appEnvironment.commandToggleLibrary() }
                     .keyboardShortcut("l", modifiers: [.command])
                     .accessibilityLabel("Toggle Library")
                     .accessibilityHint("Show or hide the library panel")
 
-                Button("Toggle Notes") { NotificationCenter.default.post(name: .toggleNotes, object: nil) }
+                Button("Toggle Notes") { appEnvironment.commandToggleNotes() }
                     .keyboardShortcut("t", modifiers: [.command])
                     .accessibilityLabel("Toggle Notes")
                     .accessibilityHint("Show or hide the notes panel")
 
                 Divider()
 
-                Button("Close PDF") { NotificationCenter.default.post(name: .closePDF, object: nil) }
+                Button("Close PDF") { appEnvironment.commandClosePDF() }
                     .keyboardShortcut("w", modifiers: [.command])
                     .accessibilityLabel("Close PDF")
                     .accessibilityHint("Close the currently open PDF")
@@ -147,19 +147,19 @@ struct DevReaderApp: App {
 
             // Help Menu
             CommandGroup(after: .help) {
-                Button("Show Help") { NotificationCenter.default.post(name: .showHelp, object: nil) }
+                Button("Show Help") { appEnvironment.openHelp() }
                     .keyboardShortcut("?", modifiers: [.command])
                     .accessibilityLabel("Show Help")
                     .accessibilityHint("Open the help documentation")
 
-                Button("Show Onboarding") { NotificationCenter.default.post(name: .showOnboarding, object: nil) }
+                Button("Show Onboarding") { appEnvironment.isShowingOnboarding = true }
                     .keyboardShortcut("o", modifiers: [.command, .shift])
                     .accessibilityLabel("Show Onboarding")
                     .accessibilityHint("Show the getting started guide")
 
                 Divider()
 
-                Button("About DevReader") { NotificationCenter.default.post(name: .showAbout, object: nil) }
+                Button("About DevReader") { appEnvironment.isShowingAbout = true }
                     .accessibilityLabel("About DevReader")
                     .accessibilityHint("Show information about DevReader")
             }

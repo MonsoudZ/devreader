@@ -48,9 +48,39 @@ final class AppEnvironment: ObservableObject {
         }
     }
 
-    // MARK: - Convenience
+    // MARK: - Command Signals
+    // Monotonic counters that ContentView observes via onChange to react to menu commands
+    // that require local-state changes (toggles, panels, file dialogs).
+    @Published var openPDFSignal = 0
+    @Published var importPDFsSignal = 0
+    @Published var toggleLibrarySignal = 0
+    @Published var toggleNotesSignal = 0
+    @Published var toggleSearchSignal = 0
 
-    func openHelp() {
-        isShowingHelp = true
+    // MARK: - Command Actions (called from menu commands)
+
+    func openHelp() { isShowingHelp = true }
+
+    func commandOpenPDF() { openPDFSignal += 1 }
+    func commandImportPDFs() { importPDFsSignal += 1 }
+    func commandToggleLibrary() { toggleLibrarySignal += 1 }
+    func commandToggleNotes() { toggleNotesSignal += 1 }
+    func commandToggleSearch() { toggleSearchSignal += 1 }
+
+    func commandClosePDF() {
+        pdfController.document = nil
+    }
+
+    func commandCaptureHighlight() {
+        pdfController.captureHighlightToNotes()
+    }
+
+    func commandAddStickyNote() {
+        pdfController.addStickyNote()
+    }
+
+    func commandNewSketchPage() {
+        guard let url = pdfController.currentPDFURL else { return }
+        sketchStore.createSketch(for: url, pageIndex: pdfController.currentPageIndex)
     }
 }

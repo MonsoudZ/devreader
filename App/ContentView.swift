@@ -146,7 +146,24 @@ struct ContentView: View {
         .onAppear {
             columnVisibility = showingLibrary ? .all : .detailOnly
             setupAutosaveTimer()
-            wireMenuNotifications()
+            wireInternalNotifications()
+        }
+        // Command signal observers (replace NotificationCenter-based menu routing)
+        .onChange(of: appEnvironment.openPDFSignal) { _, _ in openPDF() }
+        .onChange(of: appEnvironment.importPDFsSignal) { _, _ in importPDFs() }
+        .onChange(of: appEnvironment.toggleLibrarySignal) { _, _ in
+            withAnimation { showingLibrary.toggle() }
+        }
+        .onChange(of: appEnvironment.toggleNotesSignal) { _, _ in
+            withAnimation { showingRightPanel = true }
+            rightTab = .notes
+        }
+        .onChange(of: appEnvironment.toggleSearchSignal) { _, _ in
+            let wasShowing = showingSearch
+            withAnimation { showingSearch.toggle() }
+            if wasShowing {
+                appEnvironment.pdfController.searchManager.clearSearch()
+            }
         }
         .onChange(of: showingLibrary) { _, newValue in
             withAnimation {
@@ -193,80 +210,11 @@ struct ContentView: View {
         .background(Color(NSColor.windowBackgroundColor))
     }
 
-    // MARK: - Menu Notification Wiring
-    /// Subscribes to the command notifications posted by DevReaderApp's .commands
-    private func wireMenuNotifications() {
+    // MARK: - Internal Notification Wiring
+    /// Subscribes to internal notifications (addNote, showToast, pdfLoadError) that are
+    /// posted from various parts of the app — NOT from menu commands.
+    private func wireInternalNotifications() {
         guard cancellables.isEmpty else { return }
-        NotificationCenter.default.publisher(for: .openPDF)
-            .sink { _ in openPDF() }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .importPDFs)
-            .sink { _ in importPDFs() }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .closePDF)
-            .sink { _ in appEnvironment.pdfController.document = nil }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .toggleLibrary)
-            .sink { _ in
-                withAnimation {
-                    showingLibrary.toggle()
-                }
-            }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .toggleNotes)
-            .sink { _ in
-                withAnimation {
-                    showingRightPanel = true
-                }
-                rightTab = .notes
-            }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .toggleSearch)
-            .sink { _ in
-                let wasShowing = showingSearch
-                withAnimation {
-                    showingSearch.toggle()
-                }
-                if wasShowing {
-                    appEnvironment.pdfController.searchManager.clearSearch()
-                }
-            }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .captureHighlight)
-            .sink { _ in appEnvironment.pdfController.captureHighlightToNotes() }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .addStickyNote)
-            .sink { _ in appEnvironment.pdfController.addStickyNote() }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .newSketchPage)
-            .sink { _ in
-                guard let url = appEnvironment.pdfController.currentPDFURL else { return }
-                appEnvironment.sketchStore.createSketch(
-                    for: url,
-                    pageIndex: appEnvironment.pdfController.currentPageIndex
-                )
-            }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .showHelp)
-            .sink { _ in appEnvironment.openHelp() }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .showOnboarding)
-            .sink { _ in appEnvironment.isShowingOnboarding = true }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .showAbout)
-            .sink { _ in appEnvironment.isShowingAbout = true }
-            .store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .addNote)
             .sink { notification in
