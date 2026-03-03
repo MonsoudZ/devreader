@@ -43,7 +43,7 @@ struct AboutView: View {
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                 
-                Text("© 2024 DevReader. All rights reserved.")
+                Text("© \(Calendar.current.component(.year, from: Date())) DevReader. All rights reserved.")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
