@@ -163,10 +163,26 @@ struct WebView: NSViewRepresentable {
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             LoadingStateManager.shared.stopWebLoading()
             logError(AppLog.web, "WebView navigation failed: \(error.localizedDescription)")
+            showErrorPage(in: webView, error: error)
         }
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
             LoadingStateManager.shared.stopWebLoading()
             logError(AppLog.web, "WebView provisional navigation failed: \(error.localizedDescription)")
+            showErrorPage(in: webView, error: error)
+        }
+        private func showErrorPage(in webView: WKWebView, error: Error) {
+            let html = """
+            <html><head><style>
+            body { font-family: -apple-system; text-align: center; padding: 60px 20px; color: #888; background: \
+            #1e1e1e; }
+            h2 { color: #ccc; } p { margin-top: 8px; }
+            </style></head><body>
+            <h2>Page Failed to Load</h2>
+            <p>\(error.localizedDescription)</p>
+            <p style="margin-top:20px;font-size:13px;color:#666">Check your connection and try again.</p>
+            </body></html>
+            """
+            webView.loadHTMLString(html, baseURL: nil)
         }
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
             if let url = navigationAction.request.url, let scheme = url.scheme?.lowercased(),
