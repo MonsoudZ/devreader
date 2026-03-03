@@ -1,5 +1,4 @@
 import Foundation
-import CryptoKit
 import Combine
 import os.log
 
@@ -36,69 +35,15 @@ class EnhancedPersistenceService: ObservableObject {
     func saveCodable<T: Codable>(_ data: T, forKey key: String, url: URL? = nil) throws {
         let finalKey = generateKey(key, for: url)
         let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
-        
-        // Ensure directory exists
-        JSONStorageService.ensureDirectories()
-        
-        // Create temporary file for atomic write
-        let tempURL = fileURL.appendingPathExtension("tmp")
-        let backupURL = fileURL.appendingPathExtension("bak")
-        
-        do {
-            // Encode data
-            let jsonData = try JSONEncoder().encode(data)
-
-            // Write to temporary file
-            try jsonData.write(to: tempURL)
-
-            if fileManager.fileExists(atPath: fileURL.path) {
-                // Create backup before replacing
-                try? fileManager.removeItem(at: backupURL)
-                try fileManager.copyItem(at: fileURL, to: backupURL)
-
-                // Atomic replace
-                _ = try fileManager.replaceItem(at: fileURL, withItemAt: tempURL, backupItemName: nil, options: [], resultingItemURL: nil)
-            } else {
-                // First write — just move into place
-                try fileManager.moveItem(at: tempURL, to: fileURL)
-            }
-
-            // Clean up backup
-            try? fileManager.removeItem(at: backupURL)
-
-            os_log("Atomically saved data for key: %{public}@", log: logger, type: .debug, finalKey)
-
-        } catch {
-            // Restore from backup if atomic write failed
-            if fileManager.fileExists(atPath: backupURL.path) {
-                try? fileManager.removeItem(at: fileURL)
-                try? fileManager.moveItem(at: backupURL, to: fileURL)
-            }
-
-            // Clean up temporary file
-            try? fileManager.removeItem(at: tempURL)
-
-            os_log("Failed to save data atomically for key: %{public}@, error: %{public}@", log: logger, type: .error, finalKey, error.localizedDescription)
-            throw error
-        }
+        try JSONStorageService.save(data, to: fileURL)
+        os_log("Saved data for key: %{public}@", log: logger, type: .debug, finalKey)
     }
     
     /// Loads data with validation
     func loadCodable<T: Codable>(_ type: T.Type, forKey key: String, url: URL? = nil) -> T? {
         let finalKey = generateKey(key, for: url)
         let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
-        
-        do {
-            let data = try Data(contentsOf: fileURL)
-            let result = try JSONDecoder().decode(type, from: data)
-            
-            os_log("Loaded data for key: %{public}@", log: logger, type: .debug, finalKey)
-            return result
-            
-        } catch {
-            os_log("Failed to load data for key: %{public}@, error: %{public}@", log: logger, type: .error, finalKey, error.localizedDescription)
-            return nil
-        }
+        return JSONStorageService.loadOptional(type, from: fileURL)
     }
     
     // MARK: - Data Validation
