@@ -138,7 +138,6 @@ struct ContentView: View {
 
             // ===== Global UX overlays =====
             LoadingOverlay()
-                .errorOverlay(appEnvironment.errorMessageManager)
         }
         // Toasts (enhanced, non-modal)
         .enhancedToastOverlay(appEnvironment.enhancedToastCenter)

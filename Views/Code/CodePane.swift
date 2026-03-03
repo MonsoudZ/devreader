@@ -406,10 +406,7 @@ struct MonacoWebEditor: View {
 				fileName: currentFileName
 			)
 		}
-		.onChange(of: selectedLanguage) {
-			// Update Monaco language when selection changes
-			updateMonacoLanguage()
-		}
+	
 	}
 	
 	// MARK: - Helper Functions
@@ -450,11 +447,6 @@ struct MonacoWebEditor: View {
 				LoadingStateManager.shared.stopFileOperation()
 			}
 		}
-	}
-	
-	private func updateMonacoLanguage() {
-		// Language change is handled by WebViewHTML.updateNSView via
-		// monaco.editor.setModelLanguage() when selectedLanguage changes.
 	}
 }
 

@@ -93,17 +93,6 @@ final class LibraryStore: ObservableObject {
 		LoadingStateManager.shared.stopLoading(.general)
 	}
 
-	func removeDuplicates() {
-		LoadingStateManager.shared.startLoading(.general, message: "Removing duplicates...")
-
-		Task {
-			let uniqueItems = await backgroundService.removeDuplicates(from: items)
-			items = uniqueItems
-			schedulePersist()
-			LoadingStateManager.shared.stopLoading(.general)
-		}
-	}
-
 	func refreshItem(_ item: LibraryItem) {
 		// Update item with current file information, preserving identity
 		if let index = items.firstIndex(where: { $0.id == item.id }) {

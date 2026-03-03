@@ -15,7 +15,6 @@ struct NotesPane: View {
     @State private var dateFrom: Date = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
     @State private var dateTo: Date = Date()
     @AppStorage("notes.exportPresets") private var exportPresetsRaw: String = "[]"
-	@State private var currentPresetName: String = ""
 	@State private var isExporting = false
 	@State private var exportProgress: Double = 0.0
 	@State private var exportStatus: String = ""
@@ -211,10 +210,7 @@ struct NotesPane: View {
 		let chapter = pdf.outlineManager.outlineMap[pageIndex] ?? ""
 		let note = NoteItem(text: "", pageIndex: pageIndex, chapter: chapter)
 		notes.add(note)
-		// Auto-start editing the new note
-		DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-			// This will be handled by the NoteRow's auto-edit functionality
-		}
+		// NoteRow auto-starts editing for newly created notes
 	}
 	
 	var pageNotesEditor: some View {
