@@ -177,11 +177,13 @@ final class ErrorRecoveryTests: XCTestCase {
     // MARK: - Session Recovery Tests
     
     func testResetCorruptedState() async {
-        // Test corrupted state reset
-        let success = await ErrorRecoveryService.resetCorruptedState()
+        // Seed a DevReader key and verify it gets cleared
+        UserDefaults.standard.set("test", forKey: "DevReader.TestKey.v1")
+        XCTAssertNotNil(UserDefaults.standard.string(forKey: "DevReader.TestKey.v1"))
 
-        // Corrupted state reset should complete (may succeed or fail depending on current state)
-        XCTAssertTrue(success == true || success == false, "Corrupted state reset should complete")
+        let success = await ErrorRecoveryService.resetCorruptedState()
+        XCTAssertTrue(success, "Corrupted state reset should succeed")
+        XCTAssertNil(UserDefaults.standard.string(forKey: "DevReader.TestKey.v1"), "DevReader keys should be cleared")
     }
     
     // MARK: - Integration Tests

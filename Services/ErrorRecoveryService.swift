@@ -194,9 +194,9 @@ nonisolated enum ErrorRecoveryService {
         os_log("Starting corrupted state reset", log: logger, type: .info)
         
         do {
-            // Clear potentially corrupted UserDefaults
-            let keys = ["DevReader.Session.v1", "DevReader.Bookmarks.v1", "DevReader.Recents.v1", "DevReader.Pinned.v1"]
-            for key in keys {
+            // Clear all DevReader UserDefaults keys (including per-document suffixed keys)
+            let allKeys = UserDefaults.standard.dictionaryRepresentation().keys
+            for key in allKeys where key.hasPrefix("DevReader.") {
                 UserDefaults.standard.removeObject(forKey: key)
             }
             
