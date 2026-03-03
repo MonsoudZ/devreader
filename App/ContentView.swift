@@ -228,10 +228,11 @@ struct ContentView: View {
 
         NotificationCenter.default.publisher(for: .toggleSearch)
             .sink { _ in
+                let wasShowing = showingSearch
                 withAnimation {
                     showingSearch.toggle()
                 }
-                if !showingSearch {
+                if wasShowing {
                     appEnvironment.pdfController.searchManager.clearSearch()
                 }
             }
