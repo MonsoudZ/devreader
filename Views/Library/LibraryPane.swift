@@ -92,10 +92,8 @@ struct LibraryPane: View {
 			Text("Are you sure you want to remove \(selection.count) item\(selection.count == 1 ? "" : "s") from your library? This action cannot be undone.")
 		}
 		.onAppear {
-			// Load persisted sort order
-			if let persistedSort = SortOption(rawValue: persistedSortOrder) {
-				sort = persistedSort
-			}
+			// Load persisted sort order with resilient fallback
+			sort = SortOption(fromStored: persistedSortOrder)
 		}
 		.onChange(of: sort) { _, newSort in
 			// Persist sort order
@@ -208,8 +206,14 @@ struct LibraryPane: View {
     }
 }
 
-enum SortOption: String, CaseIterable { 
+// Sort options — raw values are persisted; do not rename without migration.
+enum SortOption: String, CaseIterable {
     case recent = "recent"
-    case titleAZ = "titleAZ" 
+    case titleAZ = "titleAZ"
     case titleZA = "titleZA"
+
+    /// Resilient initializer for persisted values; defaults to `.recent` for unknown strings.
+    init(fromStored rawValue: String) {
+        self = SortOption(rawValue: rawValue) ?? .recent
+    }
 }
