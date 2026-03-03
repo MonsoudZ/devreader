@@ -296,23 +296,7 @@ nonisolated enum Shell {
     }
 
     static func getFileExtension(for language: String) -> String {
-        switch language.lowercased() {
-        case "python", "python3": return "py"
-        case "ruby": return "rb"
-        case "node", "node.js", "javascript": return "js"
-        case "swift": return "swift"
-        case "bash", "sh": return "sh"
-        case "go": return "go"
-        case "c": return "c"
-        case "c++", "cpp": return "cpp"
-        case "rust": return "rs"
-        case "java": return "java"
-        case "typescript": return "ts"
-        case "kotlin": return "kt"
-        case "dart": return "dart"
-        case "sql": return "sql"
-        default: return "txt"
-        }
+        CodeLang.fromName(language)?.fileExtension ?? "txt"
     }
 
     private static func compileAndRunC(tempFile: URL) -> String {

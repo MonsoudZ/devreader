@@ -95,4 +95,41 @@ nonisolated enum CodeLang: String, CaseIterable, Sendable {
 		case .sql: return "sql"
 		}
 	}
+
+	var vimSyntax: String {
+		switch self {
+		case .bash: return "sh"
+		default: return monacoLanguage
+		}
+	}
+
+	var emacsMode: String {
+		switch self {
+		case .bash: return "sh"
+		case .cpp: return "c++"
+		default: return monacoLanguage
+		}
+	}
+
+	/// Look up a CodeLang from a lowercased language name string (e.g., "python3", "node.js")
+	static func fromName(_ name: String) -> CodeLang? {
+		switch name.lowercased() {
+		case "python", "python3": return .python
+		case "ruby": return .ruby
+		case "node", "node.js": return .node
+		case "javascript": return .javascript
+		case "swift": return .swift
+		case "bash", "sh": return .bash
+		case "go": return .go
+		case "c": return .c
+		case "c++", "cpp": return .cpp
+		case "rust": return .rust
+		case "java": return .java
+		case "typescript": return .typescript
+		case "kotlin": return .kotlin
+		case "dart": return .dart
+		case "sql": return .sql
+		default: return nil
+		}
+	}
 }

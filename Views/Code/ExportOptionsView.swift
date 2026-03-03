@@ -190,41 +190,6 @@ struct ExportOptionsView: View {
 		}
 	}
 
-	private func getVimSyntax() -> String {
-		switch language {
-		case .python: return "python"
-		case .ruby: return "ruby"
-		case .node, .javascript: return "javascript"
-		case .swift: return "swift"
-		case .bash: return "sh"
-		case .go: return "go"
-		case .c: return "c"
-		case .cpp: return "cpp"
-		case .rust: return "rust"
-		case .java: return "java"
-		case .typescript: return "typescript"
-		case .kotlin: return "kotlin"
-		case .dart: return "dart"
-		case .sql: return "sql"
-		}
-	}
-
-	private func getEmacsMode() -> String {
-		switch language {
-		case .python: return "python"
-		case .ruby: return "ruby"
-		case .node, .javascript: return "javascript"
-		case .swift: return "swift"
-		case .bash: return "sh"
-		case .go: return "go"
-		case .c: return "c"
-		case .cpp: return "c++"
-		case .rust: return "rust"
-		case .java: return "java"
-		case .typescript: return "typescript"
-		case .kotlin: return "kotlin"
-		case .dart: return "dart"
-		case .sql: return "sql"
-		}
-	}
+	private func getVimSyntax() -> String { language.vimSyntax }
+	private func getEmacsMode() -> String { language.emacsMode }
 }
