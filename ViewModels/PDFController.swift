@@ -46,6 +46,16 @@ final class PDFController: ObservableObject {
 	let bookmarkManager = PDFBookmarkManager()
 	let outlineManager = PDFOutlineManager()
 
+    // MARK: - Constants
+    private static let largePDFPageThreshold = 500
+    private static let validationSamplePages = 3
+    private static let loadDebounceNanoseconds: UInt64 = 100_000_000  // 0.1s
+    private static let persistPageDelay: TimeInterval = 0.5
+    private static let memoryPressureCooldown: TimeInterval = 5.0
+    private static let loadEstimateBaseTime: TimeInterval = 2.0
+    private static let loadEstimatePerPage: TimeInterval = 0.01
+    private static let loadEstimateMinuteThreshold: TimeInterval = 60
+
     private let sessionKey = "DevReader.Session.v1"
 	private var loadingTask: Task<Void, Never>?
 	private var outlineTask: Task<Void, Never>?
@@ -68,7 +78,7 @@ final class PDFController: ObservableObject {
 	func load(url: URL) {
 		loadingTask?.cancel()
 		loadingTask = Task {
-			try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s debounce
+			try? await Task.sleep(nanoseconds: Self.loadDebounceNanoseconds)
 			guard !Task.isCancelled else { return }
 			await loadAsync(url: url)
 		}
@@ -143,7 +153,7 @@ final class PDFController: ObservableObject {
 		}
 
 		let pageCount = loadedDoc.pageCount
-		isLargePDF = pageCount >= 500
+		isLargePDF = pageCount >= Self.largePDFPageThreshold
 
 		if isLargePDF {
 			estimatedLoadTime = estimateLoadTime(for: pageCount)
@@ -234,7 +244,7 @@ final class PDFController: ObservableObject {
 			}
 		}
 		persistPageWorkItem = workItem
-		DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+		DispatchQueue.main.asyncAfter(deadline: .now() + Self.persistPageDelay, execute: workItem)
 	}
 
 	func flushPendingPersistence() {
@@ -285,7 +295,7 @@ final class PDFController: ObservableObject {
 		isHandlingMemoryPressure = true
 		logError(AppLog.pdf, "Critical memory pressure - clearing caches")
 		URLCache.shared.removeAllCachedResponses()
-		DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
+		DispatchQueue.main.asyncAfter(deadline: .now() + Self.memoryPressureCooldown) { [weak self] in
 			self?.isHandlingMemoryPressure = false
 		}
 	}
@@ -338,7 +348,7 @@ final class PDFController: ObservableObject {
 
 	private func validateDocument(_ doc: PDFDocument) -> Bool {
 		guard doc.pageCount > 0 else { return false }
-		let samplePages = min(3, doc.pageCount)
+		let samplePages = min(Self.validationSamplePages, doc.pageCount)
 		for i in 0..<samplePages {
 			guard let page = doc.page(at: i) else { return false }
 			guard page.bounds(for: .mediaBox).width > 0 && page.bounds(for: .mediaBox).height > 0 else { return false }
@@ -392,10 +402,8 @@ final class PDFController: ObservableObject {
 	// MARK: - Large PDF Optimization Methods
 
 	private func estimateLoadTime(for pageCount: Int) -> String {
-		let baseTime = 2.0
-		let timePerPage = 0.01
-		let estimatedSeconds = baseTime + (Double(pageCount) * timePerPage)
-		if estimatedSeconds < 60 {
+		let estimatedSeconds = Self.loadEstimateBaseTime + (Double(pageCount) * Self.loadEstimatePerPage)
+		if estimatedSeconds < Self.loadEstimateMinuteThreshold {
 			return "~\(Int(estimatedSeconds))s"
 		} else {
 			let minutes = Int(estimatedSeconds / 60)

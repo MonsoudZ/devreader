@@ -22,9 +22,12 @@ class PerformanceMonitor: ObservableObject {
     private let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "Performance")
     private var monitoringTimer: Timer?
     private var memoryHistory: [UInt64] = []
-    private let maxHistorySize = 50
-    private let memoryThreshold: UInt64 = 500 * 1024 * 1024 // 500MB
-    private let criticalThreshold: UInt64 = 800 * 1024 * 1024 // 800MB
+    private static let maxHistorySize = 50
+    private static let memoryWarningThreshold: UInt64 = 500 * 1024 * 1024  // 500 MB
+    private static let memoryCriticalThreshold: UInt64 = 800 * 1024 * 1024 // 800 MB
+    private static let monitoringInterval: TimeInterval = 10.0
+    private static let criticalMemoryPercent: Double = 80
+    private static let warningMemoryPercent: Double = 60
 
     enum MemoryPressure {
         case normal, warning, critical
@@ -40,7 +43,7 @@ class PerformanceMonitor: ObservableObject {
         guard !isMonitoring else { return }
         isMonitoring = true
 
-        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { @Sendable [weak self] _ in
+        monitoringTimer = Timer.scheduledTimer(withTimeInterval: Self.monitoringInterval, repeats: true) { @Sendable [weak self] _ in
             Task { @MainActor in
                 self?.updateMemoryUsage()
             }
@@ -62,7 +65,7 @@ class PerformanceMonitor: ObservableObject {
         memoryUsage = usage
 
         memoryHistory.append(usage)
-        if memoryHistory.count > maxHistorySize {
+        if memoryHistory.count > Self.maxHistorySize {
             memoryHistory.removeFirst()
         }
 
@@ -72,11 +75,11 @@ class PerformanceMonitor: ObservableObject {
             peakMemoryUsage = usage
         }
 
-        if usage > criticalThreshold {
+        if usage > Self.memoryCriticalThreshold {
             memoryPressure = .critical
             os_log("Critical memory pressure - aggressive optimization", log: logger, type: .error)
             URLCache.shared.removeAllCachedResponses()
-        } else if usage > memoryThreshold {
+        } else if usage > Self.memoryWarningThreshold {
             memoryPressure = .warning
             os_log("Memory warning - starting optimization", log: logger, type: .info)
             URLCache.shared.removeAllCachedResponses()
@@ -132,9 +135,9 @@ class PerformanceMonitor: ObservableObject {
         let total = ProcessInfo.processInfo.physicalMemory
         let percentage = Double(memoryUsage) / Double(total) * 100
 
-        if percentage > 80 {
+        if percentage > Self.criticalMemoryPercent {
             return "Critical"
-        } else if percentage > 60 {
+        } else if percentage > Self.warningMemoryPercent {
             return "Warning"
         } else {
             return "Normal"
