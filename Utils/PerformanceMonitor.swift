@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import os.log
+import AppKit
 
 @MainActor
 class PerformanceMonitor: ObservableObject {
@@ -33,10 +34,27 @@ class PerformanceMonitor: ObservableObject {
         case normal, warning, critical
     }
 
+    private var appStateObservers: [Any] = []
+
     private init() {
         if !ProcessInfo.processInfo.isLowPowerModeEnabled {
             startMonitoring()
         }
+        observeAppState()
+    }
+
+    private func observeAppState() {
+        let resignObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didResignActiveNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.stopMonitoring() }
+        }
+        let activeObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor in self?.startMonitoring() }
+        }
+        appStateObservers = [resignObserver, activeObserver]
     }
 
     func startMonitoring() {
