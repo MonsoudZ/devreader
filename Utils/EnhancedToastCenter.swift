@@ -360,14 +360,3 @@ extension View {
     }
 }
 
-// MARK: - File Access Reasons
-
-extension EnhancedToastCenter {
-    enum FileAccessReason {
-        case notFound
-        case permissionDenied
-        case corrupted
-        case unsupportedFormat
-        case networkError
-    }
-}

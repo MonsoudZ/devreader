@@ -71,7 +71,7 @@ class ErrorMessageManager: ObservableObject {
     }
     
     /// Creates a file access error
-    static func fileAccessError(for url: URL, reason: ErrorMessageManager.FileAccessReason) -> UserFriendlyError {
+    static func fileAccessError(for url: URL, reason: FileAccessReason) -> UserFriendlyError {
         let fileName = url.lastPathComponent
         
         let (title, message): (String, String) = switch reason {
@@ -317,14 +317,12 @@ struct RecoveryAction: Identifiable {
 
 // MARK: - File Access Reasons
 
-extension ErrorMessageManager {
-    enum FileAccessReason {
-        case notFound
-        case permissionDenied
-        case corrupted
-        case unsupportedFormat
-        case networkError
-    }
+enum FileAccessReason {
+    case notFound
+    case permissionDenied
+    case corrupted
+    case unsupportedFormat
+    case networkError
 }
 
 // MARK: - Extensions (errorOverlay moved to ErrorDisplayView.swift)
