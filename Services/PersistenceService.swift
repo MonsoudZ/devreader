@@ -5,7 +5,10 @@ import os.log
 // Enhanced persistence service with JSON file-based storage
 nonisolated enum PersistenceService {
     private static let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "Persistence")
-    nonisolated(unsafe) private static var hasMigrated = false
+    // Thread-safe one-time migration using Swift's static let guarantee (dispatch_once)
+    private static let _migration: Void = {
+        JSONStorageService.migrateFromUserDefaults()
+    }()
 
     /// Deterministic hash of a URL path using SHA256. Stable across app launches.
     static func stableHash(for url: URL) -> String {
@@ -26,13 +29,10 @@ nonisolated enum PersistenceService {
         let hash = stableHash(for: u)
         return base + "." + scope + "." + hash
     }
-    
+
     // Initialize JSON-based persistence
     static func initialize() {
-        if !hasMigrated {
-            JSONStorageService.migrateFromUserDefaults()
-            hasMigrated = true
-        }
+        _ = _migration
     }
 
     // MARK: - JSON File-based Storage
