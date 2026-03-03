@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		A00100012F00000000000001 /* Models/NoteItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100002F00000000000001 /* Models/NoteItem.swift */; };
+		E00100012F00000000000001 /* Models/ToastMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00100002F00000000000001 /* Models/ToastMessage.swift */; };
 		A00100032F00000000000001 /* Models/LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100022F00000000000001 /* Models/LibraryItem.swift */; };
 		A00100072F00000000000001 /* ViewModels/PDFController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100062F00000000000001 /* ViewModels/PDFController.swift */; };
 		C00100012F00000000000001 /* ViewModels/PDFSearchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00100002F00000000000001 /* ViewModels/PDFSearchManager.swift */; };
@@ -81,6 +82,7 @@
 		9932A8162E823C67001C0FFE /* DevReaderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DevReaderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9932A8202E823C67001C0FFE /* DevReaderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DevReaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00100002F00000000000001 /* Models/NoteItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/NoteItem.swift; sourceTree = "<group>"; };
+		E00100002F00000000000001 /* Models/ToastMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/ToastMessage.swift; sourceTree = "<group>"; };
 		A00100022F00000000000001 /* Models/LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/LibraryItem.swift; sourceTree = "<group>"; };
 		A00100062F00000000000001 /* ViewModels/PDFController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFController.swift; sourceTree = "<group>"; };
 		C00100002F00000000000001 /* ViewModels/PDFSearchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFSearchManager.swift; sourceTree = "<group>"; };
@@ -218,6 +220,7 @@
 				A001003C2F00000000000001 /* Utils/LoadingStates.swift */,
 				A00100002F00000000000001 /* Models/NoteItem.swift */,
 				A00100022F00000000000001 /* Models/LibraryItem.swift */,
+				E00100002F00000000000001 /* Models/ToastMessage.swift */,
 				A00100062F00000000000001 /* ViewModels/PDFController.swift */,
 				C00100002F00000000000001 /* ViewModels/PDFSearchManager.swift */,
 				C00100022F00000000000002 /* ViewModels/PDFBookmarkManager.swift */,
@@ -402,6 +405,7 @@
 			files = (
 				A00100012F00000000000001 /* Models/NoteItem.swift in Sources */,
 				A00100032F00000000000001 /* Models/LibraryItem.swift in Sources */,
+				E00100012F00000000000001 /* Models/ToastMessage.swift in Sources */,
 				A00100072F00000000000001 /* ViewModels/PDFController.swift in Sources */,
 				C00100012F00000000000001 /* ViewModels/PDFSearchManager.swift in Sources */,
 				C00100032F00000000000002 /* ViewModels/PDFBookmarkManager.swift in Sources */,
