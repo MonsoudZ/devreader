@@ -6,8 +6,8 @@ struct WebViewHTML: NSViewRepresentable {
     var savedCode: String
     var language: String
     var theme: String
-    var onCodeChange: (String) -> Void
-    var onEditorReady: (() -> Void)?
+    var onCodeChange: @MainActor @Sendable (String) -> Void
+    var onEditorReady: (@MainActor @Sendable () -> Void)?
     func makeCoordinator() -> Coord { Coord(onCodeChange: onCodeChange, savedCode: savedCode, theme: theme, onEditorReady: onEditorReady) }
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
@@ -59,12 +59,12 @@ struct WebViewHTML: NSViewRepresentable {
         }
     }
     @MainActor final class Coord: NSObject, WKScriptMessageHandler, WKNavigationDelegate {
-        let onCodeChange: (String) -> Void
+        let onCodeChange: @MainActor @Sendable (String) -> Void
         let savedCode: String
-        let onEditorReady: (() -> Void)?
+        let onEditorReady: (@MainActor @Sendable () -> Void)?
         var currentLanguage: String = ""
         var currentTheme: String = ""
-        init(onCodeChange: @escaping (String) -> Void, savedCode: String, theme: String = "vs-dark", onEditorReady: (() -> Void)? = nil) {
+        init(onCodeChange: @escaping @MainActor @Sendable (String) -> Void, savedCode: String, theme: String = "vs-dark", onEditorReady: (@MainActor @Sendable () -> Void)? = nil) {
             self.onCodeChange = onCodeChange
             self.savedCode = savedCode
             self.currentTheme = theme
