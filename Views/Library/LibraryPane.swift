@@ -118,9 +118,11 @@ struct LibraryPane: View {
     }
 	
         func importFromFinder() {
-            let urls = FileService.openPDF(multiple: true)
-            if !urls.isEmpty { 
-                importURLs(urls)
+            Task {
+                let urls = await FileService.openPDF(multiple: true)
+                if !urls.isEmpty {
+                    importURLs(urls)
+                }
             }
         }
         

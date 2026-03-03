@@ -244,8 +244,8 @@ struct NotesPane: View {
 	}
 	
 	func exportMarkdownAsync() async {
-		// Present save panel on main thread FIRST to avoid runModal() inside Task.detached
-		guard let saveURL = FileService.savePlainText(defaultName: "DevReader-Notes.md") else { return }
+		// Present save panel on main actor to avoid blocking
+		guard let saveURL = await FileService.savePlainText(defaultName: "DevReader-Notes.md") else { return }
 
 		isExporting = true
 		exportProgress = 0.0

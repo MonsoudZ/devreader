@@ -5,21 +5,29 @@ import PDFKit
 
 enum FileService {
     // OpenPanel helpers
-    static func openPDF(multiple: Bool = false) -> [URL] {
+    @MainActor
+    static func openPDF(multiple: Bool = false) async -> [URL] {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [UTType.pdf]
         panel.allowsMultipleSelection = multiple
-        let result = panel.runModal()
-        guard result == .OK else { return [] }
-        return panel.urls
+        return await withCheckedContinuation { continuation in
+            panel.begin { response in
+                continuation.resume(returning: response == .OK ? panel.urls : [])
+            }
+        }
     }
 
     // NSSavePanel helper
-    static func savePlainText(defaultName: String) -> URL? {
+    @MainActor
+    static func savePlainText(defaultName: String) async -> URL? {
         let panel = NSSavePanel()
         panel.nameFieldStringValue = defaultName
         panel.allowedContentTypes = [UTType.plainText]
-        return panel.runModal() == .OK ? panel.url : nil
+        return await withCheckedContinuation { continuation in
+            panel.begin { response in
+                continuation.resume(returning: response == .OK ? panel.url : nil)
+            }
+        }
     }
 
     // Validation helpers
