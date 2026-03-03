@@ -412,33 +412,8 @@ final class PDFController: ObservableObject {
 	}
 
 	private func updateMemoryUsage() {
-		Task {
-			let usage = await getCurrentMemoryUsage()
-			await MainActor.run {
-				self.memoryUsage = formatBytes(usage)
-			}
-		}
-	}
-
-	private func getCurrentMemoryUsage() async -> UInt64 {
-		var info = mach_task_basic_info()
-		var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
-		let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) {
-			$0.withMemoryRebound(to: integer_t.self, capacity: 1) {
-				task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count)
-			}
-		}
-		if kerr == KERN_SUCCESS {
-			return UInt64(info.resident_size)
-		}
-		return 0
-	}
-
-	private func formatBytes(_ bytes: UInt64) -> String {
-		let formatter = ByteCountFormatter()
-		formatter.allowedUnits = [.useMB, .useGB]
-		formatter.countStyle = .memory
-		return formatter.string(fromByteCount: Int64(bytes))
+		let monitor = PerformanceMonitor.shared
+		memoryUsage = monitor.formatBytes(monitor.memoryUsage)
 	}
 
 	// MARK: - Highlight and Notes Integration
