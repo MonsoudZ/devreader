@@ -246,6 +246,10 @@ struct ContentView: View {
             .sink { _ in appEnvironment.isShowingOnboarding = true }
             .store(in: &cancellables)
 
+        NotificationCenter.default.publisher(for: .showAbout)
+            .sink { _ in appEnvironment.isShowingAbout = true }
+            .store(in: &cancellables)
+
         NotificationCenter.default.publisher(for: .addNote)
             .sink { notification in
                 if let note = notification.object as? NoteItem {

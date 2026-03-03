@@ -22,6 +22,7 @@ final class AppEnvironment: ObservableObject {
     @Published var isShowingOnboarding = false
     @Published var isShowingSettings = false
     @Published var isShowingHelp = false
+    @Published var isShowingAbout = false
 
     // MARK: - Init
     private init() {

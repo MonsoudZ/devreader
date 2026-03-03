@@ -67,6 +67,9 @@ struct DevReaderApp: App {
                         .environmentObject(appEnvironment)
                         .frame(minWidth: 820, minHeight: 600)
                 }
+                .sheet(isPresented: $appEnvironment.isShowingAbout) {
+                    AboutView(isPresented: $appEnvironment.isShowingAbout)
+                }
 
                 // Hard fail alert (only for init-time persistence failure)
                 .alert("Initialization Error", isPresented: $showingErrorAlert) {

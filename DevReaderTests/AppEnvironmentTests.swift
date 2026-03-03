@@ -133,10 +133,12 @@ final class AppEnvironmentTests: XCTestCase {
         env.isShowingOnboarding = false
         env.isShowingSettings = false
         env.isShowingHelp = false
+        env.isShowingAbout = false
 
         XCTAssertFalse(env.isShowingOnboarding)
         XCTAssertFalse(env.isShowingSettings)
         XCTAssertFalse(env.isShowingHelp)
+        XCTAssertFalse(env.isShowingAbout)
     }
 
     // MARK: - Component Initialization
