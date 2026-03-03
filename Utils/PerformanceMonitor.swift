@@ -40,7 +40,7 @@ class PerformanceMonitor: ObservableObject {
         guard !isMonitoring else { return }
         isMonitoring = true
 
-        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
+        monitoringTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { @Sendable [weak self] _ in
             Task { @MainActor in
                 self?.updateMemoryUsage()
             }
