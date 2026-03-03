@@ -229,63 +229,15 @@ final class LargePDFTests: XCTestCase {
 
     // MARK: - Helper Methods
 
-    /// Creates a large PDF using PDFKit with the specified page count
+    // Shared helpers: createTestPDF, waitForLoad, getMemoryUsage, signedMemoryDelta
+    // are in TestHelpers.swift
+
     private func createTestLargePDF(pageCount: Int) -> URL? {
-        let tempURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("test_large_\(pageCount)_\(UUID().uuidString).pdf")
-
-        let pdfDocument = PDFDocument()
-        for i in 0..<pageCount {
-            let page = PDFPage()
-            pdfDocument.insert(page, at: i)
-        }
-        pdfDocument.write(to: tempURL)
-
-        return tempURL
-    }
-
-    /// Waits for async PDF load (accounts for 0.1s debounce in load())
-    private func waitForLoad(_ controller: PDFController) async {
-        // Wait for debounce to trigger (0.1s) + buffer
-        try? await Task.sleep(nanoseconds: 200_000_000)
-
-        // Poll for loading to complete
-        var attempts = 0
-        while controller.isLoadingPDF && attempts < 100 {
-            try? await Task.sleep(nanoseconds: 100_000_000) // 0.1 seconds
-            attempts += 1
-        }
-
-        // Extra settle time for document assignment
-        if controller.document == nil {
-            try? await Task.sleep(nanoseconds: 200_000_000)
-        }
+        createTestPDF(pageCount: pageCount, name: "test_large_\(pageCount)")
     }
 
     private func getCurrentMemoryUsage() -> UInt64 {
-        var info = mach_task_basic_info()
-        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
-
-        let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) {
-            $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
-                task_info(mach_task_self_,
-                         task_flavor_t(MACH_TASK_BASIC_INFO),
-                         $0,
-                         &count)
-            }
-        }
-
-        if kerr == KERN_SUCCESS {
-            return info.resident_size
-        }
-        return 0
-    }
-
-    private func signedMemoryDelta(after: UInt64, before: UInt64) -> Int64 {
-        if after >= before {
-            return Int64(after - before)
-        }
-        return -Int64(before - after)
+        getMemoryUsage()
     }
 
     private func formatBytes(_ bytes: UInt64) -> String {
