@@ -94,31 +94,29 @@ struct ExportOptionsView: View {
 	}
 
 	private func exportToVim() {
-		// Create vim configuration
-		let vimConfig = """
-		" DevReader Export - \(fileName)
-		set syntax=\(getVimSyntax())
-		set number
-		set autoindent
-		set smartindent
+		// Export as source file with vim modeline for syntax detection
+		let commentPrefix = language.lineCommentPrefix
+		let content = """
+		\(commentPrefix) vim: set ft=\(getVimSyntax()):
+		\(commentPrefix) Exported from DevReader - \(fileName)
 
-		" Code content:
 		\(code)
 		"""
 
-		saveExportFile(vimConfig, fileExtension: "vim")
+		saveExportFile(content, fileExtension: language.fileExtension)
 	}
 
 	private func exportToEmacs() {
-		// Create emacs configuration
-		let emacsConfig = """
-		;; DevReader Export - \(fileName)
-		;; -*- mode: \(getEmacsMode()) -*-
+		// Export as source file with emacs modeline for mode detection
+		let commentPrefix = language.lineCommentPrefix
+		let content = """
+		\(commentPrefix) -*- mode: \(getEmacsMode()) -*-
+		\(commentPrefix) Exported from DevReader - \(fileName)
 
 		\(code)
 		"""
 
-		saveExportFile(emacsConfig, fileExtension: "el")
+		saveExportFile(content, fileExtension: language.fileExtension)
 	}
 
 	private func exportToJetBrains() {

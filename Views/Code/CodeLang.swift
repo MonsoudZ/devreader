@@ -96,6 +96,14 @@ nonisolated enum CodeLang: String, CaseIterable, Sendable {
 		}
 	}
 
+	var lineCommentPrefix: String {
+		switch self {
+		case .python, .ruby, .bash: return "#"
+		case .c, .cpp, .java, .swift, .go, .rust, .node, .javascript, .typescript, .kotlin, .dart: return "//"
+		case .sql: return "--"
+		}
+	}
+
 	var vimSyntax: String {
 		switch self {
 		case .bash: return "sh"
