@@ -248,12 +248,13 @@ struct NotesPane: View {
 	}
 	
 	func exportMarkdownAsync() async {
-		await MainActor.run {
-			isExporting = true
-			exportProgress = 0.0
-			exportStatus = "Preparing export..."
-		}
-		
+		// Present save panel on main thread FIRST to avoid runModal() inside Task.detached
+		guard let saveURL = FileService.savePlainText(defaultName: "DevReader-Notes.md") else { return }
+
+		isExporting = true
+		exportProgress = 0.0
+		exportStatus = "Preparing export..."
+
 		// Capture current filter values on main actor
 		let currentSelectedTag = selectedTag
 		let currentFilterBookmarks = filterBookmarks
@@ -263,42 +264,42 @@ struct NotesPane: View {
 		let currentPageNotes = notes.pageNotes
 		let currentNotesItems = notes.items
 		let currentBookmarks = pdf.bookmarkManager.bookmarks
-		
+
 		// Move heavy processing to background thread
 		await Task.detached(priority: .userInitiated) { @Sendable in
 			let df = DateFormatter()
 			df.dateStyle = .short
 			df.timeStyle = .short
-			
+
 			var md = "# Notes Export\n\n"
-			
+
 			await MainActor.run {
 				exportProgress = 0.1
 				exportStatus = "Processing page notes..."
 			}
-			
+
 			md += "## Page Notes\n\n"
 			let pages = currentPageNotes.keys.sorted()
 			let allowedPages: Set<Int>? = currentFilterBookmarks ? Set(currentBookmarks) : nil
-			
+
 			for (index, p) in pages.enumerated() {
 				let text = currentPageNotes[p]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 				let include = allowedPages.map { $0.contains(p) } ?? true
-				if include, !text.isEmpty { 
-					md += "### Page \(p+1)\n\n\(text)\n\n" 
+				if include, !text.isEmpty {
+					md += "### Page \(p+1)\n\n\(text)\n\n"
 				}
-				
+
 				// Update progress
 				await MainActor.run {
 					exportProgress = 0.1 + (0.3 * Double(index) / Double(pages.count))
 				}
 			}
-			
+
 			await MainActor.run {
 				exportProgress = 0.4
 				exportStatus = "Processing notes..."
 			}
-			
+
 			// Filter notes with tag/date/bookmark filters
 			let filteredItems = currentNotesItems.filter { item in
 				let tagOk = currentSelectedTag.map { item.tags.contains($0) } ?? true
@@ -306,75 +307,62 @@ struct NotesPane: View {
 				let bmOk = allowedPages.map { $0.contains(item.pageIndex) } ?? true
 				return tagOk && dateOk && bmOk
 			}
-			
+
 			await MainActor.run {
 				exportProgress = 0.6
 				exportStatus = "Grouping notes by chapter..."
 			}
-			
+
 			let grouped = Dictionary(grouping: filteredItems) { $0.chapter.isEmpty ? "(No Chapter)" : $0.chapter }
 				.sorted { $0.key < $1.key }
-			
+
 			for (index, g) in grouped.enumerated() {
 				md += "## \(g.key)\n\n"
-				for n in g.value { 
-					md += "- p.\(n.pageIndex + 1) (\(df.string(from: n.date))): \(n.text)\n" 
+				for n in g.value {
+					md += "- p.\(n.pageIndex + 1) (\(df.string(from: n.date))): \(n.text)\n"
 				}
 				md += "\n"
-				
+
 				// Update progress
 				await MainActor.run {
 					exportProgress = 0.6 + (0.3 * Double(index) / Double(grouped.count))
 				}
 			}
-			
+
 			await MainActor.run {
 				exportProgress = 0.9
 				exportStatus = "Saving file..."
 			}
-			
-			// Save file
-			let url = await MainActor.run { FileService.savePlainText(defaultName: "DevReader-Notes.md") }
-			if let url = url {
-				do {
-					try md.data(using: .utf8)?.write(to: url)
-				} catch {
-					await MainActor.run {
-						exportProgress = 0.0
-						exportStatus = "Export failed: \(error.localizedDescription)"
-					}
-					return
-				}
 
+			// Write to the URL chosen earlier
+			do {
+				try md.data(using: .utf8)?.write(to: saveURL)
+			} catch {
 				await MainActor.run {
-					exportProgress = 1.0
-					exportStatus = "Export completed successfully!"
+					exportProgress = 0.0
+					exportStatus = "Export failed: \(error.localizedDescription)"
+				}
+				return
+			}
 
-					// Show success toast
-					NotificationCenter.default.post(
-						name: .showToast,
-						object: ToastMessage(
-							message: "Notes exported to \(url.lastPathComponent)",
-							type: .success
-						)
+			await MainActor.run {
+				exportProgress = 1.0
+				exportStatus = "Export completed successfully!"
+
+				// Show success toast
+				NotificationCenter.default.post(
+					name: .showToast,
+					object: ToastMessage(
+						message: "Notes exported to \(saveURL.lastPathComponent)",
+						type: .success
 					)
-				}
-				try? await Task.sleep(nanoseconds: 2_000_000_000)
-				await MainActor.run {
-					isExporting = false
-					exportProgress = 0.0
-					exportStatus = ""
-				}
-			} else {
-				await MainActor.run {
-					exportStatus = "Export failed - could not save file"
-				}
-				try? await Task.sleep(nanoseconds: 2_000_000_000)
-				await MainActor.run {
-					isExporting = false
-					exportProgress = 0.0
-					exportStatus = ""
-				}
+				)
+			}
+			try? await Task.sleep(nanoseconds: 2_000_000_000)
+			await MainActor.run {
+				isExporting = false
+				exportProgress = 0.0
+				exportStatus = ""
 			}
 		}.value
 	}
