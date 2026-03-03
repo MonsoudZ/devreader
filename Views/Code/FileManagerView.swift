@@ -11,6 +11,9 @@ struct FileManagerView: View {
 	@State private var files: [URL] = []
 	@State private var selectedFile: URL?
 
+	private static let recentFilesKey = "DevReader.Code.RecentFiles.v1"
+	private static let maxRecentFiles = 20
+
 	var body: some View {
 		VStack {
 			HStack {
@@ -69,17 +72,20 @@ struct FileManagerView: View {
 	}
 
 	private func loadRecentFiles() {
-		// Load recent files from a directory
-		guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
-		let codeFilesPath = documentsPath.appendingPathComponent("DevReader/CodeFiles")
-
-		do {
-			try FileManager.default.createDirectory(at: codeFilesPath, withIntermediateDirectories: true)
-			files = try FileManager.default.contentsOfDirectory(at: codeFilesPath, includingPropertiesForKeys: nil)
-				.filter { $0.pathExtension != "" }
-		} catch {
+		guard let paths = UserDefaults.standard.stringArray(forKey: Self.recentFilesKey) else {
 			files = []
+			return
 		}
+		files = paths.compactMap { URL(fileURLWithPath: $0) }
+			.filter { FileManager.default.fileExists(atPath: $0.path) }
+	}
+
+	private static func addToRecentFiles(_ url: URL) {
+		var paths = UserDefaults.standard.stringArray(forKey: recentFilesKey) ?? []
+		paths.removeAll { $0 == url.path }
+		paths.insert(url.path, at: 0)
+		if paths.count > maxRecentFiles { paths = Array(paths.prefix(maxRecentFiles)) }
+		UserDefaults.standard.set(paths, forKey: recentFilesKey)
 	}
 
 	private func openFile() {
@@ -107,6 +113,7 @@ struct FileManagerView: View {
 				selectedLanguage = lang
 			}
 
+			Self.addToRecentFiles(url)
 			dismiss()
 		} catch {
 			logError(AppLog.code, "Error loading file: \(error)")
