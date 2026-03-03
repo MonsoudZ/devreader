@@ -186,7 +186,7 @@ struct NotesPane: View {
 				}
 				if !presets.isEmpty {
 					Divider()
-					ForEach(loadPresets(), id: \.name) { preset in
+					ForEach(presets, id: \.name) { preset in
 						Button("Delete '\(preset.name)'") { deletePreset(named: preset.name) }
 					}
 				}
