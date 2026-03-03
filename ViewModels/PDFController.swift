@@ -472,8 +472,11 @@ final class PDFController: ObservableObject {
 
 	func addStickyNote() {
 		guard currentPDFURL != nil else { return }
+		let selectedText = PDFSelectionBridge.shared.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines)
+		let noteText = (selectedText?.isEmpty == false) ? selectedText! : ""
 		let stickyNote = NoteItem(
-			text: "Sticky note on page \(currentPageIndex + 1)",
+			title: "Sticky note — page \(currentPageIndex + 1)",
+			text: noteText,
 			pageIndex: currentPageIndex,
 			chapter: getCurrentChapter() ?? "Unknown Chapter",
 			tags: ["sticky"]
