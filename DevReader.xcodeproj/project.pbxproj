@@ -23,6 +23,12 @@
 		A00100192F00000000000001 /* App/ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100182F00000000000001 /* App/ContentView.swift */; };
 		A001001B2F00000000000001 /* Views/Web/WebPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001A2F00000000000001 /* Views/Web/WebPane.swift */; };
 		A001001D2F00000000000001 /* Views/Code/CodePane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001C2F00000000000001 /* Views/Code/CodePane.swift */; };
+		D001000B2F00000000000006 /* Views/Code/WebViewHTML.swift in Sources */ = {isa = PBXBuildFile; fileRef = D001000A2F00000000000006 /* Views/Code/WebViewHTML.swift */; };
+		D00100092F00000000000005 /* Views/Code/ExportOptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100082F00000000000005 /* Views/Code/ExportOptionsView.swift */; };
+		D00100072F00000000000004 /* Views/Code/FileManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100062F00000000000004 /* Views/Code/FileManagerView.swift */; };
+		D00100052F00000000000003 /* Views/Code/MonacoWebEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100042F00000000000003 /* Views/Code/MonacoWebEditor.swift */; };
+		D00100032F00000000000002 /* Views/Code/ScratchRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100022F00000000000002 /* Views/Code/ScratchRunner.swift */; };
+		D00100012F00000000000001 /* Views/Code/CodeLang.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100002F00000000000001 /* Views/Code/CodeLang.swift */; };
 		A001001F2F00000000000001 /* Views/Sketch/Sketch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001001E2F00000000000001 /* Views/Sketch/Sketch.swift */; };
 		A00100212F00000000000001 /* Views/Settings/SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100202F00000000000001 /* Views/Settings/SettingsView.swift */; };
 		A00100232F00000000000001 /* Views/Onboarding/OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100222F00000000000001 /* Views/Onboarding/OnboardingView.swift */; };
@@ -90,6 +96,12 @@
 		A00100182F00000000000001 /* App/ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/ContentView.swift; sourceTree = "<group>"; };
 		A001001A2F00000000000001 /* Views/Web/WebPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Web/WebPane.swift; sourceTree = "<group>"; };
 		A001001C2F00000000000001 /* Views/Code/CodePane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/CodePane.swift; sourceTree = "<group>"; };
+		D001000A2F00000000000006 /* Views/Code/WebViewHTML.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/WebViewHTML.swift; sourceTree = "<group>"; };
+		D00100082F00000000000005 /* Views/Code/ExportOptionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/ExportOptionsView.swift; sourceTree = "<group>"; };
+		D00100062F00000000000004 /* Views/Code/FileManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/FileManagerView.swift; sourceTree = "<group>"; };
+		D00100042F00000000000003 /* Views/Code/MonacoWebEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/MonacoWebEditor.swift; sourceTree = "<group>"; };
+		D00100022F00000000000002 /* Views/Code/ScratchRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/ScratchRunner.swift; sourceTree = "<group>"; };
+		D00100002F00000000000001 /* Views/Code/CodeLang.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/CodeLang.swift; sourceTree = "<group>"; };
 		A001001E2F00000000000001 /* Views/Sketch/Sketch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Sketch/Sketch.swift; sourceTree = "<group>"; };
 		A00100202F00000000000001 /* Views/Settings/SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/SettingsView.swift; sourceTree = "<group>"; };
 		A00100222F00000000000001 /* Views/Onboarding/OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Onboarding/OnboardingView.swift; sourceTree = "<group>"; };
@@ -192,6 +204,12 @@
 				A00100182F00000000000001 /* App/ContentView.swift */,
 				A001001A2F00000000000001 /* Views/Web/WebPane.swift */,
 				A001001C2F00000000000001 /* Views/Code/CodePane.swift */,
+				D001000A2F00000000000006 /* Views/Code/WebViewHTML.swift */,
+				D00100082F00000000000005 /* Views/Code/ExportOptionsView.swift */,
+				D00100062F00000000000004 /* Views/Code/FileManagerView.swift */,
+				D00100042F00000000000003 /* Views/Code/MonacoWebEditor.swift */,
+				D00100022F00000000000002 /* Views/Code/ScratchRunner.swift */,
+				D00100002F00000000000001 /* Views/Code/CodeLang.swift */,
 				A001001E2F00000000000001 /* Views/Sketch/Sketch.swift */,
 				A00100202F00000000000001 /* Views/Settings/SettingsView.swift */,
 				A00100222F00000000000001 /* Views/Onboarding/OnboardingView.swift */,
@@ -399,6 +417,12 @@
 				A00100192F00000000000001 /* App/ContentView.swift in Sources */,
 				A001001B2F00000000000001 /* Views/Web/WebPane.swift in Sources */,
 				A001001D2F00000000000001 /* Views/Code/CodePane.swift in Sources */,
+				D001000B2F00000000000006 /* Views/Code/WebViewHTML.swift in Sources */,
+				D00100092F00000000000005 /* Views/Code/ExportOptionsView.swift in Sources */,
+				D00100072F00000000000004 /* Views/Code/FileManagerView.swift in Sources */,
+				D00100052F00000000000003 /* Views/Code/MonacoWebEditor.swift in Sources */,
+				D00100032F00000000000002 /* Views/Code/ScratchRunner.swift in Sources */,
+				D00100012F00000000000001 /* Views/Code/CodeLang.swift in Sources */,
 				A001001F2F00000000000001 /* Views/Sketch/Sketch.swift in Sources */,
 				A00100212F00000000000001 /* Views/Settings/SettingsView.swift in Sources */,
 				A00100232F00000000000001 /* Views/Onboarding/OnboardingView.swift in Sources */,
