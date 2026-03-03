@@ -397,10 +397,6 @@ private struct PDFSearchBar: View {
     }
 
     private func search() {
-        if isLargePDF {
-            searchManager.performSearchOptimized(query, in: document)
-        } else {
-            searchManager.performSearch(query, in: document)
-        }
+        searchManager.performSearch(query, in: document)
     }
 }

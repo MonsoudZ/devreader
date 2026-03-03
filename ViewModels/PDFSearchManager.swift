@@ -14,25 +14,33 @@ final class PDFSearchManager: ObservableObject {
 
     func performSearch(_ query: String, in document: PDFDocument?) {
         guard let doc = document else { return }
-        isSearching = true
-        LoadingStateManager.shared.startSearch("Searching in PDF...")
 
-        let startTime = Date()
-        PerformanceMonitor.shared.trackSearch(startTime)
+        // Cancel any in-flight search
+        searchTask?.cancel()
 
-        defer {
-            isSearching = false
-            LoadingStateManager.shared.stopSearch()
-        }
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         searchQuery = trimmed
         guard !trimmed.isEmpty else { clearSearch(); return }
-        let options: NSString.CompareOptions = [.caseInsensitive]
-        let results = doc.findString(trimmed, withOptions: options)
-        results.forEach { $0.color = NSColor.systemOrange.withAlphaComponent(0.6) }
-        searchResults = results
-        searchIndex = 0
-        focusCurrentSearchSelection(in: document)
+
+        isSearching = true
+        LoadingStateManager.shared.startSearch("Searching in PDF...")
+
+        searchTask = Task {
+            let startTime = Date()
+            // findString runs on the main actor (PDFKit is not thread-safe)
+            // but wrapping in a Task yields to the run loop, keeping UI responsive
+            let results = doc.findString(trimmed, withOptions: [.caseInsensitive])
+
+            guard !Task.isCancelled else { return }
+
+            results.forEach { $0.color = NSColor.systemOrange.withAlphaComponent(0.6) }
+            searchResults = results
+            searchIndex = 0
+            focusCurrentSearchSelection(in: document)
+            PerformanceMonitor.shared.trackSearch(startTime)
+            isSearching = false
+            LoadingStateManager.shared.stopSearch()
+        }
     }
 
     func nextSearchResult(in document: PDFDocument?) {
@@ -79,37 +87,5 @@ final class PDFSearchManager: ObservableObject {
         return pageIndex
     }
 
-    /// Optimized search for large PDFs — runs search off main thread
-    func performSearchOptimized(_ query: String, in document: PDFDocument?) {
-        guard let doc = document else { return }
-
-        // Cancel any in-flight search
-        searchTask?.cancel()
-
-        isSearching = true
-        LoadingStateManager.shared.startSearch("Searching in large PDF...")
-
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        searchQuery = trimmed
-        guard !trimmed.isEmpty else {
-            clearSearch()
-            LoadingStateManager.shared.stopSearch()
-            return
-        }
-
-        searchTask = Task {
-            // PDFDocument.findString is a read-only query; run on main to avoid
-            // thread-safety issues with PDFKit's internal state.
-            let results = doc.findString(trimmed, withOptions: [.caseInsensitive])
-
-            guard !Task.isCancelled else { return }
-
-            results.forEach { $0.color = NSColor.systemOrange.withAlphaComponent(0.6) }
-            searchResults = results
-            searchIndex = 0
-            focusCurrentSearchSelection(in: document)
-            isSearching = false
-            LoadingStateManager.shared.stopSearch()
-        }
-    }
+    // performSearchOptimized removed — performSearch is now non-blocking for all PDFs
 }

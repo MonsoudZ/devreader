@@ -115,11 +115,7 @@ final class LargePDFTests: XCTestCase {
         for term in searchTerms {
             let startTime = CFAbsoluteTimeGetCurrent()
 
-            if pdfController.isLargePDF {
-                pdfController.searchManager.performSearchOptimized(term, in: pdfController.document)
-            } else {
-                pdfController.searchManager.performSearch(term, in: pdfController.document)
-            }
+            pdfController.searchManager.performSearch(term, in: pdfController.document)
 
             // Wait for search to complete
             var searchAttempts = 0
