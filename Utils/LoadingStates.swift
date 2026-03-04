@@ -91,34 +91,40 @@ class LoadingStateManager: ObservableObject {
 }
 
 // MARK: - Loading Overlay View
+/// Non-blocking loading indicator shown as a small floating pill at the top
+/// of the window. Does NOT prevent user interaction with the rest of the UI.
 struct LoadingOverlay: View {
     @ObservedObject var loadingManager = LoadingStateManager.shared
-    
+
     var body: some View {
         if loadingManager.isLoading {
-            ZStack {
-                Color.black.opacity(0.3)
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 16) {
+            VStack {
+                HStack(spacing: 8) {
                     ProgressView()
-                        .scaleEffect(1.2)
-                        .progressViewStyle(CircularProgressViewStyle())
-                    
+                        .controlSize(.small)
+
                     Text(loadingManager.loadingMessage)
-                        .font(.callout)
+                        .font(.caption)
                         .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                    
+                        .lineLimit(1)
+
                     if loadingManager.loadingProgress > 0 {
                         ProgressView(value: loadingManager.loadingProgress)
                             .progressViewStyle(LinearProgressViewStyle())
-                            .frame(width: 200)
+                            .frame(width: 80)
                     }
                 }
-                .padding(24)
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(.regularMaterial, in: Capsule())
+                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                .padding(.top, 8)
+
+                Spacer()
             }
+            .allowsHitTesting(false)
+            .transition(.move(edge: .top).combined(with: .opacity))
+            .animation(.easeInOut(duration: 0.25), value: loadingManager.isLoading)
         }
     }
 }
