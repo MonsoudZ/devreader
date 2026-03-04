@@ -123,6 +123,13 @@ struct DevReaderApp: App {
                     .keyboardShortcut("s", modifiers: [.command, .shift])
                     .accessibilityLabel("Add Sticky Note")
                     .accessibilityHint("Add a sticky note to the current page")
+
+                Divider()
+
+                Button("Toggle Page Bookmark") { appEnvironment.commandToggleBookmark() }
+                    .keyboardShortcut("d", modifiers: [.command])
+                    .accessibilityLabel("Toggle Page Bookmark")
+                    .accessibilityHint("Bookmark or unbookmark the current PDF page")
             }
 
             // View Menu

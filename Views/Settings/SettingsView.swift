@@ -165,7 +165,7 @@ struct SettingsView: View {
 					}
 					.padding(.top, 4)
 				}
-				Section("Keyboard Shortcuts") { VStack(alignment: .leading, spacing: 4) { Text("\u{2318}\u{21e7}J - Highlight Selection"); Text("\u{2318}\u{21e7}H - Highlight \u{2192} Note"); Text("\u{2318}\u{21e7}S - Add Sticky Note"); Text("\u{2318}\u{21e7}N - New Sketch Page") } .font(.caption).foregroundStyle(.secondary) }
+				Section("Keyboard Shortcuts") { VStack(alignment: .leading, spacing: 4) { Text("\u{2318}\u{21e7}J - Highlight Selection"); Text("\u{2318}\u{21e7}H - Highlight \u{2192} Note"); Text("\u{2318}\u{21e7}S - Add Sticky Note"); Text("\u{2318}\u{21e7}N - New Sketch Page"); Text("\u{2318}D - Toggle Page Bookmark") } .font(.caption).foregroundStyle(.secondary) }
 			}
 			.formStyle(.grouped)
 		}

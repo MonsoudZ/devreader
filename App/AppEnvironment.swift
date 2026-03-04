@@ -87,6 +87,14 @@ final class AppEnvironment: ObservableObject {
         pdfController.addStickyNote()
     }
 
+    func commandToggleBookmark() {
+        guard pdfController.document != nil else { return }
+        pdfController.bookmarkManager.toggleBookmark(
+            pdfController.currentPageIndex,
+            for: pdfController.currentPDFURL
+        )
+    }
+
     /// Retains the current sketch window to prevent deallocation.
     private var currentSketchWindow: SketchWindow?
 
