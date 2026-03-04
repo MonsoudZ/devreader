@@ -1,6 +1,7 @@
 import SwiftUI
 import AppKit
 import Foundation
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
 	@Environment(\.dismiss) private var dismiss
@@ -218,8 +219,49 @@ struct SettingsView: View {
 	}
 
 	private func exportPerformanceReport() {
-		alertTitle = "Feature Coming Soon"
-		alertMessage = "Performance report export will be available in a future update."
-		showingAlert = true
+		let monitor = performanceMonitor
+		let df = DateFormatter()
+		df.dateStyle = .medium
+		df.timeStyle = .medium
+
+		let report = """
+		DevReader Performance Report
+		Generated: \(df.string(from: Date()))
+		========================================
+
+		Memory
+		  Current Usage:  \(monitor.formatBytes(monitor.memoryUsage))
+		  Peak Usage:     \(monitor.formatBytes(monitor.peakMemoryUsage))
+		  Average Usage:  \(monitor.formatBytes(monitor.averageMemoryUsage))
+		  Pressure:       \(monitor.getMemoryPressure())
+		  Monitoring:     \(monitor.isMonitoring ? "Active" : "Inactive")
+
+		Timing
+		  Last PDF Load:  \(String(format: "%.2f", monitor.pdfLoadTime))s
+		  Last Search:    \(String(format: "%.2f", monitor.searchTime))s
+		  Last Annotation:\(String(format: "%.2f", monitor.annotationTime))s
+
+		System
+		  Physical Memory:\(monitor.formatBytes(ProcessInfo.processInfo.physicalMemory))
+		  Processors:     \(ProcessInfo.processInfo.processorCount)
+		  OS Version:     \(ProcessInfo.processInfo.operatingSystemVersionString)
+		"""
+
+		let panel = NSSavePanel()
+		panel.allowedContentTypes = [.plainText]
+		panel.nameFieldStringValue = "DevReader-Performance-Report.txt"
+		panel.begin { response in
+			guard response == .OK, let url = panel.url else { return }
+			do {
+				try report.write(to: url, atomically: true, encoding: .utf8)
+				alertTitle = "Report Exported"
+				alertMessage = "Performance report saved to \(url.lastPathComponent)"
+				showingAlert = true
+			} catch {
+				alertTitle = "Export Failed"
+				alertMessage = error.localizedDescription
+				showingAlert = true
+			}
+		}
 	}
 }
