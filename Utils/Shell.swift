@@ -9,14 +9,23 @@ nonisolated enum Shell {
         let exitCode: Int32
     }
 
-    @discardableResult
-    static func run(_ cmd: String, args: [String] = [], stdin: String? = nil) -> String {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: cmd)
-        p.arguments = args
-        let inPipe = Pipe(); let outPipe = Pipe(); let errPipe = Pipe()
-        p.standardOutput = outPipe; p.standardError = errPipe; p.standardInput = inPipe
-        do { try p.run() } catch { return "Failed to start: \(error)" }
+    // MARK: - Core Process Execution
+
+    /// Runs a configured Process with pipe I/O, async reading, and timeout.
+    /// All public/private run methods delegate here to avoid duplicating
+    /// the pipe-setup / async-read / timeout-wait boilerplate.
+    private static func executeProcess(_ process: Process, stdin: String? = nil) -> RunResult {
+        let inPipe = Pipe()
+        let outPipe = Pipe()
+        let errPipe = Pipe()
+        process.standardInput = inPipe
+        process.standardOutput = outPipe
+        process.standardError = errPipe
+
+        do { try process.run() } catch {
+            return RunResult(output: "Failed to start: \(error)", exitCode: -1)
+        }
+
         if let s = stdin { inPipe.fileHandleForWriting.write(Data(s.utf8)) }
         inPipe.fileHandleForWriting.closeFile()
 
@@ -24,131 +33,20 @@ nonisolated enum Shell {
         // when child output exceeds the ~64 KB pipe buffer.
         var outData = Data()
         var errData = Data()
-        let outGroup = DispatchGroup()
-        let errGroup = DispatchGroup()
+        let ioGroup = DispatchGroup()
 
-        outGroup.enter()
+        ioGroup.enter()
         DispatchQueue.global(qos: .userInitiated).async {
             outData = outPipe.fileHandleForReading.readDataToEndOfFile()
-            outGroup.leave()
+            ioGroup.leave()
         }
-        errGroup.enter()
+        ioGroup.enter()
         DispatchQueue.global(qos: .userInitiated).async {
             errData = errPipe.fileHandleForReading.readDataToEndOfFile()
-            errGroup.leave()
+            ioGroup.leave()
         }
 
         // Wait with timeout to prevent infinite hangs
-        let waitGroup = DispatchGroup()
-        waitGroup.enter()
-        DispatchQueue.global(qos: .utility).async {
-            p.waitUntilExit()
-            waitGroup.leave()
-        }
-        if waitGroup.wait(timeout: .now() + executionTimeout) == .timedOut {
-            p.terminate()
-            return "[Execution timed out after \(Int(executionTimeout))s]"
-        }
-
-        outGroup.wait()
-        errGroup.wait()
-
-        let out = String(data: outData, encoding: .utf8) ?? ""
-        let err = String(data: errData, encoding: .utf8) ?? ""
-        return out + (err.isEmpty ? "" : "\n[stderr]\n" + err)
-    }
-
-    private static func runReturningResult(_ cmd: String, args: [String] = [], stdin: String? = nil) -> RunResult {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: cmd)
-        p.arguments = args
-        let inPipe = Pipe(); let outPipe = Pipe(); let errPipe = Pipe()
-        p.standardOutput = outPipe; p.standardError = errPipe; p.standardInput = inPipe
-        do { try p.run() } catch { return RunResult(output: "Failed to start: \(error)", exitCode: -1) }
-        if let s = stdin { inPipe.fileHandleForWriting.write(Data(s.utf8)) }
-        inPipe.fileHandleForWriting.closeFile()
-
-        var outData = Data()
-        var errData = Data()
-        let outGroup = DispatchGroup()
-        let errGroup = DispatchGroup()
-
-        outGroup.enter()
-        DispatchQueue.global(qos: .userInitiated).async {
-            outData = outPipe.fileHandleForReading.readDataToEndOfFile()
-            outGroup.leave()
-        }
-        errGroup.enter()
-        DispatchQueue.global(qos: .userInitiated).async {
-            errData = errPipe.fileHandleForReading.readDataToEndOfFile()
-            errGroup.leave()
-        }
-
-        let waitGroup = DispatchGroup()
-        waitGroup.enter()
-        DispatchQueue.global(qos: .utility).async {
-            p.waitUntilExit()
-            waitGroup.leave()
-        }
-        if waitGroup.wait(timeout: .now() + executionTimeout) == .timedOut {
-            p.terminate()
-            return RunResult(output: "[Execution timed out after \(Int(executionTimeout))s]", exitCode: -1)
-        }
-
-        outGroup.wait()
-        errGroup.wait()
-
-        let out = String(data: outData, encoding: .utf8) ?? ""
-        let err = String(data: errData, encoding: .utf8) ?? ""
-        let output = out + (err.isEmpty ? "" : "\n[stderr]\n" + err)
-        return RunResult(output: output, exitCode: p.terminationStatus)
-    }
-
-    private static func runWithFallbackReturningResult(_ primary: String, fallback: String, args: [String] = [], stdin: String? = nil) -> RunResult {
-        if FileManager.default.fileExists(atPath: primary) {
-            let result = runReturningResult(primary, args: args, stdin: stdin)
-            if result.exitCode != -1 {
-                return result
-            }
-        }
-
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-        process.arguments = [fallback] + args
-
-        let outPipe = Pipe()
-        let errPipe = Pipe()
-        process.standardOutput = outPipe
-        process.standardError = errPipe
-
-        if let stdin = stdin {
-            let inPipe = Pipe()
-            process.standardInput = inPipe
-            inPipe.fileHandleForWriting.write(stdin.data(using: .utf8) ?? Data())
-            inPipe.fileHandleForWriting.closeFile()
-        }
-
-        do {
-            try process.run()
-        } catch {
-            return RunResult(output: "Error: \(error.localizedDescription). Please ensure \(fallback) is installed and available in PATH.", exitCode: -1)
-        }
-
-        var outData = Data()
-        var errData = Data()
-        let group = DispatchGroup()
-
-        group.enter()
-        DispatchQueue.global(qos: .userInitiated).async {
-            outData = outPipe.fileHandleForReading.readDataToEndOfFile()
-            group.leave()
-        }
-        group.enter()
-        DispatchQueue.global(qos: .userInitiated).async {
-            errData = errPipe.fileHandleForReading.readDataToEndOfFile()
-            group.leave()
-        }
-
         let waitGroup = DispatchGroup()
         waitGroup.enter()
         DispatchQueue.global(qos: .utility).async {
@@ -160,7 +58,7 @@ nonisolated enum Shell {
             return RunResult(output: "[Execution timed out after \(Int(executionTimeout))s]", exitCode: -1)
         }
 
-        group.wait()
+        ioGroup.wait()
 
         let out = String(data: outData, encoding: .utf8) ?? ""
         let err = String(data: errData, encoding: .utf8) ?? ""
@@ -168,70 +66,42 @@ nonisolated enum Shell {
         return RunResult(output: output, exitCode: process.terminationStatus)
     }
 
-    private static func runWithFallback(_ primary: String, fallback: String, args: [String] = [], stdin: String? = nil) -> String {
-        // Try primary path first
+    /// Creates a Process targeting the given executable path and arguments.
+    private static func makeProcess(_ cmd: String, args: [String]) -> Process {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: cmd)
+        p.arguments = args
+        return p
+    }
+
+    // MARK: - Public / Internal Run Methods
+
+    @discardableResult
+    static func run(_ cmd: String, args: [String] = [], stdin: String? = nil) -> String {
+        executeProcess(makeProcess(cmd, args: args), stdin: stdin).output
+    }
+
+    private static func runReturningResult(_ cmd: String, args: [String] = [], stdin: String? = nil) -> RunResult {
+        executeProcess(makeProcess(cmd, args: args), stdin: stdin)
+    }
+
+    private static func runWithFallbackReturningResult(_ primary: String, fallback: String, args: [String] = [], stdin: String? = nil) -> RunResult {
         if FileManager.default.fileExists(atPath: primary) {
             let result = runReturningResult(primary, args: args, stdin: stdin)
-            if result.exitCode != -1 {
-                return result.output
-            }
+            if result.exitCode != -1 { return result }
         }
-
-        // Fallback to system PATH
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-        process.arguments = [fallback] + args
-
-        let outPipe = Pipe()
-        let errPipe = Pipe()
-        process.standardOutput = outPipe
-        process.standardError = errPipe
-
-        if let stdin = stdin {
-            let inPipe = Pipe()
-            process.standardInput = inPipe
-            inPipe.fileHandleForWriting.write(stdin.data(using: .utf8) ?? Data())
-            inPipe.fileHandleForWriting.closeFile()
+        let result = executeProcess(makeProcess("/usr/bin/env", args: [fallback] + args), stdin: stdin)
+        if result.exitCode == -1 && result.output.hasPrefix("Failed to start:") {
+            return RunResult(
+                output: "Error: \(fallback) not found. Please ensure \(fallback) is installed and available in PATH.",
+                exitCode: -1
+            )
         }
+        return result
+    }
 
-        do {
-            try process.run()
-        } catch {
-            return "Error: \(error.localizedDescription). Please ensure \(fallback) is installed and available in PATH."
-        }
-
-        // Read pipes async before waiting
-        var outData = Data()
-        var errData = Data()
-        let group = DispatchGroup()
-
-        group.enter()
-        DispatchQueue.global(qos: .userInitiated).async {
-            outData = outPipe.fileHandleForReading.readDataToEndOfFile()
-            group.leave()
-        }
-        group.enter()
-        DispatchQueue.global(qos: .userInitiated).async {
-            errData = errPipe.fileHandleForReading.readDataToEndOfFile()
-            group.leave()
-        }
-
-        let waitGroup = DispatchGroup()
-        waitGroup.enter()
-        DispatchQueue.global(qos: .utility).async {
-            process.waitUntilExit()
-            waitGroup.leave()
-        }
-        if waitGroup.wait(timeout: .now() + executionTimeout) == .timedOut {
-            process.terminate()
-            return "[Execution timed out after \(Int(executionTimeout))s]"
-        }
-
-        group.wait()
-
-        let out = String(data: outData, encoding: .utf8) ?? ""
-        let err = String(data: errData, encoding: .utf8) ?? ""
-        return out + (err.isEmpty ? "" : "\n[stderr]\n" + err)
+    private static func runWithFallback(_ primary: String, fallback: String, args: [String] = [], stdin: String? = nil) -> String {
+        runWithFallbackReturningResult(primary, fallback: fallback, args: args, stdin: stdin).output
     }
 
     @discardableResult
