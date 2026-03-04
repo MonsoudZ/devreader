@@ -65,12 +65,15 @@ struct ExportOptionsView: View {
 	private func createVSCodeProject(at url: URL) {
 		let projectName = fileName.components(separatedBy: ".").first ?? "devreader-project"
 		let projectPath = url.appendingPathComponent(projectName)
+		let sourceFile = projectPath.appendingPathComponent(fileName)
+
+		if FileManager.default.fileExists(atPath: sourceFile.path) {
+			guard confirmOverwrite(sourceFile) else { return }
+		}
 
 		do {
 			try FileManager.default.createDirectory(at: projectPath, withIntermediateDirectories: true)
 
-			// Create source file
-			let sourceFile = projectPath.appendingPathComponent(fileName)
 			try code.write(to: sourceFile, atomically: true, encoding: .utf8)
 
 			// Create VSCode settings
@@ -136,12 +139,15 @@ struct ExportOptionsView: View {
 	private func createJetBrainsProject(at url: URL) {
 		let projectName = fileName.components(separatedBy: ".").first ?? "devreader-project"
 		let projectPath = url.appendingPathComponent(projectName)
+		let sourceFile = projectPath.appendingPathComponent(fileName)
+
+		if FileManager.default.fileExists(atPath: sourceFile.path) {
+			guard confirmOverwrite(sourceFile) else { return }
+		}
 
 		do {
 			try FileManager.default.createDirectory(at: projectPath, withIntermediateDirectories: true)
 
-			// Create source file
-			let sourceFile = projectPath.appendingPathComponent(fileName)
 			try code.write(to: sourceFile, atomically: true, encoding: .utf8)
 
 			// Create .idea directory with basic project configuration
@@ -190,4 +196,15 @@ struct ExportOptionsView: View {
 
 	private func getVimSyntax() -> String { language.vimSyntax }
 	private func getEmacsMode() -> String { language.emacsMode }
+
+	/// Shows a confirmation alert before overwriting an existing file. Returns true if the user confirms.
+	private func confirmOverwrite(_ file: URL) -> Bool {
+		let alert = NSAlert()
+		alert.messageText = "File Already Exists"
+		alert.informativeText = "\"\(file.lastPathComponent)\" already exists at this location. Do you want to replace it?"
+		alert.alertStyle = .warning
+		alert.addButton(withTitle: "Replace")
+		alert.addButton(withTitle: "Cancel")
+		return alert.runModal() == .alertFirstButtonReturn
+	}
 }
