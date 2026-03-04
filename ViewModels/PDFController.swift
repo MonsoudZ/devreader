@@ -416,6 +416,46 @@ final class PDFController: ObservableObject {
 		memoryUsage = monitor.formatBytes(monitor.memoryUsage)
 	}
 
+	// MARK: - PDF Annotation Layer
+
+	/// Adds a visual highlight annotation on the PDF page for the current selection.
+	func highlightSelection() {
+		guard let doc = document, currentPDFURL != nil else { return }
+		let bridge = PDFSelectionBridge.shared
+		guard let selection = bridge.pdfView?.currentSelection ?? {
+			// Rebuild selection from cached text if live selection was cleared
+			guard let cached = bridge.cachedSelectionText else { return nil }
+			return doc.findString(cached, withOptions: [.caseInsensitive]).first
+		}() else {
+			NotificationCenter.default.post(
+				name: .showToast,
+				object: ToastMessage(message: "Select text in the PDF first", type: .warning)
+			)
+			return
+		}
+
+		let colorName = UserDefaults.standard.string(forKey: "highlightColor") ?? "yellow"
+		let color: NSColor = switch colorName {
+		case "green": .systemGreen.withAlphaComponent(0.3)
+		case "blue": .systemBlue.withAlphaComponent(0.3)
+		case "pink": .systemPink.withAlphaComponent(0.3)
+		default: .systemYellow.withAlphaComponent(0.3)
+		}
+
+		for page in selection.pages {
+			let selectionBounds = selection.bounds(for: page)
+			guard selectionBounds.width > 0 && selectionBounds.height > 0 else { continue }
+			let annotation = PDFAnnotation(bounds: selectionBounds, forType: .highlight, withProperties: nil)
+			annotation.color = color
+			page.addAnnotation(annotation)
+		}
+
+		NotificationCenter.default.post(
+			name: .showToast,
+			object: ToastMessage(message: "Text highlighted on PDF", type: .success)
+		)
+	}
+
 	// MARK: - Highlight and Notes Integration
 
 	func captureHighlightToNotes() {
@@ -436,11 +476,9 @@ final class PDFController: ObservableObject {
 			pageIndex: currentPageIndex,
 			chapter: getCurrentChapter() ?? "Unknown Chapter"
 		)
+		// Also add a visual highlight annotation on the PDF page
+		highlightSelection()
 		NotificationCenter.default.post(name: .addNote, object: note)
-		NotificationCenter.default.post(
-			name: .showToast,
-			object: ToastMessage(message: "Highlight captured as note", type: .success)
-		)
 	}
 
 	private func getCurrentChapter() -> String? {

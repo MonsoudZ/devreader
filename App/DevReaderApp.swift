@@ -109,10 +109,15 @@ struct DevReaderApp: App {
 
             // Edit Menu
             CommandGroup(after: .textEditing) {
+                Button("Highlight Selection") { appEnvironment.commandHighlightSelection() }
+                    .keyboardShortcut("j", modifiers: [.command, .shift])
+                    .accessibilityLabel("Highlight Selection")
+                    .accessibilityHint("Add a highlight annotation on the selected PDF text")
+
                 Button("Highlight → Note") { appEnvironment.commandCaptureHighlight() }
                     .keyboardShortcut("h", modifiers: [.command, .shift])
                     .accessibilityLabel("Capture Highlight to Note")
-                    .accessibilityHint("Convert selected text to a note")
+                    .accessibilityHint("Convert selected text to a note and highlight it")
 
                 Button("Add Sticky Note") { appEnvironment.commandAddStickyNote() }
                     .keyboardShortcut("s", modifiers: [.command, .shift])

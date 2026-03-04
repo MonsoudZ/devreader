@@ -79,6 +79,10 @@ final class AppEnvironment: ObservableObject {
         pdfController.captureHighlightToNotes()
     }
 
+    func commandHighlightSelection() {
+        pdfController.highlightSelection()
+    }
+
     func commandAddStickyNote() {
         pdfController.addStickyNote()
     }
