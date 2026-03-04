@@ -104,6 +104,32 @@ nonisolated enum Shell {
         runWithFallbackReturningResult(primary, fallback: fallback, args: args, stdin: stdin).output
     }
 
+    // MARK: - Sandboxed Execution
+
+    /// Maximum virtual memory for sandboxed code execution (512 MB, in KB for ulimit -v)
+    private static let sandboxMemoryLimitKB = 512 * 1024
+    /// Maximum output file size for sandboxed code execution (10 MB, in 512-byte blocks for ulimit -f)
+    private static let sandboxFileSizeBlocks = 10 * 1024 * 2
+
+    /// Escapes a string for safe inclusion in a single-quoted shell argument.
+    private static func escapeShellArg(_ arg: String) -> String {
+        "'" + arg.replacingOccurrences(of: "'", with: "'\\''") + "'"
+    }
+
+    /// Runs a command with resource limits (memory, file size) applied via ulimit.
+    /// Used by runCode to prevent user code from exhausting system resources.
+    private static func runSandboxed(_ cmd: String, args: [String] = []) -> String {
+        let shellArgs = ([cmd] + args).map { escapeShellArg($0) }.joined(separator: " ")
+        let script = "ulimit -v \(sandboxMemoryLimitKB) 2>/dev/null; ulimit -f \(sandboxFileSizeBlocks) 2>/dev/null; exec \(shellArgs)"
+        return run("/bin/bash", args: ["-c", script])
+    }
+
+    /// Resolves primary/fallback path and runs with resource limits.
+    private static func runWithFallbackSandboxed(_ primary: String, fallback: String, args: [String] = []) -> String {
+        let cmd = FileManager.default.fileExists(atPath: primary) ? primary : fallback
+        return runSandboxed(cmd, args: args)
+    }
+
     @discardableResult
     static func runCode(_ language: String, code: String) -> String {
         // Use a unique temp file name (UUID) to prevent symlink / TOCTOU attacks
@@ -127,17 +153,17 @@ nonisolated enum Shell {
             let result: String
             switch language.lowercased() {
             case "python", "python3":
-                result = runWithFallback("/usr/bin/python3", fallback: "python3", args: [tempFile.path])
+                result = runWithFallbackSandboxed("/usr/bin/python3", fallback: "python3", args: [tempFile.path])
             case "ruby":
-                result = runWithFallback("/usr/bin/ruby", fallback: "ruby", args: [tempFile.path])
+                result = runWithFallbackSandboxed("/usr/bin/ruby", fallback: "ruby", args: [tempFile.path])
             case "node", "node.js", "javascript":
-                result = runWithFallback("/usr/bin/node", fallback: "node", args: [tempFile.path])
+                result = runWithFallbackSandboxed("/usr/bin/node", fallback: "node", args: [tempFile.path])
             case "swift":
-                result = runWithFallback("/usr/bin/swift", fallback: "swift", args: [tempFile.path])
+                result = runWithFallbackSandboxed("/usr/bin/swift", fallback: "swift", args: [tempFile.path])
             case "bash", "sh":
-                result = runWithFallback("/bin/bash", fallback: "bash", args: [tempFile.path])
+                result = runWithFallbackSandboxed("/bin/bash", fallback: "bash", args: [tempFile.path])
             case "go":
-                result = runWithFallback("/usr/local/go/bin/go", fallback: "go", args: ["run", tempFile.path])
+                result = runWithFallbackSandboxed("/usr/local/go/bin/go", fallback: "go", args: ["run", tempFile.path])
             case "c":
                 result = compileAndRunC(tempFile: tempFile)
             case "c++", "cpp":
@@ -147,13 +173,13 @@ nonisolated enum Shell {
             case "java":
                 result = compileAndRunJava(tempFile: tempFile)
             case "typescript":
-                result = runWithFallback("/usr/local/bin/npx", fallback: "npx", args: ["tsx", tempFile.path])
+                result = runWithFallbackSandboxed("/usr/local/bin/npx", fallback: "npx", args: ["tsx", tempFile.path])
             case "kotlin":
-                result = runWithFallback("/usr/local/bin/kotlinc", fallback: "kotlinc", args: ["-script", tempFile.path])
+                result = runWithFallbackSandboxed("/usr/local/bin/kotlinc", fallback: "kotlinc", args: ["-script", tempFile.path])
             case "dart":
-                result = runWithFallback("/usr/local/bin/dart", fallback: "dart", args: ["run", tempFile.path])
+                result = runWithFallbackSandboxed("/usr/local/bin/dart", fallback: "dart", args: ["run", tempFile.path])
             case "sql":
-                result = runWithFallback("/usr/bin/sqlite3", fallback: "sqlite3", args: [":memory:", ".read", tempFile.path])
+                result = runWithFallbackSandboxed("/usr/bin/sqlite3", fallback: "sqlite3", args: [":memory:", ".read", tempFile.path])
             default:
                 result = "Unsupported language: \(language)"
             }
@@ -177,13 +203,13 @@ nonisolated enum Shell {
         // Try gcc first, then clang as fallback
         let compileResult = runWithFallbackReturningResult("/usr/bin/gcc", fallback: "gcc", args: ["-o", outputFile.path, tempFile.path])
         if compileResult.exitCode == 0 {
-            return run(outputFile.path)
+            return runSandboxed(outputFile.path)
         }
 
         // Try clang as fallback
         let clangResult = runWithFallbackReturningResult("/usr/bin/clang", fallback: "clang", args: ["-o", outputFile.path, tempFile.path])
         if clangResult.exitCode == 0 {
-            return run(outputFile.path)
+            return runSandboxed(outputFile.path)
         }
 
         return "Compilation failed. Please ensure gcc or clang is installed.\nGCC Error: \(compileResult.output)\nClang Error: \(clangResult.output)"
@@ -197,13 +223,13 @@ nonisolated enum Shell {
         // Try g++ first, then clang++ as fallback
         let compileResult = runWithFallbackReturningResult("/usr/bin/g++", fallback: "g++", args: ["-o", outputFile.path, tempFile.path])
         if compileResult.exitCode == 0 {
-            return run(outputFile.path)
+            return runSandboxed(outputFile.path)
         }
 
         // Try clang++ as fallback
         let clangResult = runWithFallbackReturningResult("/usr/bin/clang++", fallback: "clang++", args: ["-o", outputFile.path, tempFile.path])
         if clangResult.exitCode == 0 {
-            return run(outputFile.path)
+            return runSandboxed(outputFile.path)
         }
 
         return "Compilation failed. Please ensure g++ or clang++ is installed.\nG++ Error: \(compileResult.output)\nClang++ Error: \(clangResult.output)"
@@ -216,7 +242,7 @@ nonisolated enum Shell {
 
         let compileResult = runWithFallbackReturningResult("/usr/local/bin/rustc", fallback: "rustc", args: ["-o", outputFile.path, tempFile.path])
         if compileResult.exitCode == 0 {
-            return run(outputFile.path)
+            return runSandboxed(outputFile.path)
         }
         return "Rust compilation failed. Please ensure rustc is installed.\nError: \(compileResult.output)"
     }
@@ -239,7 +265,7 @@ nonisolated enum Shell {
         )
         if compileResult.exitCode == 0 {
             let className = tempFile.deletingPathExtension().lastPathComponent
-            return runWithFallback("/usr/bin/java", fallback: "java", args: ["-cp", javaDir.path, className])
+            return runWithFallbackSandboxed("/usr/bin/java", fallback: "java", args: ["-cp", javaDir.path, className])
         }
         return "Java compilation failed. Please ensure javac and java are installed.\nError: \(compileResult.output)"
     }
