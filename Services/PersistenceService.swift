@@ -63,6 +63,8 @@ nonisolated enum PersistenceService {
             return JSONStorageService.recentsPath()
         } else if key == "DevReader.Pinned.v1" {
             return JSONStorageService.pinnedPath()
+        } else if key == "DevReader.Web.Bookmarks.v1" {
+            return JSONStorageService.webBookmarksPath()
         } else if key.hasPrefix("DevReader.Notes.v1.") {
             let hash = String(key.dropFirst("DevReader.Notes.v1.".count))
             return JSONStorageService.dataDirectory.appendingPathComponent("notes_\(hash).json")

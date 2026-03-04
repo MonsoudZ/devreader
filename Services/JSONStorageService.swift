@@ -48,6 +48,10 @@ nonisolated enum JSONStorageService {
     static func pinnedPath() -> URL {
         dataDirectory.appendingPathComponent("pinned.json")
     }
+
+    static func webBookmarksPath() -> URL {
+        dataDirectory.appendingPathComponent("web_bookmarks.json")
+    }
     
     // MARK: - Directory Management
     static func ensureDirectories() {
@@ -279,11 +283,13 @@ nonisolated enum JSONStorageService {
         let library = loadOptional([LibraryItem].self, from: libraryPath()) ?? []
         let recentDocs = loadOptional([URL].self, from: recentsPath()) ?? []
         let pinnedDocs = loadOptional([URL].self, from: pinnedPath()) ?? []
-        
+        let webBookmarks = loadOptional([URL].self, from: webBookmarksPath()) ?? []
+
         return DevReaderData(
             library: library,
             recentDocuments: recentDocs.map { $0.absoluteString },
             pinnedDocuments: pinnedDocs.map { $0.absoluteString },
+            webBookmarks: webBookmarks.map { $0.absoluteString },
             exportDate: Date(),
             version: "2.0"
         )
@@ -300,7 +306,13 @@ nonisolated enum JSONStorageService {
         let pinnedURLs = data.pinnedDocuments.compactMap { URL(string: $0) }
         try save(recentURLs, to: recentsPath())
         try save(pinnedURLs, to: pinnedPath())
-        
+
+        // Import web bookmarks (optional field for backward compatibility)
+        if let webBookmarkStrings = data.webBookmarks {
+            let webBookmarkURLs = webBookmarkStrings.compactMap { URL(string: $0) }
+            try save(webBookmarkURLs, to: webBookmarksPath())
+        }
+
         os_log("Imported data with %d library items", log: logger, type: .info, data.library.count)
     }
     
