@@ -83,8 +83,20 @@ final class AppEnvironment: ObservableObject {
         pdfController.addStickyNote()
     }
 
+    /// Retains the current sketch window to prevent deallocation.
+    private var currentSketchWindow: SketchWindow?
+
     func commandNewSketchPage() {
         guard let url = pdfController.currentPDFURL else { return }
-        sketchStore.createSketch(for: url, pageIndex: pdfController.currentPageIndex)
+        let pageIndex = pdfController.currentPageIndex
+        let sketchWindow = SketchWindow(
+            size: CGSize(width: 800, height: 600),
+            pdfURL: url,
+            pageIndex: pageIndex
+        ) { [weak self] _ in
+            self?.currentSketchWindow = nil
+        }
+        currentSketchWindow = sketchWindow
+        sketchWindow.show()
     }
 }
