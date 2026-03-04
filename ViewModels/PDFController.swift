@@ -420,7 +420,9 @@ final class PDFController: ObservableObject {
 
 	func captureHighlightToNotes() {
 		guard currentPDFURL != nil else { return }
-		let selectedText = PDFSelectionBridge.shared.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines)
+		let bridge = PDFSelectionBridge.shared
+		let liveText = bridge.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines)
+		let selectedText = (liveText?.isEmpty == false) ? liveText : bridge.cachedSelectionText
 		guard let text = selectedText, !text.isEmpty else {
 			NotificationCenter.default.post(
 				name: .showToast,
@@ -455,8 +457,10 @@ final class PDFController: ObservableObject {
 
 	func addStickyNote() {
 		guard currentPDFURL != nil else { return }
-		let selectedText = PDFSelectionBridge.shared.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines)
-		let noteText = (selectedText?.isEmpty == false) ? selectedText! : ""
+		let bridge = PDFSelectionBridge.shared
+		let liveText = bridge.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines)
+		let selectedText = (liveText?.isEmpty == false) ? liveText : bridge.cachedSelectionText
+		let noteText = selectedText ?? ""
 		let stickyNote = NoteItem(
 			title: "Sticky note — page \(currentPageIndex + 1)",
 			text: noteText,

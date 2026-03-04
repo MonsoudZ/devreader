@@ -8,7 +8,27 @@ final class PDFSelectionBridge {
 	weak var pdfView: PDFView?
 	var cancellables = Set<AnyCancellable>()
 	var currentSelection: PDFSelection? { pdfView?.currentSelection }
+	/// Caches the last non-empty selection text so menu commands can access it
+	/// even after the menu activation clears the PDFView selection.
+	private(set) var cachedSelectionText: String?
+	private var selectionObserver: Any?
+
     func setHighlightedSelections(_ selections: [PDFSelection]) { pdfView?.highlightedSelections = selections }
+
+	func observeSelectionChanges(from pdfView: PDFView) {
+		selectionObserver.map { NotificationCenter.default.removeObserver($0) }
+		selectionObserver = NotificationCenter.default.addObserver(
+			forName: .PDFViewSelectionChanged, object: pdfView, queue: .main
+		) { [weak self] _ in
+			Task { @MainActor in
+				guard let self else { return }
+				if let text = self.pdfView?.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines),
+				   !text.isEmpty {
+					self.cachedSelectionText = text
+				}
+			}
+		}
+	}
 }
 
 struct PDFViewRepresentable: NSViewRepresentable {
@@ -24,6 +44,7 @@ struct PDFViewRepresentable: NSViewRepresentable {
 		v.backgroundColor = .windowBackgroundColor
 		v.delegate = context.coordinator
 		PDFSelectionBridge.shared.pdfView = v
+		PDFSelectionBridge.shared.observeSelectionChanges(from: v)
 
 		// Aggressive memory optimization
 		v.interpolationQuality = .low
