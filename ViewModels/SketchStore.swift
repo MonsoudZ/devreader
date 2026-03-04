@@ -5,7 +5,7 @@ import os.log
 
 /// Manages sketch data and persistence
 @MainActor
-class SketchStore: ObservableObject {
+final class SketchStore: ObservableObject {
     @Published var sketches: [SketchItem] = []
     @Published var currentSketch: SketchItem?
     

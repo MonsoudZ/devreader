@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CodePane: View {
-	@State private var mode: CodeMode = .scratch
+	@AppStorage("codeEditorMode") private var mode: CodeMode = .scratch
 	var body: some View {
 		VStack(spacing: 0) {
 			Picker("", selection: $mode) {
@@ -22,4 +22,4 @@ struct CodePane: View {
 	}
 }
 
-enum CodeMode { case scratch, monaco }
+enum CodeMode: String { case scratch, monaco }

@@ -45,7 +45,7 @@ final class EnhancedPersistenceTests: XCTestCase {
     }
     
     func testKeyGenerationUsesContentFingerprint() async {
-        let pdf = createTempPDF(name: "test_attrs.pdf", content: "Original content")
+        let pdf = makeTempFile(named: "test_attrs.pdf", content: "Original content")
         let key1 = persistenceService.generateKey("test.notes", for: pdf)
 
         // Modify file content — key SHOULD change (content-based fingerprinting)
@@ -59,7 +59,7 @@ final class EnhancedPersistenceTests: XCTestCase {
     }
     
     func testSamePDFGeneratesSameKey() async {
-        let pdf = createTempPDF(name: "test.pdf", content: "Content")
+        let pdf = makeTempFile(named: "test.pdf", content: "Content")
         let key1 = persistenceService.generateKey("test.notes", for: pdf)
         let key2 = persistenceService.generateKey("test.notes", for: pdf)
         
@@ -73,7 +73,7 @@ final class EnhancedPersistenceTests: XCTestCase {
     
     func testAtomicWriteSuccess() async {
         let testData = ["key1": "value1", "key2": "value2"]
-        let pdf = createTempPDF(name: "test.pdf", content: "Content")
+        let pdf = makeTempFile(named: "test.pdf", content: "Content")
         
         do {
             try persistenceService.saveCodable(testData, forKey: "test.atomic", url: pdf)
@@ -92,7 +92,7 @@ final class EnhancedPersistenceTests: XCTestCase {
     
     func testAtomicWriteWithCorruption() async {
         let testData = ["key1": "value1", "key2": "value2"]
-        let pdf = createTempPDF(name: "test.pdf", content: "Content")
+        let pdf = makeTempFile(named: "test.pdf", content: "Content")
 
         do {
             try persistenceService.saveCodable(testData, forKey: "test.corruption", url: pdf)
@@ -121,7 +121,7 @@ final class EnhancedPersistenceTests: XCTestCase {
     // MARK: - NotesStore Integration Tests
     
     func testNotesStoreWithMockPersistence() async {
-        let pdf = createTempPDF(name: "test_mock.pdf", content: "Content")
+        let pdf = makeTempFile(named: "test_mock.pdf", content: "Content")
 
         // Set current PDF
         notesStore.setCurrentPDF(pdf)
@@ -130,8 +130,8 @@ final class EnhancedPersistenceTests: XCTestCase {
         let note = NoteItem(text: "Test note", pageIndex: 1, chapter: "Test Chapter")
         notesStore.add(note)
 
-        // Wait for debounced persistence (0.3s + buffer)
-        try? await Task.sleep(nanoseconds: 500_000_000)
+        // Poll for debounced persistence to complete
+        await waitUntil(timeout: 2.0) { [mock = self.mockPersistenceService!] in !mock.lastSavedNotes.isEmpty }
 
         // Verify note was saved
         XCTAssertEqual(mockPersistenceService.lastSavedNotes.count, 1, "Note should be saved")
@@ -142,7 +142,7 @@ final class EnhancedPersistenceTests: XCTestCase {
     }
     
     func testNotesStoreHandlesPersistenceErrors() async {
-        let pdf = createTempPDF(name: "test.pdf", content: "Content")
+        let pdf = makeTempFile(named: "test.pdf", content: "Content")
         
         // Configure mock to throw error
         mockPersistenceService.shouldThrowError = true
@@ -162,8 +162,8 @@ final class EnhancedPersistenceTests: XCTestCase {
     }
     
     func testNotesStoreSeparatesNotesByPDF() async {
-        let pdf1 = createTempPDF(name: "book1.pdf", content: "Content 1")
-        let pdf2 = createTempPDF(name: "book2.pdf", content: "Content 2")
+        let pdf1 = makeTempFile(named: "book1.pdf", content: "Content 1")
+        let pdf2 = makeTempFile(named: "book2.pdf", content: "Content 2")
         
         // Add note to first PDF
         notesStore.setCurrentPDF(pdf1)
@@ -188,7 +188,7 @@ final class EnhancedPersistenceTests: XCTestCase {
     }
     
     func testTagsPersistenceSync() async {
-        let pdf = createTempPDF(name: "test_tags.pdf", content: "Content")
+        let pdf = makeTempFile(named: "test_tags.pdf", content: "Content")
         notesStore.setCurrentPDF(pdf)
 
         // Add a note with tags
@@ -197,8 +197,8 @@ final class EnhancedPersistenceTests: XCTestCase {
         notesStore.addTag("important", to: note)
         notesStore.addTag("review", to: note)
 
-        // Wait for debounced persistence (0.3s + buffer)
-        try? await Task.sleep(nanoseconds: 500_000_000)
+        // Poll for debounced persistence to complete
+        await waitUntil(timeout: 2.0) { [mock = self.mockPersistenceService!] in mock.lastSavedTags.count >= 2 }
 
         // Verify tags were saved
         XCTAssertEqual(mockPersistenceService.lastSavedTags.count, 2, "Should save 2 tags")
@@ -212,7 +212,7 @@ final class EnhancedPersistenceTests: XCTestCase {
     // MARK: - Data Recovery Tests
     
     func testDataRecovery() async {
-        let pdf = createTempPDF(name: "test.pdf", content: "Content")
+        let pdf = makeTempFile(named: "test.pdf", content: "Content")
 
         // Save some data
         let testData = ["key1": "value1"]
@@ -234,11 +234,4 @@ final class EnhancedPersistenceTests: XCTestCase {
         try? FileManager.default.removeItem(at: pdf)
     }
     
-    // MARK: - Helper Methods
-    
-    private func createTempPDF(name: String, content: String) -> URL {
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(name)
-        try? content.write(to: tempURL, atomically: true, encoding: .utf8)
-        return tempURL
-    }
 }

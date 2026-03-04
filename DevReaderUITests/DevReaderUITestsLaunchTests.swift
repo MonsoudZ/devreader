@@ -14,15 +14,14 @@ final class DevReaderUITestsLaunchTests: XCTestCase {
     }
 
     override func setUpWithError() throws {
+        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
+            throw XCTSkip("UI launch test skipped (set DEVREADER_UI_E2E=1 to enable)")
+        }
         continueAfterFailure = false
     }
 
     @MainActor
     func testLaunch() throws {
-        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
-            throw XCTSkip("UI launch test skipped (set DEVREADER_UI_E2E=1 to enable)")
-        }
-        
         let app = XCUIApplication()
         app.launch()
 

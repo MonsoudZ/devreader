@@ -8,6 +8,11 @@ nonisolated enum PersistenceService {
     // Thread-safe one-time migration using Swift's static let guarantee (dispatch_once)
     private static let _migration: Void = {
         JSONStorageService.migrateFromUserDefaults()
+        if !FileManager.default.fileExists(atPath: JSONStorageService.dataDirectory.path) {
+            let msg = "Failed to create data directory at \(JSONStorageService.dataDirectory.path)"
+            os_log("CRITICAL: %{public}@", log: AppLog.persistence, type: .fault, msg)
+            UserDefaults.standard.set(msg, forKey: "initializationError")
+        }
     }()
 
     /// Deterministic hash of a URL path using SHA256. Stable across app launches.
@@ -79,10 +84,14 @@ nonisolated enum PersistenceService {
         }
         guard key != legacyKey else { return nil }
         guard let result = loadCodable(type, forKey: legacyKey) else { return nil }
-        // Migrate: save to new key and delete old
-        try? saveCodable(result, forKey: key)
-        delete(forKey: legacyKey)
-        os_log("Migrated data from legacy key %{public}@ to %{public}@", log: logger, type: .info, legacyKey, key)
+        // Migrate: save to new key and delete old only if save succeeds
+        do {
+            try saveCodable(result, forKey: key)
+            delete(forKey: legacyKey)
+            os_log("Migrated data from legacy key %{public}@ to %{public}@", log: logger, type: .info, legacyKey, key)
+        } catch {
+            os_log("Migration save failed for key %{public}@, keeping legacy: %{public}@", log: logger, type: .error, key, error.localizedDescription)
+        }
         return result
     }
     

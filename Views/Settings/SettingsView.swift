@@ -62,7 +62,7 @@ struct SettingsView: View {
 					HStack {
 						Text("Default Zoom")
 						Spacer()
-						Slider(value: $defaultZoom, in: 0.5...3.0, step: 0.1)
+						Slider(value: $defaultZoom, in: 0.5...2.0, step: 0.1)
 							.accessibilityIdentifier("zoomSlider")
 							.accessibilityLabel("Default zoom level")
 							.accessibilityHint("Adjust the default zoom level for PDFs")

@@ -9,21 +9,33 @@ import XCTest
 
 final class DevReaderUITests: XCTestCase {
 
+    override class func setUp() {
+        super.setUp()
+        guard ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] == "1" else {
+            // XCTSkip can't be thrown from class setUp, so tests skip individually below.
+            return
+        }
+    }
+
     override func setUpWithError() throws {
+        try skipUnlessE2E()
         continueAfterFailure = false
     }
 
     override func tearDownWithError() throws {
     }
 
+    /// Shared skip guard — single place to maintain the env-var check.
+    private func skipUnlessE2E() throws {
+        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
+            throw XCTSkip("UI test skipped (set DEVREADER_UI_E2E=1 to enable)")
+        }
+    }
+
     // MARK: - Core UI Tests
 
     @MainActor
     func testAppLaunchShowsMainUI() throws {
-        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
-            throw XCTSkip("UI test skipped (set DEVREADER_UI_E2E=1 to enable)")
-        }
-
         let app = XCUIApplication()
         app.launch()
 
@@ -38,10 +50,6 @@ final class DevReaderUITests: XCTestCase {
 
     @MainActor
     func testToggleLibraryPanel() throws {
-        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
-            throw XCTSkip("UI test skipped (set DEVREADER_UI_E2E=1 to enable)")
-        }
-
         let app = XCUIApplication()
         app.launch()
 
@@ -60,10 +68,6 @@ final class DevReaderUITests: XCTestCase {
 
     @MainActor
     func testToggleToolsPanel() throws {
-        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
-            throw XCTSkip("UI test skipped (set DEVREADER_UI_E2E=1 to enable)")
-        }
-
         let app = XCUIApplication()
         app.launch()
 
@@ -84,9 +88,6 @@ final class DevReaderUITests: XCTestCase {
 
     @MainActor
     func testLaunchPerformance() throws {
-        if ProcessInfo.processInfo.environment["DEVREADER_UI_E2E"] != "1" {
-            throw XCTSkip("UI launch performance test skipped (set DEVREADER_UI_E2E=1 to enable)")
-        }
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }

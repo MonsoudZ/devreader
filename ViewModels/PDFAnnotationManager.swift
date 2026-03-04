@@ -24,18 +24,30 @@ final class PDFAnnotationManager: ObservableObject {
 
 	/// Adds a visual highlight annotation on the PDF page for the current selection.
 	func highlightSelection() {
-		guard let ctrl = pdfController,
-			  let doc = ctrl.document, let pdfURL = ctrl.currentPDFURL else { return }
-		let bridge = ctrl.selectionBridge
-		guard let selection = bridge.pdfView?.currentSelection ?? {
-			// Rebuild selection from cached text if live selection was cleared
-			guard let cached = bridge.cachedSelectionText else { return nil }
-			return doc.findString(cached, withOptions: [.caseInsensitive]).first
-		}() else {
+		guard let ctrl = pdfController else { return }
+		guard applyHighlightAnnotation() else {
 			ctrl.toastRequestPublisher.send(
 				ToastMessage(message: "Select text in the PDF first", type: .warning)
 			)
 			return
+		}
+		ctrl.toastRequestPublisher.send(
+			ToastMessage(message: "Text highlighted on PDF", type: .success)
+		)
+	}
+
+	/// Core highlight logic shared by highlightSelection() and captureHighlightToNotes().
+	/// Returns true if a highlight was applied, false if no valid selection.
+	@discardableResult
+	private func applyHighlightAnnotation() -> Bool {
+		guard let ctrl = pdfController,
+			  let doc = ctrl.document, let pdfURL = ctrl.currentPDFURL else { return false }
+		let bridge = ctrl.selectionBridge
+		guard let selection = bridge.pdfView?.currentSelection ?? {
+			guard let cached = bridge.cachedSelectionText else { return nil }
+			return doc.findString(cached, withOptions: [.caseInsensitive]).first
+		}() else {
+			return false
 		}
 
 		let colorName = UserDefaults.standard.string(forKey: "highlightColor") ?? "yellow"
@@ -46,8 +58,10 @@ final class PDFAnnotationManager: ObservableObject {
 		default: .systemYellow.withAlphaComponent(0.3)
 		}
 
+		var didApply = false
 		for page in selection.pages {
-			guard let pageIndex = doc.index(for: page) as Int? else { continue }
+			let pageIndex = doc.index(for: page)
+			guard pageIndex >= 0, pageIndex < doc.pageCount else { continue }
 			let selectionBounds = selection.bounds(for: page)
 			guard selectionBounds.width > 0 && selectionBounds.height > 0 else { continue }
 			let annotation = PDFAnnotation(bounds: selectionBounds, forType: .highlight, withProperties: nil)
@@ -63,12 +77,11 @@ final class PDFAnnotationManager: ObservableObject {
 				text: selectedText
 			)
 			annotations.append(record)
+			didApply = true
 		}
 
-		schedulePersist(for: pdfURL)
-		ctrl.toastRequestPublisher.send(
-			ToastMessage(message: "Text highlighted on PDF", type: .success)
-		)
+		if didApply { schedulePersist(for: pdfURL) }
+		return didApply
 	}
 
 	// MARK: - Restore / Clear
@@ -160,8 +173,8 @@ final class PDFAnnotationManager: ObservableObject {
 			pageIndex: ctrl.currentPageIndex,
 			chapter: getCurrentChapter() ?? "Unknown Chapter"
 		)
-		// Also add a visual highlight annotation on the PDF page
-		highlightSelection()
+		// Also add a visual highlight annotation on the PDF page (no toast — the note itself is the feedback)
+		applyHighlightAnnotation()
 		ctrl.noteRequestPublisher.send(note)
 	}
 

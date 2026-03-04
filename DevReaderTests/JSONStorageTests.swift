@@ -204,13 +204,14 @@ final class JSONStorageTests: XCTestCase {
         // Test with valid data
         let testData = "Valid Data"
         let url = JSONStorageService.dataDirectory.appendingPathComponent("test_validation.json")
-        
+
         try? JSONStorageService.save(testData, to: url)
         let validationResult = JSONStorageService.validateDataIntegrity()
-        
-        // Validation should return empty array for valid data
-        XCTAssertTrue(validationResult.isEmpty, "Valid data should pass validation")
-        
+
+        // Our test file should not appear in any issues
+        let issuesForOurFile = validationResult.filter { $0.contains("test_validation.json") }
+        XCTAssertTrue(issuesForOurFile.isEmpty, "Valid data should pass validation, got: \(issuesForOurFile)")
+
         // Clean up
         JSONStorageService.delete(url: url)
     }

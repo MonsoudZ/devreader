@@ -45,6 +45,38 @@ func waitForLoad(_ controller: PDFController) async {
     }
 }
 
+// MARK: - Lightweight Temp PDF Helpers
+
+/// Creates a minimal PDF stub file (not a real PDFKit document).
+/// Suitable for tests that only need a file to exist (e.g., library, persistence).
+/// Uses a UUID suffix to prevent collisions between parallel test runs.
+func makeTempPDFStub(named prefix: String = "test") -> URL {
+    let url = FileManager.default.temporaryDirectory
+        .appendingPathComponent("\(prefix)_\(UUID().uuidString).pdf")
+    try? "%PDF-1.4\n%%EOF".data(using: .utf8)?.write(to: url)
+    return url
+}
+
+/// Creates a temp file with arbitrary content, useful for key-generation tests.
+/// Uses a UUID suffix to prevent collisions between parallel test runs.
+func makeTempFile(named prefix: String = "test", extension ext: String = "pdf", content: String) -> URL {
+    let url = FileManager.default.temporaryDirectory
+        .appendingPathComponent("\(prefix)_\(UUID().uuidString).\(ext)")
+    try? content.write(to: url, atomically: true, encoding: .utf8)
+    return url
+}
+
+// MARK: - Polling Helpers
+
+/// Polls a condition at short intervals, returning when it becomes true or timeout is reached.
+@MainActor
+func waitUntil(timeout: TimeInterval = 2.0, interval: UInt64 = 50_000_000, condition: @MainActor () -> Bool) async {
+    let deadline = CFAbsoluteTimeGetCurrent() + timeout
+    while !condition() && CFAbsoluteTimeGetCurrent() < deadline {
+        try? await Task.sleep(nanoseconds: interval)
+    }
+}
+
 // MARK: - Memory Measurement
 
 /// Returns the current resident memory size of this process in bytes.

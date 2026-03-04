@@ -20,51 +20,57 @@ final class LibraryStoreTests: XCTestCase {
 		store = nil
 	}
 
+	/// Polls until the store's item count reaches the expected value (or timeout).
+	private func waitForItems(count expected: Int, timeout: TimeInterval = 2.0) async {
+		await waitUntil(timeout: timeout) { [store] in store!.items.count >= expected }
+	}
+
 	// MARK: - Add / Remove
 
 	func testAddSinglePDF() async {
-		let url = makeTempPDF(named: "test1.pdf")
+		let url = makeTempPDFStub(named: "test1")
 		defer { try? FileManager.default.removeItem(at: url) }
 
 		store.add(urls: [url])
-		// Wait for async Task inside add()
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		await waitForItems(count: 1)
 
 		XCTAssertEqual(store.items.count, 1)
 		XCTAssertEqual(store.items.first?.url, url)
 	}
 
 	func testAddMultiplePDFs() async {
-		let url1 = makeTempPDF(named: "a.pdf")
-		let url2 = makeTempPDF(named: "b.pdf")
+		let url1 = makeTempPDFStub(named: "a")
+		let url2 = makeTempPDFStub(named: "b")
 		defer {
 			try? FileManager.default.removeItem(at: url1)
 			try? FileManager.default.removeItem(at: url2)
 		}
 
 		store.add(urls: [url1, url2])
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		await waitForItems(count: 2)
 
 		XCTAssertEqual(store.items.count, 2)
 	}
 
 	func testAddRejectsNonPDFFiles() async {
-		let url = FileManager.default.temporaryDirectory.appendingPathComponent("test.txt")
+		let url = FileManager.default.temporaryDirectory
+			.appendingPathComponent("test_\(UUID().uuidString).txt")
 		try? "text".write(to: url, atomically: true, encoding: .utf8)
 		defer { try? FileManager.default.removeItem(at: url) }
 
 		store.add(urls: [url])
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		// Wait briefly — nothing should be added
+		await waitUntil(timeout: 0.5) { false }
 
 		XCTAssertEqual(store.items.count, 0, "Non-PDF files should be filtered out")
 	}
 
 	func testRemoveItem() async {
-		let url = makeTempPDF(named: "toremove.pdf")
+		let url = makeTempPDFStub(named: "toremove")
 		defer { try? FileManager.default.removeItem(at: url) }
 
 		store.add(urls: [url])
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		await waitForItems(count: 1)
 		XCTAssertEqual(store.items.count, 1)
 
 		let item = store.items.first!
@@ -73,15 +79,15 @@ final class LibraryStoreTests: XCTestCase {
 	}
 
 	func testRemoveByIDs() async {
-		let url1 = makeTempPDF(named: "r1.pdf")
-		let url2 = makeTempPDF(named: "r2.pdf")
+		let url1 = makeTempPDFStub(named: "r1")
+		let url2 = makeTempPDFStub(named: "r2")
 		defer {
 			try? FileManager.default.removeItem(at: url1)
 			try? FileManager.default.removeItem(at: url2)
 		}
 
 		store.add(urls: [url1, url2])
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		await waitForItems(count: 2)
 		XCTAssertEqual(store.items.count, 2)
 
 		let ids = Set(store.items.map { $0.id })
@@ -92,33 +98,34 @@ final class LibraryStoreTests: XCTestCase {
 	// MARK: - Duplicate Detection
 
 	func testAddDuplicateURLIsRejected() async {
-		let url = makeTempPDF(named: "dup.pdf")
+		let url = makeTempPDFStub(named: "dup")
 		defer { try? FileManager.default.removeItem(at: url) }
 
 		store.add(urls: [url])
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		await waitForItems(count: 1)
 		XCTAssertEqual(store.items.count, 1)
 
 		// Add the same URL again
 		store.add(urls: [url])
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		// Wait briefly — count should stay at 1
+		await waitUntil(timeout: 0.5) { false }
 		XCTAssertEqual(store.items.count, 1, "Duplicate URL should not be added")
 	}
 
 	// MARK: - Sort Order
 
 	func testItemsSortedByDateDescending() async {
-		let url1 = makeTempPDF(named: "first.pdf")
-		let url2 = makeTempPDF(named: "second.pdf")
+		let url1 = makeTempPDFStub(named: "first")
+		let url2 = makeTempPDFStub(named: "second")
 		defer {
 			try? FileManager.default.removeItem(at: url1)
 			try? FileManager.default.removeItem(at: url2)
 		}
 
 		store.add(urls: [url1])
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		await waitForItems(count: 1)
 		store.add(urls: [url2])
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		await waitForItems(count: 2)
 
 		XCTAssertEqual(store.items.count, 2)
 		// Most recently added should be first
@@ -128,22 +135,14 @@ final class LibraryStoreTests: XCTestCase {
 	// MARK: - Persistence (debounced)
 
 	func testFlushPendingPersistence() async {
-		let url = makeTempPDF(named: "persist.pdf")
+		let url = makeTempPDFStub(named: "persist")
 		defer { try? FileManager.default.removeItem(at: url) }
 
 		store.add(urls: [url])
-		try? await Task.sleep(nanoseconds: 200_000_000)
+		await waitForItems(count: 1)
 		XCTAssertEqual(store.items.count, 1)
 
 		// Flush should not crash
 		store.flushPendingPersistence()
-	}
-
-	// MARK: - Helpers
-
-	private func makeTempPDF(named: String) -> URL {
-		let url = FileManager.default.temporaryDirectory.appendingPathComponent(named)
-		try? "%PDF-1.4\n%%EOF".data(using: .utf8)?.write(to: url)
-		return url
 	}
 }

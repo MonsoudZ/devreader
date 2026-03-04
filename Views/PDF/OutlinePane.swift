@@ -20,7 +20,11 @@ struct OutlinePane: View {
             let filtered = searchText.isEmpty ? allEntries : allEntries.filter {
                 $0.title.localizedCaseInsensitiveContains(searchText)
             }
-            return Array(filtered.prefix(100)) // Limit to 100 entries for performance
+            let limited = Array(filtered.prefix(100))
+            if filtered.count > 100 {
+                log(AppLog.pdf, "Outline truncated: showing 100 of \(filtered.count) entries")
+            }
+            return limited
         }
 
         return allEntries

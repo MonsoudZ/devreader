@@ -144,13 +144,5 @@ struct RecoveryAction: Identifiable {
     }
 }
 
-// MARK: - File Access Reasons
 
-enum FileAccessReason {
-    case notFound
-    case permissionDenied
-    case corrupted
-    case unsupportedFormat
-    case networkError
-}
 

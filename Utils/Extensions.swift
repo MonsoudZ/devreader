@@ -1,7 +1,7 @@
 import Foundation
 import PDFKit
 import SwiftUI
-import Combine
+
 
 extension PDFSelection {
 	func pageBoxes() -> [(PDFPage, CGRect)] {

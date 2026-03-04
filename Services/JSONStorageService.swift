@@ -366,13 +366,18 @@ nonisolated enum JSONStorageService {
             issues.append("Data directory missing")
         }
         
-        // Check for corrupted JSON files
+        // Check for corrupted JSON files (validate JSON structure, not just readability)
         let jsonFiles = (try? FileManager.default.contentsOfDirectory(at: dataDirectory, includingPropertiesForKeys: nil)) ?? []
         for file in jsonFiles where file.pathExtension == "json" {
             do {
-                _ = try Data(contentsOf: file)
+                let data = try Data(contentsOf: file)
+                guard !data.isEmpty else {
+                    issues.append("Empty file: \(file.lastPathComponent)")
+                    continue
+                }
+                _ = try JSONSerialization.jsonObject(with: data, options: .fragmentsAllowed)
             } catch {
-                issues.append("Corrupted file: \(file.lastPathComponent)")
+                issues.append("Corrupted file: \(file.lastPathComponent) — \(error.localizedDescription)")
             }
         }
         

@@ -101,6 +101,7 @@ struct SketchView: View {
 			if components.count == 4 {
 				color = Color(.sRGB, red: components[0], green: components[1], blue: components[2], opacity: components[3])
 			} else {
+				logError(AppLog.sketch, "Invalid color data: expected 4 components, got \(components.count)")
 				color = Color.black
 			}
 		}

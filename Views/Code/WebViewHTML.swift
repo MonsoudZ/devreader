@@ -48,14 +48,19 @@ struct WebViewHTML: NSViewRepresentable {
         } else {
             if context.coordinator.currentLanguage != language {
                 context.coordinator.currentLanguage = language
-                let escaped = language.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
+                let escaped = language.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'").replacingOccurrences(of: "\n", with: "\\n").replacingOccurrences(of: "\r", with: "\\r")
                 let js = "if (window.editor) { monaco.editor.setModelLanguage(window.editor.getModel(), '\(escaped)'); }"
-                view.evaluateJavaScript(js, completionHandler: nil)
+                view.evaluateJavaScript(js) { _, error in
+                    if let error = error { logError(AppLog.code, "Language change failed: \(error.localizedDescription)") }
+                }
             }
             if context.coordinator.currentTheme != theme {
                 context.coordinator.currentTheme = theme
-                let js = "if (window.monaco) { monaco.editor.setTheme('\(theme)'); }"
-                view.evaluateJavaScript(js, completionHandler: nil)
+                let escapedTheme = theme.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
+                let js = "if (window.monaco) { monaco.editor.setTheme('\(escapedTheme)'); }"
+                view.evaluateJavaScript(js) { _, error in
+                    if let error = error { logError(AppLog.code, "Theme change failed: \(error.localizedDescription)") }
+                }
             }
         }
     }

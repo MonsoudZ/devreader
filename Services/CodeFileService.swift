@@ -9,9 +9,7 @@ enum CodeFileService {
 	/// Allowed base directories for file operations. Files outside these are rejected.
 	private static let allowedRoots: [URL] = {
 		var roots: [URL] = []
-		if let home = FileManager.default.homeDirectoryForCurrentUser as URL? {
-			roots.append(home)
-		}
+		roots.append(FileManager.default.homeDirectoryForCurrentUser)
 		roots.append(FileManager.default.temporaryDirectory)
 		return roots
 	}()
