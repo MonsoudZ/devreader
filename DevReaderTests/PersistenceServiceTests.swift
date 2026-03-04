@@ -4,10 +4,10 @@ import XCTest
 final class PersistenceServiceTests: XCTestCase {
     struct Dummy: Codable, Equatable { let a: Int; let b: String }
 
-    func testSaveLoadDeleteCodable() {
+    func testSaveLoadDeleteCodable() throws {
         let key = "Test.Dummy.\(UUID().uuidString)"
         let value = Dummy(a: 42, b: "hello")
-        PersistenceService.saveCodable(value, forKey: key)
+        try PersistenceService.saveCodable(value, forKey: key)
         let loaded: Dummy? = PersistenceService.loadCodable(Dummy.self, forKey: key)
         XCTAssertEqual(loaded, value)
         PersistenceService.delete(forKey: key)
@@ -15,9 +15,9 @@ final class PersistenceServiceTests: XCTestCase {
         XCTAssertNil(afterDelete)
     }
 
-    func testSaveLoadInt() {
+    func testSaveLoadInt() throws {
         let key = "Test.Int.\(UUID().uuidString)"
-        PersistenceService.saveInt(123, forKey: key)
+        try PersistenceService.saveInt(123, forKey: key)
         let loaded = PersistenceService.loadInt(forKey: key)
         XCTAssertEqual(loaded, 123)
         PersistenceService.delete(forKey: key)

@@ -10,7 +10,18 @@ final class PDFSearchManager: ObservableObject {
     @Published var searchIndex: Int = 0
     @Published var isSearching: Bool = false
 
+    let selectionBridge: PDFSelectionBridge
+    let loadingStateManager: LoadingStateManager
+    let performanceMonitor: PerformanceMonitor
     private var searchTask: Task<Void, Never>?
+
+    init(selectionBridge: PDFSelectionBridge = PDFSelectionBridge(),
+         loadingStateManager: LoadingStateManager = .shared,
+         performanceMonitor: PerformanceMonitor = .shared) {
+        self.selectionBridge = selectionBridge
+        self.loadingStateManager = loadingStateManager
+        self.performanceMonitor = performanceMonitor
+    }
 
     func performSearch(_ query: String, in document: PDFDocument?) {
         guard let doc = document else { return }
@@ -23,7 +34,7 @@ final class PDFSearchManager: ObservableObject {
         guard !trimmed.isEmpty else { clearSearch(); return }
 
         isSearching = true
-        LoadingStateManager.shared.startSearch("Searching in PDF...")
+        loadingStateManager.startSearch("Searching in PDF...")
 
         searchTask = Task {
             let startTime = Date()
@@ -37,9 +48,9 @@ final class PDFSearchManager: ObservableObject {
             searchResults = results
             searchIndex = 0
             focusCurrentSearchSelection(in: document)
-            PerformanceMonitor.shared.trackSearch(startTime)
+            performanceMonitor.trackSearch(startTime)
             isSearching = false
-            LoadingStateManager.shared.stopSearch()
+            loadingStateManager.stopSearch()
         }
     }
 
@@ -61,7 +72,7 @@ final class PDFSearchManager: ObservableObject {
         searchResults = []
         searchIndex = 0
         searchQuery = ""
-        PDFSelectionBridge.shared.setHighlightedSelections([])
+        selectionBridge.setHighlightedSelections([])
     }
 
     func jumpToSearchResult(_ index: Int, in document: PDFDocument?) {
@@ -77,13 +88,13 @@ final class PDFSearchManager: ObservableObject {
     func focusCurrentSearchSelection(in document: PDFDocument?) -> Int? {
         guard !searchResults.isEmpty else { return nil }
         let sel = searchResults[searchIndex]
-        PDFSelectionBridge.shared.setHighlightedSelections(searchResults)
+        selectionBridge.setHighlightedSelections(searchResults)
         var pageIndex: Int?
         if let page = sel.pages.first, let doc = document {
             let idx = doc.index(for: page)
             if idx >= 0 && idx < doc.pageCount { pageIndex = idx }
         }
-        PDFSelectionBridge.shared.pdfView?.go(to: sel)
+        selectionBridge.pdfView?.go(to: sel)
         return pageIndex
     }
 

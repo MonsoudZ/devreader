@@ -32,19 +32,26 @@ final class PDFController: ObservableObject {
 	@Published var document: PDFDocument?
 	@Published var currentPageIndex: Int = 0
 	@Published private(set) var currentPDFURL: URL?
-    // Loading state
-    @Published var isLoadingPDF: Bool = false
-    // Reading progress
-    @Published var readingProgress: Double = 0.0
+    // Loading state (not @Published — views use loadingStateManager; kept for tests)
+    var isLoadingPDF: Bool = false
+    // Reading progress (not @Published — only used internally/tests, avoids needless redraws)
+    var readingProgress: Double = 0.0
     // Large PDF optimizations
-    @Published var isLargePDF: Bool = false
-    @Published var estimatedLoadTime: String = ""
-    @Published var memoryUsage: String = ""
+    var isLargePDF: Bool = false
+    var estimatedLoadTime: String = ""
+    var memoryUsage: String = ""
+
+	// MARK: - Event Publishers (replace NotificationCenter posts)
+	let pdfLoadErrorPublisher = PassthroughSubject<URL, Never>()
+	let noteRequestPublisher = PassthroughSubject<NoteItem, Never>()
+	let toastRequestPublisher = PassthroughSubject<ToastMessage, Never>()
 
 	// MARK: - Managers
-	let searchManager = PDFSearchManager()
+	let selectionBridge = PDFSelectionBridge()
+	let searchManager: PDFSearchManager
 	let bookmarkManager = PDFBookmarkManager()
 	let outlineManager = PDFOutlineManager()
+	private(set) lazy var annotationManager = PDFAnnotationManager(pdfController: self)
 
     // MARK: - Constants
     private static let largePDFPageThreshold = 500
@@ -56,23 +63,34 @@ final class PDFController: ObservableObject {
     private static let loadEstimatePerPage: TimeInterval = 0.01
     private static let loadEstimateMinuteThreshold: TimeInterval = 60
 
+    let loadingStateManager: LoadingStateManager
+    let performanceMonitor: PerformanceMonitor
+
+    private var activeSecurityScope: URL?
     private let sessionKey = "DevReader.Session.v1"
 	private var loadingTask: Task<Void, Never>?
 	private var outlineTask: Task<Void, Never>?
 	private var isHandlingMemoryPressure = false
-	private var memoryPressureObserver: Any?
-	private var persistPageWorkItem: DispatchWorkItem?
+	nonisolated(unsafe) private var memoryPressureObserver: Any?
+	nonisolated(unsafe) private var persistPageWorkItem: DispatchWorkItem?
 	private var isRestoringPage = false
 	private let lastOpenedPDFKey = "DevReader.LastOpenedPDF.v1"
-	private var managerCancellables = Set<AnyCancellable>()
-
-	init() {
-		// Forward objectWillChange from each manager so views observing PDFController still update
-		searchManager.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &managerCancellables)
-		bookmarkManager.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &managerCancellables)
-		outlineManager.objectWillChange.sink { [weak self] in self?.objectWillChange.send() }.store(in: &managerCancellables)
+	init(loadingStateManager: LoadingStateManager = .shared, performanceMonitor: PerformanceMonitor = .shared) {
+		self.loadingStateManager = loadingStateManager
+		self.performanceMonitor = performanceMonitor
+		self.searchManager = PDFSearchManager(selectionBridge: selectionBridge, loadingStateManager: loadingStateManager, performanceMonitor: performanceMonitor)
 
 		setupMemoryPressureHandler()
+	}
+
+	deinit {
+		// removeObserver and cancel are thread-safe — safe from nonisolated deinit
+		if let observer = memoryPressureObserver {
+			NotificationCenter.default.removeObserver(observer)
+		}
+		loadingTask?.cancel()
+		outlineTask?.cancel()
+		persistPageWorkItem?.cancel()
 	}
 
 	func load(url: URL) {
@@ -89,7 +107,24 @@ final class PDFController: ObservableObject {
 		load(url: url)
 	}
 
+	/// Open a PDF from a library item, using its security-scoped bookmark if available.
+	func load(libraryItem: LibraryItem) {
+		if let resolved = libraryItem.resolveURLFromBookmark(),
+		   FileManager.default.fileExists(atPath: resolved.path) {
+			let didStart = resolved.startAccessingSecurityScopedResource()
+			if didStart { activeSecurityScope = resolved }
+			load(url: resolved)
+			return
+		}
+		load(url: libraryItem.url)
+	}
+
 	private func cleanupCurrentPDF() async {
+		annotationManager.flushPendingPersistence()
+		if let scope = activeSecurityScope {
+			scope.stopAccessingSecurityScopedResource()
+			activeSecurityScope = nil
+		}
 		document = nil
 		currentPDFURL = nil
 		currentPageIndex = 0
@@ -111,18 +146,18 @@ final class PDFController: ObservableObject {
         await cleanupCurrentPDF()
 
         let startTime = Date()
-        PerformanceMonitor.shared.trackPDFLoad(startTime)
+        performanceMonitor.trackPDFLoad(startTime)
 
-        LoadingStateManager.shared.startPDFLoading("Loading PDF...")
+        loadingStateManager.startPDFLoading("Loading PDF...")
         isLoadingPDF = true
         defer {
             isLoadingPDF = false
-            LoadingStateManager.shared.stopPDFLoading()
+            loadingStateManager.stopPDFLoading()
         }
 
 		guard FileManager.default.fileExists(atPath: url.path) else {
 			logError(AppLog.pdf, "PDF file does not exist: \(url.path)")
-			NotificationCenter.default.post(name: .pdfLoadError, object: url)
+			pdfLoadErrorPublisher.send(url)
 			return
 		}
 
@@ -142,13 +177,13 @@ final class PDFController: ObservableObject {
 
 		guard let loadedDoc = doc else {
 			logError(AppLog.pdf, "All PDF loading strategies failed for: \(url.path)")
-			NotificationCenter.default.post(name: .pdfLoadError, object: url)
+			pdfLoadErrorPublisher.send(url)
 			return
 		}
 
 		guard validateDocument(loadedDoc) else {
 			logError(AppLog.pdf, "PDF document failed integrity check")
-			NotificationCenter.default.post(name: .pdfLoadError, object: url)
+			pdfLoadErrorPublisher.send(url)
 			return
 		}
 
@@ -158,16 +193,16 @@ final class PDFController: ObservableObject {
 		if isLargePDF {
 			estimatedLoadTime = estimateLoadTime(for: pageCount)
 			updateMemoryUsage()
-			LoadingStateManager.shared.updatePDFProgress(0.5, message: "Processing large PDF (\(pageCount) pages)...")
+			loadingStateManager.updatePDFProgress(0.5, message: "Processing large PDF (\(pageCount) pages)...")
 		}
 
 		self.document = loadedDoc
 		self.currentPDFURL = url
 
-		PersistenceService.saveCodable(url, forKey: lastOpenedPDFKey)
+		try? PersistenceService.saveCodable(url, forKey: lastOpenedPDFKey)
 
 		if isLargePDF {
-			LoadingStateManager.shared.updatePDFProgress(0.8, message: "Building outline for large PDF...")
+			loadingStateManager.updatePDFProgress(0.8, message: "Building outline for large PDF...")
 			outlineTask = Task {
 				await outlineManager.rebuildOutlineMapAsync(from: document, isLargePDF: isLargePDF)
 			}
@@ -178,6 +213,7 @@ final class PDFController: ObservableObject {
 		loadPageForPDF(url)
 		updateReadingProgress()
 		bookmarkManager.loadBookmarks(for: currentPDFURL)
+		annotationManager.restoreAnnotations(for: url)
 		bookmarkManager.loadRecents()
 		bookmarkManager.addRecent(url)
 		onPDFChanged?(url)
@@ -197,6 +233,8 @@ final class PDFController: ObservableObject {
 
 	func clearSession() {
 		flushPendingPersistence()
+		annotationManager.flushPendingPersistence()
+		annotationManager.clearAnnotations()
 		document = nil
 		currentPDFURL = nil
 		currentPageIndex = 0
@@ -259,14 +297,15 @@ final class PDFController: ObservableObject {
 
     func savePageForPDF(_ url: URL) {
         let pageKey = PersistenceService.key(sessionKey, for: url)
-        PersistenceService.saveInt(currentPageIndex, forKey: pageKey)
+        try? PersistenceService.saveInt(currentPageIndex, forKey: pageKey)
     }
 
     private func loadPageForPDF(_ url: URL) {
 		isRestoringPage = true
 		defer { isRestoringPage = false }
         let pageKey = PersistenceService.key(sessionKey, for: url)
-        let savedPage = PersistenceService.loadInt(forKey: pageKey) ?? 0
+        let legacyPageKey = PersistenceService.legacyKey(sessionKey, for: url)
+        let savedPage = PersistenceService.loadCodableWithMigration(Int.self, forKey: pageKey, legacyKey: legacyPageKey) ?? 0
 		if savedPage > 0 {
 			let lastIndex = max(0, (document?.pageCount ?? 1) - 1)
 			currentPageIndex = min(savedPage, lastIndex)
@@ -412,104 +451,13 @@ final class PDFController: ObservableObject {
 	}
 
 	private func updateMemoryUsage() {
-		let monitor = PerformanceMonitor.shared
+		let monitor = performanceMonitor
 		memoryUsage = monitor.formatBytes(monitor.memoryUsage)
 	}
 
-	// MARK: - PDF Annotation Layer
+	// MARK: - PDF Annotation Layer (forwarding to annotationManager)
 
-	/// Adds a visual highlight annotation on the PDF page for the current selection.
-	func highlightSelection() {
-		guard let doc = document, currentPDFURL != nil else { return }
-		let bridge = PDFSelectionBridge.shared
-		guard let selection = bridge.pdfView?.currentSelection ?? {
-			// Rebuild selection from cached text if live selection was cleared
-			guard let cached = bridge.cachedSelectionText else { return nil }
-			return doc.findString(cached, withOptions: [.caseInsensitive]).first
-		}() else {
-			NotificationCenter.default.post(
-				name: .showToast,
-				object: ToastMessage(message: "Select text in the PDF first", type: .warning)
-			)
-			return
-		}
-
-		let colorName = UserDefaults.standard.string(forKey: "highlightColor") ?? "yellow"
-		let color: NSColor = switch colorName {
-		case "green": .systemGreen.withAlphaComponent(0.3)
-		case "blue": .systemBlue.withAlphaComponent(0.3)
-		case "pink": .systemPink.withAlphaComponent(0.3)
-		default: .systemYellow.withAlphaComponent(0.3)
-		}
-
-		for page in selection.pages {
-			let selectionBounds = selection.bounds(for: page)
-			guard selectionBounds.width > 0 && selectionBounds.height > 0 else { continue }
-			let annotation = PDFAnnotation(bounds: selectionBounds, forType: .highlight, withProperties: nil)
-			annotation.color = color
-			page.addAnnotation(annotation)
-		}
-
-		NotificationCenter.default.post(
-			name: .showToast,
-			object: ToastMessage(message: "Text highlighted on PDF", type: .success)
-		)
-	}
-
-	// MARK: - Highlight and Notes Integration
-
-	func captureHighlightToNotes() {
-		guard currentPDFURL != nil else { return }
-		let bridge = PDFSelectionBridge.shared
-		let liveText = bridge.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines)
-		let selectedText = (liveText?.isEmpty == false) ? liveText : bridge.cachedSelectionText
-		guard let text = selectedText, !text.isEmpty else {
-			NotificationCenter.default.post(
-				name: .showToast,
-				object: ToastMessage(message: "Select text in the PDF first", type: .warning)
-			)
-			return
-		}
-		let note = NoteItem(
-			title: "Highlight from page \(currentPageIndex + 1)",
-			text: text,
-			pageIndex: currentPageIndex,
-			chapter: getCurrentChapter() ?? "Unknown Chapter"
-		)
-		// Also add a visual highlight annotation on the PDF page
-		highlightSelection()
-		NotificationCenter.default.post(name: .addNote, object: note)
-	}
-
-	private func getCurrentChapter() -> String? {
-		if let chapter = outlineManager.outlineMap[currentPageIndex] {
-			return chapter
-		}
-		for i in stride(from: currentPageIndex - 1, through: 0, by: -1) {
-			if let chapter = outlineManager.outlineMap[i] {
-				return chapter
-			}
-		}
-		return document?.outlineRoot?.label
-	}
-
-	func addStickyNote() {
-		guard currentPDFURL != nil else { return }
-		let bridge = PDFSelectionBridge.shared
-		let liveText = bridge.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines)
-		let selectedText = (liveText?.isEmpty == false) ? liveText : bridge.cachedSelectionText
-		let noteText = selectedText ?? ""
-		let stickyNote = NoteItem(
-			title: "Sticky note — page \(currentPageIndex + 1)",
-			text: noteText,
-			pageIndex: currentPageIndex,
-			chapter: getCurrentChapter() ?? "Unknown Chapter",
-			tags: ["sticky"]
-		)
-		NotificationCenter.default.post(name: .addNote, object: stickyNote)
-		NotificationCenter.default.post(
-			name: .showToast,
-			object: ToastMessage(message: "Sticky note added", type: .success)
-		)
-	}
+	func highlightSelection() { annotationManager.highlightSelection() }
+	func captureHighlightToNotes() { annotationManager.captureHighlightToNotes() }
+	func addStickyNote() { annotationManager.addStickyNote() }
 }

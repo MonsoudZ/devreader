@@ -10,11 +10,15 @@ class SketchStore: ObservableObject {
     @Published var currentSketch: SketchItem?
     
     private let persistenceService: SketchPersistenceProtocol
-    private var persistWorkItem: DispatchWorkItem?
+    nonisolated(unsafe) private var persistWorkItem: DispatchWorkItem?
 
     init(persistenceService: SketchPersistenceProtocol? = nil) {
         self.persistenceService = persistenceService ?? SketchPersistenceService()
         loadSketches()
+    }
+
+    deinit {
+        persistWorkItem?.cancel()
     }
     
     // MARK: - Sketch Management

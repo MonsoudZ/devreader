@@ -4,7 +4,11 @@ import os.log
 /// Enhanced JSON file-based storage system for better performance and reliability
 nonisolated enum JSONStorageService {
     private static let logger = AppLog.persistence
-    
+
+    /// File extensions used for atomic write intermediaries.
+    static let tempExtension = "tmp"
+    static let backupExtension = "bak"
+
     // MARK: - Storage Locations
     static var appSupportURL: URL {
         guard let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
@@ -71,35 +75,30 @@ nonisolated enum JSONStorageService {
         ensureDirectories()
         let jsonData = try JSONEncoder().encode(data)
         
-        // Atomic write to prevent corruption
-        let tempURL = url.appendingPathExtension("tmp")
-        let backupURL = url.appendingPathExtension("bak")
+        // Atomic write to prevent corruption — UUID avoids collision on concurrent saves
+        let tempURL = url.deletingPathExtension()
+            .appendingPathExtension(UUID().uuidString)
+            .appendingPathExtension(tempExtension)
         
         do {
             // Write to temporary file first
             try jsonData.write(to: tempURL)
 
-            if FileManager.default.fileExists(atPath: url.path) {
-                // Create backup of existing file
-                try? FileManager.default.removeItem(at: backupURL)
-                try FileManager.default.copyItem(at: url, to: backupURL)
-                // Atomic replace
-                _ = try FileManager.default.replaceItem(at: url, withItemAt: tempURL, backupItemName: nil, options: [], resultingItemURL: nil)
-                // Clean up backup
-                try? FileManager.default.removeItem(at: backupURL)
-            } else {
-                // First write — just move the temp file into place
+            // Try atomic replace (works when target exists)
+            do {
+                _ = try FileManager.default.replaceItem(
+                    at: url, withItemAt: tempURL,
+                    backupItemName: nil, options: [], resultingItemURL: nil
+                )
+            } catch let replaceError as NSError where replaceError.domain == NSCocoaErrorDomain
+                && (replaceError.code == NSFileNoSuchFileError || replaceError.code == NSFileReadNoSuchFileError) {
+                // Target doesn't exist yet — move temp file into place
                 try FileManager.default.moveItem(at: tempURL, to: url)
             }
 
             os_log("Saved data atomically to: %{public}@", log: logger, type: .debug, url.path)
         } catch {
-            // Restore from backup if atomic write failed
-            if FileManager.default.fileExists(atPath: backupURL.path) {
-                try? FileManager.default.replaceItem(at: url, withItemAt: backupURL, backupItemName: nil, options: [], resultingItemURL: nil)
-            }
-
-            // Clean up temporary file
+            // Clean up temporary file on failure
             try? FileManager.default.removeItem(at: tempURL)
 
             os_log("Failed to save data atomically: %{public}@", log: logger, type: .error, error.localizedDescription)
@@ -271,6 +270,9 @@ nonisolated enum JSONStorageService {
     }
     
     static func restoreFromBackup(_ backupURL: URL) throws {
+        // Safety: create a pre-restore backup so we can recover if something goes wrong
+        _ = try? createBackup()
+
         let backupData = try load(DevReaderData.self, from: backupURL)
         try importAllData(backupData)
         os_log("Restored from backup: %{public}@", log: logger, type: .info, backupURL.path)
@@ -279,28 +281,43 @@ nonisolated enum JSONStorageService {
     // MARK: - Export/Import
     static func exportAllData() throws -> DevReaderData {
         ensureDirectories()
-        
+
         let library = loadOptional([LibraryItem].self, from: libraryPath()) ?? []
         let recentDocs = loadOptional([URL].self, from: recentsPath()) ?? []
         let pinnedDocs = loadOptional([URL].self, from: pinnedPath()) ?? []
         let webBookmarks = loadOptional([URL].self, from: webBookmarksPath()) ?? []
+
+        // Export annotation files
+        let annotationBundles = exportAnnotationBundles()
 
         return DevReaderData(
             library: library,
             recentDocuments: recentDocs.map { $0.absoluteString },
             pinnedDocuments: pinnedDocs.map { $0.absoluteString },
             webBookmarks: webBookmarks.map { $0.absoluteString },
+            annotationBundles: annotationBundles.isEmpty ? nil : annotationBundles,
             exportDate: Date(),
             version: "2.0"
         )
     }
+
+    private static func exportAnnotationBundles() -> [AnnotationBundle] {
+        let files = (try? FileManager.default.contentsOfDirectory(at: dataDirectory, includingPropertiesForKeys: nil)) ?? []
+        return files.compactMap { file -> AnnotationBundle? in
+            let name = file.deletingPathExtension().lastPathComponent
+            guard name.hasPrefix("annotations_") else { return nil }
+            let hash = String(name.dropFirst("annotations_".count))
+            guard let annotations = loadOptional([PDFAnnotationData].self, from: file), !annotations.isEmpty else { return nil }
+            return AnnotationBundle(hash: hash, annotations: annotations)
+        }
+    }
     
     static func importAllData(_ data: DevReaderData) throws {
         ensureDirectories()
-        
+
         // Import library
         try save(data.library, to: libraryPath())
-        
+
         // Import recent and pinned documents
         let recentURLs = data.recentDocuments.compactMap { URL(string: $0) }
         let pinnedURLs = data.pinnedDocuments.compactMap { URL(string: $0) }
@@ -311,6 +328,14 @@ nonisolated enum JSONStorageService {
         if let webBookmarkStrings = data.webBookmarks {
             let webBookmarkURLs = webBookmarkStrings.compactMap { URL(string: $0) }
             try save(webBookmarkURLs, to: webBookmarksPath())
+        }
+
+        // Import annotation bundles
+        if let bundles = data.annotationBundles {
+            for bundle in bundles {
+                let fileURL = dataDirectory.appendingPathComponent("annotations_\(bundle.hash).json")
+                try save(bundle.annotations, to: fileURL)
+            }
         }
 
         os_log("Imported data with %d library items", log: logger, type: .info, data.library.count)

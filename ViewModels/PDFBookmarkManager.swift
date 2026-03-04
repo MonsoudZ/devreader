@@ -28,7 +28,8 @@ final class PDFBookmarkManager: ObservableObject {
         bookmarks.removeAll()
         guard let url = url else { return }
         let key = PersistenceService.key(bookmarksKey, for: url)
-        if let arr: [Int] = PersistenceService.loadCodable([Int].self, forKey: key) {
+        let legacy = PersistenceService.legacyKey(bookmarksKey, for: url)
+        if let arr: [Int] = PersistenceService.loadCodableWithMigration([Int].self, forKey: key, legacyKey: legacy) {
             bookmarks = Set(arr)
         }
     }
@@ -36,7 +37,7 @@ final class PDFBookmarkManager: ObservableObject {
     func saveBookmarks(for url: URL?) {
         guard let url = url else { return }
         let key = PersistenceService.key(bookmarksKey, for: url)
-        PersistenceService.saveCodable(Array(bookmarks), forKey: key)
+        try? PersistenceService.saveCodable(Array(bookmarks), forKey: key)
     }
 
     func loadRecents() {
@@ -60,8 +61,8 @@ final class PDFBookmarkManager: ObservableObject {
     }
 
     func saveRecents() {
-        PersistenceService.saveCodable(recentDocuments, forKey: recentsKey)
-        PersistenceService.saveCodable(pinnedDocuments, forKey: pinnedKey)
+        try? PersistenceService.saveCodable(recentDocuments, forKey: recentsKey)
+        try? PersistenceService.saveCodable(pinnedDocuments, forKey: pinnedKey)
     }
 
     func addRecent(_ url: URL) {

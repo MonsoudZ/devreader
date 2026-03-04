@@ -1,11 +1,11 @@
 import SwiftUI
 
-struct ToastMessage: Identifiable {
+nonisolated struct ToastMessage: Identifiable, Sendable {
     let id = UUID()
     let message: String
     let type: ToastType
 
-    enum ToastType {
+    nonisolated enum ToastType: Sendable {
         case success
         case error
         case warning

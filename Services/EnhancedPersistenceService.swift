@@ -10,23 +10,29 @@ class EnhancedPersistenceService: ObservableObject {
     private let logger = AppLog.persistence
     private let fileManager = FileManager.default
 
-    private init() {}
+    init() {}
 
     // MARK: - Collision-Safe Key Generation
 
-    /// Generates a collision-safe key using a deterministic SHA256 hash of the file path.
-    /// Only the path is used — file attributes like size/date are excluded to prevent
-    /// keys from changing when files are touched, synced, or re-downloaded.
+    /// Generates a collision-safe key using content fingerprint (first 64KB SHA256) when
+    /// available, falling back to path hash. Content fingerprint survives file moves.
     func generateKey(_ base: String, for url: URL?, scope: String? = nil) -> String {
         guard let url = url else { return base }
 
-        let uniqueId = PersistenceService.stableHash(for: url)
+        let uniqueId = PersistenceService.contentFingerprint(for: url)
+            ?? PersistenceService.stableHash(for: url)
 
         if let scope = scope {
             return "\(base).\(scope).\(uniqueId)"
         }
 
         return "\(base).\(uniqueId)"
+    }
+
+    /// Legacy key using path-based hash (used for migration fallback)
+    func legacyKey(_ base: String, for url: URL?) -> String {
+        guard let url = url else { return base }
+        return "\(base).\(PersistenceService.stableHash(for: url))"
     }
     
     // MARK: - Atomic Operations
@@ -46,18 +52,61 @@ class EnhancedPersistenceService: ObservableObject {
         return JSONStorageService.loadOptional(type, from: fileURL)
     }
     
+    /// Loads data trying content-fingerprint key first, then falls back to legacy path-hash key.
+    /// If found at legacy key, copies to new key and deletes old.
+    func loadCodableWithMigration<T: Codable>(_ type: T.Type, forKey key: String, url: URL? = nil) -> T? {
+        // Try new content-fingerprint key first
+        if let result = loadCodable(type, forKey: key, url: url) {
+            return result
+        }
+
+        // Fall back to legacy path-hash key
+        guard let url = url else { return nil }
+        let legacy = legacyKey(key, for: url)
+        let newKey = generateKey(key, for: url)
+        guard legacy != newKey else { return nil } // same key, no migration needed
+
+        let legacyURL = JSONStorageService.dataDirectory.appendingPathComponent("\(legacy).json")
+        guard let result = JSONStorageService.loadOptional(type, from: legacyURL) else { return nil }
+
+        // Migrate: save to new key and delete old
+        let newURL = JSONStorageService.dataDirectory.appendingPathComponent("\(newKey).json")
+        try? JSONStorageService.save(result, to: newURL)
+        try? fileManager.removeItem(at: legacyURL)
+        os_log("Migrated data from legacy key %{public}@ to %{public}@", log: logger, type: .info, legacy, newKey)
+
+        return result
+    }
+
     // MARK: - Data Validation
     
-    /// Validates data integrity
+    /// Typed validation — checks that the file decodes with JSONDecoder.
+    func validateData<T: Codable>(_ type: T.Type, forKey key: String, url: URL? = nil) -> Bool {
+        let finalKey = generateKey(key, for: url)
+        let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
+
+        guard fileManager.fileExists(atPath: fileURL.path) else { return false }
+
+        do {
+            let data = try Data(contentsOf: fileURL)
+            _ = try JSONDecoder().decode(type, from: data)
+            return true
+        } catch {
+            os_log("Data validation failed for key: %{public}@, error: %{public}@", log: logger, type: .error, finalKey, error.localizedDescription)
+            return false
+        }
+    }
+
+    /// Untyped validation — checks that the file contains valid JSON.
     func validateData(forKey key: String, url: URL? = nil) -> Bool {
         let finalKey = generateKey(key, for: url)
         let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
-        
+
         guard fileManager.fileExists(atPath: fileURL.path) else { return false }
-        
+
         do {
             let data = try Data(contentsOf: fileURL)
-            // Try to decode as generic JSON to validate structure
+            guard !data.isEmpty else { return false }
             _ = try JSONSerialization.jsonObject(with: data)
             return true
         } catch {
@@ -95,17 +144,30 @@ class EnhancedPersistenceService: ObservableObject {
     
     // MARK: - Cleanup Operations
     
-    /// Clears all data for a specific PDF
-    func clearData(for url: URL) {
-        let baseKeys = ["DevReader.Notes.v1", "DevReader.PageNotes.v1", "DevReader.Tags.v1"]
-        
+    /// Clears all data for a specific PDF. Returns the number of files that failed to delete.
+    @discardableResult
+    func clearData(for url: URL) -> Int {
+        let baseKeys = ["DevReader.Notes.v1", "DevReader.PageNotes.v1", "DevReader.Tags.v1", "DevReader.Annotations.v1"]
+        var failures = 0
+
         for baseKey in baseKeys {
             let finalKey = generateKey(baseKey, for: url)
             let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
-            try? fileManager.removeItem(at: fileURL)
+            guard fileManager.fileExists(atPath: fileURL.path) else { continue }
+            do {
+                try fileManager.removeItem(at: fileURL)
+            } catch {
+                failures += 1
+                os_log("Failed to delete %{public}@: %{public}@", log: logger, type: .error, finalKey, error.localizedDescription)
+            }
         }
-        
-        os_log("Cleared all data for PDF: %{public}@", log: logger, type: .info, url.lastPathComponent)
+
+        if failures == 0 {
+            os_log("Cleared all data for PDF: %{public}@", log: logger, type: .info, url.lastPathComponent)
+        } else {
+            os_log("Partially cleared data for PDF: %{public}@ (%d failures)", log: logger, type: .error, url.lastPathComponent, failures)
+        }
+        return failures
     }
     
     /// Deletes data for a single key
@@ -113,8 +175,8 @@ class EnhancedPersistenceService: ObservableObject {
         let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(key).json")
         try? fileManager.removeItem(at: fileURL)
         // Also clean up any temp/backup files
-        try? fileManager.removeItem(at: fileURL.appendingPathExtension("tmp"))
-        try? fileManager.removeItem(at: fileURL.appendingPathExtension("bak"))
+        try? fileManager.removeItem(at: fileURL.appendingPathExtension(JSONStorageService.tempExtension))
+        try? fileManager.removeItem(at: fileURL.appendingPathExtension(JSONStorageService.backupExtension))
         os_log("Deleted data for key: %{public}@", log: logger, type: .debug, key)
     }
 
@@ -132,7 +194,7 @@ class EnhancedPersistenceService: ObservableObject {
     func restoreBackup(forKey key: String, url: URL? = nil) -> Bool {
         let finalKey = generateKey(key, for: url)
         let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
-        let backupURL = fileURL.appendingPathExtension("bak")
+        let backupURL = fileURL.appendingPathExtension(JSONStorageService.backupExtension)
 
         guard fileManager.fileExists(atPath: backupURL.path) else { return false }
 

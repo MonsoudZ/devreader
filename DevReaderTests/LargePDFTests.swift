@@ -117,16 +117,15 @@ final class LargePDFTests: XCTestCase {
 
             pdfController.searchManager.performSearch(term, in: pdfController.document)
 
-            // Wait for search to complete
-            var searchAttempts = 0
-            while pdfController.searchManager.isSearching && searchAttempts < 100 {
-                try await Task.sleep(nanoseconds: 100_000_000)
-                searchAttempts += 1
+            // Wait for search to complete with bounded timeout (5s)
+            let deadline = CFAbsoluteTimeGetCurrent() + 5.0
+            while pdfController.searchManager.isSearching && CFAbsoluteTimeGetCurrent() < deadline {
+                try await Task.sleep(nanoseconds: 50_000_000)
             }
 
             let searchTime = CFAbsoluteTimeGetCurrent() - startTime
 
-            XCTAssertLessThan(searchTime, 10.0, "Search for '\(term)' should complete within 10 seconds")
+            XCTAssertLessThan(searchTime, 5.0, "Search for '\(term)' should complete within 5 seconds")
             XCTAssertFalse(pdfController.searchManager.isSearching, "Search should complete")
         }
     }

@@ -177,13 +177,14 @@ final class ErrorRecoveryTests: XCTestCase {
     // MARK: - Session Recovery Tests
     
     func testResetCorruptedState() async {
-        // Seed a DevReader key and verify it gets cleared
-        UserDefaults.standard.set("test", forKey: "DevReader.TestKey.v1")
-        XCTAssertNotNil(UserDefaults.standard.string(forKey: "DevReader.TestKey.v1"))
+        // resetCorruptedState clears temp repair directory only (UserDefaults sweep was removed as unsafe)
+        let repairDir = FileManager.default.temporaryDirectory.appendingPathComponent("DevReaderRepair")
+        try? FileManager.default.createDirectory(at: repairDir, withIntermediateDirectories: true)
+        try? Data("test".utf8).write(to: repairDir.appendingPathComponent("dummy.pdf"))
 
         let success = await ErrorRecoveryService.resetCorruptedState()
         XCTAssertTrue(success, "Corrupted state reset should succeed")
-        XCTAssertNil(UserDefaults.standard.string(forKey: "DevReader.TestKey.v1"), "DevReader keys should be cleared")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: repairDir.path), "Repair directory should be removed")
     }
     
     // MARK: - Integration Tests

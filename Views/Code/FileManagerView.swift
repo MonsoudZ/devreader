@@ -11,9 +11,6 @@ struct FileManagerView: View {
 	@State private var files: [URL] = []
 	@State private var selectedFile: URL?
 
-	private static let recentFilesKey = "DevReader.Code.RecentFiles.v1"
-	private static let maxRecentFiles = 20
-
 	var body: some View {
 		VStack {
 			HStack {
@@ -68,24 +65,7 @@ struct FileManagerView: View {
 			}
 		}
 		.frame(width: 500, height: 400)
-		.onAppear { loadRecentFiles() }
-	}
-
-	private func loadRecentFiles() {
-		guard let paths = UserDefaults.standard.stringArray(forKey: Self.recentFilesKey) else {
-			files = []
-			return
-		}
-		files = paths.compactMap { URL(fileURLWithPath: $0) }
-			.filter { FileManager.default.fileExists(atPath: $0.path) }
-	}
-
-	private static func addToRecentFiles(_ url: URL) {
-		var paths = UserDefaults.standard.stringArray(forKey: recentFilesKey) ?? []
-		paths.removeAll { $0 == url.path }
-		paths.insert(url.path, at: 0)
-		if paths.count > maxRecentFiles { paths = Array(paths.prefix(maxRecentFiles)) }
-		UserDefaults.standard.set(paths, forKey: recentFilesKey)
+		.onAppear { files = CodeFileService.loadRecentFiles() }
 	}
 
 	private func openFile() {
@@ -103,17 +83,15 @@ struct FileManagerView: View {
 
 	private func loadFile(_ url: URL) {
 		do {
-			let content = try String(contentsOf: url, encoding: .utf8)
+			let content = try CodeFileService.loadFile(at: url)
 			savedCode = content
 			currentFileName = url.lastPathComponent
 
-			// Detect language from file extension
-			let ext = url.pathExtension.lowercased()
-			if let lang = CodeLang.allCases.first(where: { $0.fileExtension == ext }) {
+			if let lang = CodeFileService.detectLanguage(for: url) {
 				selectedLanguage = lang
 			}
 
-			Self.addToRecentFiles(url)
+			CodeFileService.addToRecentFiles(url)
 			dismiss()
 		} catch {
 			logError(AppLog.code, "Error loading file: \(error)")
@@ -130,8 +108,8 @@ struct FileManagerView: View {
 		guard let file = selectedFile else { return }
 
 		do {
-			try FileManager.default.removeItem(at: file)
-			loadRecentFiles()
+			try CodeFileService.deleteFileWithConfirmation(file)
+			files = CodeFileService.loadRecentFiles()
 		} catch {
 			logError(AppLog.code, "Error deleting file: \(error)")
 		}

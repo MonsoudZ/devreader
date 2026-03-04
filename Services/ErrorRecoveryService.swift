@@ -192,21 +192,15 @@ nonisolated enum ErrorRecoveryService {
     // MARK: - Session Recovery
     static func resetCorruptedState() async -> Bool {
         os_log("Starting corrupted state reset", log: logger, type: .info)
-        
+
         do {
-            // Clear all DevReader UserDefaults keys (including per-document suffixed keys)
-            let allKeys = UserDefaults.standard.dictionaryRepresentation().keys
-            for key in allKeys where key.hasPrefix("DevReader.") {
-                UserDefaults.standard.removeObject(forKey: key)
-            }
-            
-            // Clear temporary files
+            // Clear temporary repair files
             let tempDir = FileManager.default.temporaryDirectory
             let repairDir = tempDir.appendingPathComponent("DevReaderRepair")
             if FileManager.default.fileExists(atPath: repairDir.path) {
                 try FileManager.default.removeItem(at: repairDir)
             }
-            
+
             os_log("Session recovery completed successfully", log: logger, type: .info)
             return true
         } catch {

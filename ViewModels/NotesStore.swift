@@ -10,11 +10,15 @@ final class NotesStore: ObservableObject {
 
 	private var currentPDFURL: URL?
 	private let persistenceService: NotesPersistenceProtocol
-	private var persistWorkItem: DispatchWorkItem?
+	nonisolated(unsafe) private var persistWorkItem: DispatchWorkItem?
 	private var isLoading = false
 
 	init(persistenceService: NotesPersistenceProtocol? = nil) {
 		self.persistenceService = persistenceService ?? NotesPersistenceService()
+	}
+
+	deinit {
+		persistWorkItem?.cancel()
 	}
 
 	func setCurrentPDF(_ url: URL?) {

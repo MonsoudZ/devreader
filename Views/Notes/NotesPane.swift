@@ -6,25 +6,40 @@ import AppKit
 struct NotesPane: View {
 	@ObservedObject var pdf: PDFController
 	@ObservedObject var notes: NotesStore
+	@ObservedObject var bookmarkManager: PDFBookmarkManager
+	@ObservedObject var outlineManager: PDFOutlineManager
+	var toastCenter: EnhancedToastCenter
+
 	@State private var filter = ""
 	@State private var showPageNotes = true
-    // Export filters
-    @State private var selectedTag: String? = nil
-    @State private var filterBookmarks = false
-    @State private var useDateFilter = false
-    @State private var dateFrom: Date = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
-    @State private var dateTo: Date = Date()
-    @AppStorage("notes.exportPresets") private var exportPresetsRaw: String = "[]"
+
+	// Export filters
+	@State private var selectedTag: String? = nil
+	@State private var filterBookmarks = false
+	@State private var useDateFilter = false
+	@State private var dateFrom: Date = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
+	@State private var dateTo: Date = Date()
+	@AppStorage("notes.exportPresets") private var exportPresetsRaw: String = "[]"
+
 	@State private var isExporting = false
 	@State private var exportProgress: Double = 0.0
 	@State private var exportStatus: String = ""
 	@State private var showingPresetSheet = false
 	@State private var presetName = ""
-	
 	@State private var showingFilterPopover = false
 
 	private var hasActiveFilters: Bool {
 		selectedTag != nil || filterBookmarks || useDateFilter
+	}
+
+	private var currentExportFilter: ExportFilter {
+		ExportFilter(
+			selectedTag: selectedTag,
+			filterBookmarks: filterBookmarks,
+			useDateFilter: useDateFilter,
+			dateFrom: dateFrom,
+			dateTo: dateTo
+		)
 	}
 
 	var body: some View {
@@ -56,7 +71,7 @@ struct NotesPane: View {
 				.accessibilityLabel("Filter options")
 				.accessibilityHint("Show export and filter options")
 				Button {
-					Task { await exportMarkdownAsync() }
+					Task { await exportMarkdown() }
 				} label: {
 					Label("Export MD", systemImage: "square.and.arrow.up")
 				}
@@ -67,7 +82,7 @@ struct NotesPane: View {
 				.accessibilityHint("Export notes to Markdown format")
 				.disabled(isExporting)
 			}.padding(8)
-			
+
 			// Export progress indicator
 			if isExporting {
 				VStack(spacing: 8) {
@@ -85,7 +100,7 @@ struct NotesPane: View {
 				.padding(.horizontal, 8)
 				.padding(.bottom, 4)
 			}
-			
+
 			if let doc = pdf.document, let url = doc.documentURL {
 				HStack {
 					Image(systemName: "doc.text.fill").foregroundStyle(.blue)
@@ -94,7 +109,7 @@ struct NotesPane: View {
 				}
 				.padding(.horizontal, 8).padding(.bottom, 4)
 			}
-			
+
 			Divider()
 			if pdf.document == nil {
 				VStack(spacing: 12) {
@@ -113,43 +128,45 @@ struct NotesPane: View {
 				.frame(maxWidth: .infinity)
 				.accessibilityElement(children: .combine)
 			} else {
-			ScrollView {
-				LazyVStack(alignment: .leading, spacing: 12) {
-					if showPageNotes { pageNotesEditor }
-					Divider()
-					if !pdf.bookmarkManager.bookmarks.isEmpty {
-						VStack(alignment: .leading, spacing: 6) {
-							Text("Bookmarks").font(.headline)
-							ForEach(Array(pdf.bookmarkManager.bookmarks).sorted(), id: \.self) { pageIndex in
-								HStack {
-									Image(systemName: "bookmark.fill").foregroundStyle(.blue)
-									Text("Page \(pageIndex + 1)").font(.body)
-									Spacer()
-									Button("Go") { pdf.goToPage(pageIndex) }
-										.buttonStyle(.bordered).controlSize(.small)
+				ScrollView {
+					LazyVStack(alignment: .leading, spacing: 12) {
+						if showPageNotes { pageNotesEditor }
+						Divider()
+						if !bookmarkManager.bookmarks.isEmpty {
+							VStack(alignment: .leading, spacing: 6) {
+								Text("Bookmarks").font(.headline)
+								ForEach(Array(bookmarkManager.bookmarks).sorted(), id: \.self) { pageIndex in
+									HStack {
+										Image(systemName: "bookmark.fill").foregroundStyle(.blue)
+										Text("Page \(pageIndex + 1)").font(.body)
+										Spacer()
+										Button("Go") { pdf.goToPage(pageIndex) }
+											.buttonStyle(.bordered).controlSize(.small)
+									}
+									.padding(.horizontal, 8).padding(.vertical, 4)
+									.background(Color(NSColor.controlBackgroundColor)).cornerRadius(6)
 								}
-								.padding(.horizontal, 8).padding(.vertical, 4)
-								.background(Color(NSColor.controlBackgroundColor)).cornerRadius(6)
 							}
+							.padding(.horizontal, 8)
+							Divider()
 						}
-						.padding(.horizontal, 8)
-						Divider()
-					}
-					ForEach(filteredGroups, id: \.key) { group in
-						VStack(alignment: .leading, spacing: 6) {
-							Text(group.key).font(.headline)
-							ForEach(group.value) { item in
-								NoteRow(item: item, jump: { pdf.goToPage(item.pageIndex) }, notes: notes)
+						ForEach(filteredGroups, id: \.key) { group in
+							VStack(alignment: .leading, spacing: 6) {
+								Text(group.key).font(.headline)
+								ForEach(group.value) { item in
+									NoteRow(item: item, jump: { pdf.goToPage(item.pageIndex) }, notes: notes)
+								}
 							}
+							.padding(.horizontal, 8)
+							Divider()
 						}
-						.padding(.horizontal, 8)
-						Divider()
 					}
 				}
 			}
-			} // else pdf.document != nil
 		}
 	}
+
+	// MARK: - Filter Popover
 
 	private var filterPopoverContent: some View {
 		VStack(alignment: .leading, spacing: 12) {
@@ -197,7 +214,7 @@ struct NotesPane: View {
 					presetName = ""
 					showingPresetSheet = true
 				}
-				let presets = loadPresets()
+				let presets = NotesExportService.loadPresets(from: exportPresetsRaw)
 				if presets.isEmpty { Text("No presets").foregroundStyle(.secondary) }
 				ForEach(presets, id: \.name) { preset in
 					Button(preset.name) { applyPreset(preset) }
@@ -205,7 +222,9 @@ struct NotesPane: View {
 				if !presets.isEmpty {
 					Divider()
 					ForEach(presets, id: \.name) { preset in
-						Button("Delete '\(preset.name)'") { deletePreset(named: preset.name) }
+						Button("Delete '\(preset.name)'") {
+							exportPresetsRaw = NotesExportService.deletePreset(named: preset.name, existing: exportPresetsRaw)
+						}
 					}
 				}
 			}
@@ -217,20 +236,21 @@ struct NotesPane: View {
 		.frame(width: 280)
 	}
 
+	// MARK: - Helpers
+
 	private var filteredGroups: [(key: String, value: [NoteItem])] {
 		let groups = notes.groupedByChapter().map { (key: $0.key, value: $0.value.filter { filter.isEmpty || $0.text.localizedCaseInsensitiveContains(filter) }) }
 		return groups.filter { !$0.value.isEmpty }
 	}
-	
+
 	func addCustomNote() {
 		guard pdf.document != nil else { return }
 		let pageIndex = pdf.currentPageIndex
-		let chapter = pdf.outlineManager.outlineMap[pageIndex] ?? ""
+		let chapter = outlineManager.outlineMap[pageIndex] ?? ""
 		let note = NoteItem(text: "", pageIndex: pageIndex, chapter: chapter)
 		notes.add(note)
-		// NoteRow auto-starts editing for newly created notes
 	}
-	
+
 	var pageNotesEditor: some View {
 		VStack(alignment: .leading, spacing: 4) {
 			if pdf.document != nil {
@@ -255,196 +275,97 @@ struct NotesPane: View {
 				presetName: $presetName,
 				isPresented: $showingPresetSheet,
 				onSave: { name in
-					savePreset(name: name)
+					exportPresetsRaw = NotesExportService.savePreset(name: name, filter: currentExportFilter, existing: exportPresetsRaw)
 				}
 			)
 		}
 	}
-	
-	func exportMarkdownAsync() async {
-		// Present save panel on main actor to avoid blocking
+
+	// MARK: - Export
+
+	private func exportMarkdown() async {
 		guard let saveURL = await FileService.savePlainText(defaultName: "DevReader-Notes.md") else { return }
 
 		isExporting = true
 		exportProgress = 0.0
 		exportStatus = "Preparing export..."
 
-		// Capture current filter values on main actor
-		let currentSelectedTag = selectedTag
-		let currentFilterBookmarks = filterBookmarks
-		let currentUseDateFilter = useDateFilter
-		let currentDateFrom = dateFrom
-		let currentDateTo = dateTo
-		let currentPageNotes = notes.pageNotes
-		let currentNotesItems = notes.items
-		let currentBookmarks = pdf.bookmarkManager.bookmarks
-
-		// Move heavy processing to background thread
-		await Task.detached(priority: .userInitiated) { @Sendable in
-			let df = DateFormatter()
-			df.dateStyle = .short
-			df.timeStyle = .short
-
-			var md = "# Notes Export\n\n"
-
-			await MainActor.run {
-				exportProgress = 0.1
-				exportStatus = "Processing page notes..."
+		let success = await NotesExportService.exportMarkdown(
+			to: saveURL,
+			pageNotes: notes.pageNotes,
+			items: notes.items,
+			bookmarks: bookmarkManager.bookmarks,
+			filter: currentExportFilter,
+			onProgress: { progress, status in
+				exportProgress = progress
+				exportStatus = status
 			}
+		)
 
-			md += "## Page Notes\n\n"
-			let pages = currentPageNotes.keys.sorted()
-			let allowedPages: Set<Int>? = currentFilterBookmarks ? Set(currentBookmarks) : nil
+		if success {
+			exportProgress = 1.0
+			exportStatus = "Export completed successfully!"
+			toastCenter.showSuccess("Export Complete", "Notes exported to \(saveURL.lastPathComponent)")
+		}
 
-			for (index, p) in pages.enumerated() {
-				let text = currentPageNotes[p]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-				let include = allowedPages.map { $0.contains(p) } ?? true
-				if include, !text.isEmpty {
-					md += "### Page \(p+1)\n\n\(text)\n\n"
-				}
-
-				// Update progress
-				await MainActor.run {
-					exportProgress = 0.1 + (0.3 * Double(index) / Double(pages.count))
-				}
-			}
-
-			await MainActor.run {
-				exportProgress = 0.4
-				exportStatus = "Processing notes..."
-			}
-
-			// Filter notes with tag/date/bookmark filters
-			let filteredItems = currentNotesItems.filter { item in
-				let tagOk = currentSelectedTag.map { item.tags.contains($0) } ?? true
-				let dateOk = !currentUseDateFilter || (item.date >= Calendar.current.startOfDay(for: currentDateFrom) && item.date <= Calendar.current.date(byAdding: DateComponents(day: 1, second: -1), to: Calendar.current.startOfDay(for: currentDateTo)) ?? currentDateTo)
-				let bmOk = allowedPages.map { $0.contains(item.pageIndex) } ?? true
-				return tagOk && dateOk && bmOk
-			}
-
-			await MainActor.run {
-				exportProgress = 0.6
-				exportStatus = "Grouping notes by chapter..."
-			}
-
-			let grouped = Dictionary(grouping: filteredItems) { $0.chapter.isEmpty ? "(No Chapter)" : $0.chapter }
-				.sorted { $0.key < $1.key }
-
-			for (index, g) in grouped.enumerated() {
-				md += "## \(g.key)\n\n"
-				for n in g.value {
-					md += "- p.\(n.pageIndex + 1) (\(df.string(from: n.date))): \(n.text)\n"
-				}
-				md += "\n"
-
-				// Update progress
-				await MainActor.run {
-					exportProgress = 0.6 + (0.3 * Double(index) / Double(grouped.count))
-				}
-			}
-
-			await MainActor.run {
-				exportProgress = 0.9
-				exportStatus = "Saving file..."
-			}
-
-			// Write to the URL chosen earlier
-			do {
-				try md.data(using: .utf8)?.write(to: saveURL)
-			} catch {
-				await MainActor.run {
-					exportProgress = 0.0
-					exportStatus = "Export failed: \(error.localizedDescription)"
-				}
-				return
-			}
-
-			await MainActor.run {
-				exportProgress = 1.0
-				exportStatus = "Export completed successfully!"
-
-				// Show success toast
-				NotificationCenter.default.post(
-					name: .showToast,
-					object: ToastMessage(
-						message: "Notes exported to \(saveURL.lastPathComponent)",
-						type: .success
-					)
-				)
-			}
-			try? await Task.sleep(nanoseconds: 2_000_000_000)
-			await MainActor.run {
-				isExporting = false
-				exportProgress = 0.0
-				exportStatus = ""
-			}
-		}.value
+		try? await Task.sleep(nanoseconds: 2_000_000_000)
+		isExporting = false
+		exportProgress = 0.0
+		exportStatus = ""
 	}
-    // MARK: - Presets
-    struct ExportPreset: Codable, Equatable { let name: String; let tag: String?; let bookmarks: Bool; let useDate: Bool; let from: Date; let to: Date }
-    private func loadPresets() -> [ExportPreset] { (try? JSONDecoder().decode([ExportPreset].self, from: Data(exportPresetsRaw.utf8))) ?? [] }
-    private func savePresets(_ presets: [ExportPreset]) {
-        if let data = try? JSONEncoder().encode(presets), let s = String(data: data, encoding: .utf8) { exportPresetsRaw = s }
-    }
-    private func savePreset(name: String) {
-        guard !name.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        var presets = loadPresets().filter { $0.name != name }
-        presets.append(ExportPreset(name: name, tag: selectedTag, bookmarks: filterBookmarks, useDate: useDateFilter, from: dateFrom, to: dateTo))
-        savePresets(presets)
-    }
-    private func applyPreset(_ p: ExportPreset) {
-        selectedTag = p.tag
-        filterBookmarks = p.bookmarks
-        useDateFilter = p.useDate
-        dateFrom = p.from
-        dateTo = p.to
-    }
-    private func deletePreset(named: String) { savePresets(loadPresets().filter { $0.name != named }) }
+
+	private func applyPreset(_ p: ExportPreset) {
+		selectedTag = p.tag
+		filterBookmarks = p.bookmarks
+		useDateFilter = p.useDate
+		dateFrom = p.from
+		dateTo = p.to
+	}
 }
 
 // MARK: - PresetSaveSheet
 
 struct PresetSaveSheet: View {
-    @Binding var presetName: String
-    @Binding var isPresented: Bool
-    let onSave: (String) -> Void
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Save Export Preset")
-                .font(.headline)
-            
-            Text("Enter a name for this export filter preset:")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
-            TextField("Preset name", text: $presetName)
-                .textFieldStyle(.roundedBorder)
-                .accessibilityIdentifier("presetNameField")
-                .accessibilityLabel("Preset name")
-                .accessibilityHint("Enter a name for the export filter preset")
-            
-            HStack(spacing: 12) {
-                Button("Cancel") {
-                    isPresented = false
-                }
-                .buttonStyle(.bordered)
-                .accessibilityIdentifier("presetCancel")
-                .accessibilityLabel("Cancel")
-                .accessibilityHint("Cancel saving the preset")
-                
-                Button("Save") {
-                    onSave(presetName)
-                    isPresented = false
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(presetName.trimmingCharacters(in: .whitespaces).isEmpty)
-                .accessibilityIdentifier("presetSave")
-                .accessibilityLabel("Save preset")
-                .accessibilityHint("Save the export filter preset with the entered name")
-            }
-        }
-        .padding(20)
-        .frame(width: 300)
-    }
+	@Binding var presetName: String
+	@Binding var isPresented: Bool
+	let onSave: (String) -> Void
+
+	var body: some View {
+		VStack(spacing: 20) {
+			Text("Save Export Preset")
+				.font(.headline)
+
+			Text("Enter a name for this export filter preset:")
+				.font(.subheadline)
+				.foregroundStyle(.secondary)
+
+			TextField("Preset name", text: $presetName)
+				.textFieldStyle(.roundedBorder)
+				.accessibilityIdentifier("presetNameField")
+				.accessibilityLabel("Preset name")
+				.accessibilityHint("Enter a name for the export filter preset")
+
+			HStack(spacing: 12) {
+				Button("Cancel") {
+					isPresented = false
+				}
+				.buttonStyle(.bordered)
+				.accessibilityIdentifier("presetCancel")
+				.accessibilityLabel("Cancel")
+				.accessibilityHint("Cancel saving the preset")
+
+				Button("Save") {
+					onSave(presetName)
+					isPresented = false
+				}
+				.buttonStyle(.borderedProminent)
+				.disabled(presetName.trimmingCharacters(in: .whitespaces).isEmpty)
+				.accessibilityIdentifier("presetSave")
+				.accessibilityLabel("Save preset")
+				.accessibilityHint("Save the export filter preset with the entered name")
+			}
+		}
+		.padding(20)
+		.frame(width: 300)
+	}
 }

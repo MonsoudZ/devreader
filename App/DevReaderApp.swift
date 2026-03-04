@@ -15,7 +15,7 @@ import AppKit
 @main
 struct DevReaderApp: App {
     // Shared app-wide state (stores, controllers, services)
-    @StateObject private var appEnvironment = AppEnvironment.shared        // central hub
+    @StateObject private var appEnvironment = AppEnvironment()              // DevReaderApp owns the single instance
     // Legacy ToastCenter removed — all toasts now use EnhancedToastCenter
 
     // App appearance
@@ -185,6 +185,7 @@ struct DevReaderApp: App {
             case .inactive, .background:
                 // Flush any pending debounced persistence
                 appEnvironment.pdfController.flushPendingPersistence()
+                appEnvironment.pdfController.annotationManager.flushPendingPersistence()
                 appEnvironment.libraryStore.flushPendingPersistence()
                 appEnvironment.notesStore.flushPendingPersistence()
                 appEnvironment.sketchStore.flushPendingPersistence()

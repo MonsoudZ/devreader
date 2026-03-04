@@ -14,7 +14,7 @@ class ErrorMessageManager: ObservableObject {
     
     private let logger = AppLog.app
     
-    private init() {}
+    init() {}
     
     // MARK: - Error Display
     

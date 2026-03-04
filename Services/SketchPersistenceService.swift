@@ -9,7 +9,11 @@ protocol SketchPersistenceProtocol {
 
 @MainActor
 final class SketchPersistenceService: SketchPersistenceProtocol {
-    private let persistenceService = EnhancedPersistenceService.shared
+    private let persistenceService: EnhancedPersistenceService
+
+    init(persistenceService: EnhancedPersistenceService = .shared) {
+        self.persistenceService = persistenceService
+    }
     private let sketchesKey = "DevReader.Sketches.v1"
 
     func saveSketches(_ sketches: [SketchItem]) throws {

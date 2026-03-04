@@ -5,18 +5,10 @@ import AppKit
 struct MonacoWebEditor: View {
 	@Environment(\.colorScheme) private var colorScheme
 	@AppStorage("monacoCode") private var savedCode: String = ""
-	@State private var useFallback = false
-	@State private var isMonacoLoaded = false
-	@State private var loadTimeoutTask: Task<Void, Never>?
-	@State private var selectedLanguage: CodeLang = .python
-	@State private var output: String = ""
-	@State private var isRunning = false
-	@State private var showFileManager = false
-	@State private var currentFileName = "untitled"
-	@State private var showExportOptions = false
+	@StateObject private var vm = MonacoEditorViewModel()
 
 	private func html(_ initial: String) -> String {
-		let language = selectedLanguage.monacoLanguage
+		let language = vm.selectedLanguage.monacoLanguage
 		return """
 		<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">
 		<style>html,body,#container{height:100%;margin:0}#container{display:flex;flex-direction:column}#editor{flex:1;}</style>
@@ -53,7 +45,7 @@ struct MonacoWebEditor: View {
 		VStack(spacing: 0) {
 			// Toolbar
 			HStack {
-				Picker("Language", selection: $selectedLanguage) {
+				Picker("Language", selection: $vm.selectedLanguage) {
 					ForEach(CodeLang.allCases, id: \.self) { lang in
 						Text(lang.rawValue).tag(lang)
 					}
@@ -64,16 +56,16 @@ struct MonacoWebEditor: View {
 				.accessibilityLabel("Programming language")
 				.accessibilityHint("Select the programming language for the editor")
 
-				Button("Run") { executeCode() }
+				Button("Run") { vm.executeCode(source: savedCode) }
 					.buttonStyle(.borderedProminent)
 					.controlSize(.small)
-					.disabled(isRunning)
+					.disabled(vm.isRunning)
 					.accessibilityIdentifier("monacoRunButton")
 					.accessibilityLabel("Run code")
 					.accessibilityHint("Execute the code in the editor")
 
 				Button {
-					saveFile()
+					vm.saveFile(code: savedCode)
 				} label: {
 					Label("Save", systemImage: "square.and.arrow.down")
 				}
@@ -84,7 +76,7 @@ struct MonacoWebEditor: View {
 				.accessibilityHint("Save the current code to a file")
 
 				Button {
-					showFileManager = true
+					vm.showFileManager = true
 				} label: {
 					Label("Load", systemImage: "folder")
 				}
@@ -95,7 +87,7 @@ struct MonacoWebEditor: View {
 				.accessibilityHint("Open the file manager to load a file")
 
 				Button {
-					showExportOptions = true
+					vm.showExportOptions = true
 				} label: {
 					Label("Export", systemImage: "square.and.arrow.up")
 				}
@@ -107,7 +99,7 @@ struct MonacoWebEditor: View {
 
 				Spacer()
 
-				Text(currentFileName)
+				Text(vm.currentFileName)
 					.font(.caption)
 					.foregroundColor(.secondary)
 			}
@@ -120,31 +112,21 @@ struct MonacoWebEditor: View {
 			HStack(spacing: 0) {
 				// Editor
 				VStack(spacing: 0) {
-					if useFallback {
+					if vm.useFallback {
 						FallbackCodeEditor(code: $savedCode, onRetryMonaco: {
-							useFallback = false
-							isMonacoLoaded = false
+							vm.retryMonaco()
 						})
 					} else {
-						WebViewHTML(html: html(savedCode), savedCode: savedCode, language: selectedLanguage.monacoLanguage, theme: colorScheme == .dark ? "vs-dark" : "vs", onCodeChange: { newCode in
+						WebViewHTML(html: html(savedCode), savedCode: savedCode, language: vm.selectedLanguage.monacoLanguage, theme: colorScheme == .dark ? "vs-dark" : "vs", onCodeChange: { newCode in
 							savedCode = newCode
 						}, onEditorReady: {
-							isMonacoLoaded = true
-							loadTimeoutTask?.cancel()
-							LoadingStateManager.shared.stopMonacoLoading()
+							vm.onEditorReady()
 						})
 						.onAppear {
-							LoadingStateManager.shared.startMonacoLoading("Initializing Monaco editor...")
-							loadTimeoutTask?.cancel()
-							loadTimeoutTask = Task { @MainActor in
-								try? await Task.sleep(nanoseconds: 8_000_000_000) // 8 seconds
-								guard !Task.isCancelled, !isMonacoLoaded else { return }
-								useFallback = true
-								LoadingStateManager.shared.stopMonacoLoading()
-							}
+							vm.startMonacoLoadTimeout()
 						}
 						.onDisappear {
-							loadTimeoutTask?.cancel()
+							vm.cancelMonacoLoadTimeout()
 						}
 					}
 				}
@@ -158,7 +140,7 @@ struct MonacoWebEditor: View {
 							.padding(.horizontal, 8)
 							.padding(.vertical, 4)
 						Spacer()
-						Button("Clear") { output = "" }
+						Button("Clear") { vm.output = "" }
 							.font(.caption)
 							.padding(.horizontal, 8)
 							.accessibilityIdentifier("monacoClearOutput")
@@ -168,7 +150,7 @@ struct MonacoWebEditor: View {
 					.background(Color(NSColor.controlBackgroundColor))
 
 					ScrollView {
-						Text(output)
+						Text(vm.output)
 							.font(.system(.footnote, design: .monospaced))
 							.padding(8)
 							.frame(maxWidth: .infinity, alignment: .leading)
@@ -178,61 +160,19 @@ struct MonacoWebEditor: View {
 				.frame(width: 300)
 			}
 		}
-		.sheet(isPresented: $showFileManager) {
+		.sheet(isPresented: $vm.showFileManager) {
 			FileManagerView(
-				selectedLanguage: $selectedLanguage,
+				selectedLanguage: $vm.selectedLanguage,
 				savedCode: $savedCode,
-				currentFileName: $currentFileName
+				currentFileName: $vm.currentFileName
 			)
 		}
-		.sheet(isPresented: $showExportOptions) {
+		.sheet(isPresented: $vm.showExportOptions) {
 			ExportOptionsView(
 				code: savedCode,
-				language: selectedLanguage,
-				fileName: currentFileName
+				language: vm.selectedLanguage,
+				fileName: vm.currentFileName
 			)
-		}
-
-	}
-
-	// MARK: - Helper Functions
-
-	private func executeCode() {
-		isRunning = true
-		output = ""
-		LoadingStateManager.shared.startLoading(.general, message: "Running \(selectedLanguage.rawValue) code...")
-		let lang = selectedLanguage.rawValue
-		let source = savedCode
-		Task.detached(priority: .userInitiated) {
-			let result = Shell.runCode(lang, code: source)
-			await MainActor.run {
-				self.output = result
-				self.isRunning = false
-				LoadingStateManager.shared.stopLoading(.general)
-			}
-		}
-	}
-
-	private func saveFile() {
-		LoadingStateManager.shared.startFileOperation("Saving file...")
-
-		let panel = NSSavePanel()
-		panel.allowedContentTypes = [UTType(filenameExtension: selectedLanguage.fileExtension) ?? .plainText]
-		panel.nameFieldStringValue = currentFileName
-
-		panel.begin { response in
-			if response == .OK, let url = panel.url {
-				do {
-					try savedCode.write(to: url, atomically: true, encoding: .utf8)
-					currentFileName = url.lastPathComponent
-					LoadingStateManager.shared.stopFileOperation()
-				} catch {
-					output = "Error saving file: \(error.localizedDescription)"
-					LoadingStateManager.shared.stopFileOperation()
-				}
-			} else {
-				LoadingStateManager.shared.stopFileOperation()
-			}
 		}
 	}
 }

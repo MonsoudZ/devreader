@@ -1,10 +1,10 @@
 import XCTest
 import PDFKit
+import Combine
 @testable import DevReader
 
 /// Integration tests verifying the wiring between AppEnvironment components.
-/// Since AppEnvironment uses a private singleton init, these tests verify
-/// the same wiring patterns by constructing components manually.
+/// Each test creates a fresh, isolated AppEnvironment instance.
 @MainActor
 final class AppEnvironmentTests: XCTestCase {
 
@@ -14,6 +14,7 @@ final class AppEnvironmentTests: XCTestCase {
         let mockPersistence = MockNotesPersistenceService()
         let notes = NotesStore(persistenceService: mockPersistence)
         let pdf = PDFController()
+        addTeardownBlock { [notes, pdf] in _ = notes; _ = pdf }
 
         // Replicate AppEnvironment wiring
         pdf.onPDFChanged = { [weak notes] url in
@@ -37,6 +38,7 @@ final class AppEnvironmentTests: XCTestCase {
         let mockPersistence = MockNotesPersistenceService()
         let notes = NotesStore(persistenceService: mockPersistence)
         let pdf = PDFController()
+        addTeardownBlock { [notes, pdf] in _ = notes; _ = pdf }
 
         pdf.onPDFChanged = { [weak notes] url in
             notes?.setCurrentPDF(url)
@@ -58,6 +60,7 @@ final class AppEnvironmentTests: XCTestCase {
         let mockPersistence = MockNotesPersistenceService()
         let notes = NotesStore(persistenceService: mockPersistence)
         let pdf = PDFController()
+        addTeardownBlock { [notes, pdf] in _ = notes; _ = pdf }
 
         pdf.onPDFChanged = { [weak notes] url in
             notes?.setCurrentPDF(url)
@@ -81,6 +84,7 @@ final class AppEnvironmentTests: XCTestCase {
 
     func testClearSessionTriggersOnPDFChangedNil() {
         let pdf = PDFController()
+        addTeardownBlock { [pdf] in _ = pdf }
         var receivedURL: URL?? = .none // Distinguish "not called" from "called with nil"
 
         pdf.onPDFChanged = { url in
@@ -97,6 +101,7 @@ final class AppEnvironmentTests: XCTestCase {
 
     func testEnhancedToastCenterShowsSuccess() {
         let toastCenter = EnhancedToastCenter()
+        addTeardownBlock { [toastCenter] in _ = toastCenter }
 
         toastCenter.showSuccess("Title", "Message")
 
@@ -106,6 +111,7 @@ final class AppEnvironmentTests: XCTestCase {
 
     func testEnhancedToastCenterShowsError() {
         let toastCenter = EnhancedToastCenter()
+        addTeardownBlock { [toastCenter] in _ = toastCenter }
 
         toastCenter.showError("Error Title", "Error message")
 
@@ -115,25 +121,18 @@ final class AppEnvironmentTests: XCTestCase {
     // MARK: - Sheet Toggles
 
     func testOpenHelpSetsShowingHelp() {
-        let env = AppEnvironment.shared
+        let env = AppEnvironment()
+        addTeardownBlock { [env] in _ = env }
 
         env.isShowingHelp = false
         env.openHelp()
 
         XCTAssertTrue(env.isShowingHelp, "openHelp() should set isShowingHelp to true")
-
-        // Reset
-        env.isShowingHelp = false
     }
 
     func testSheetTogglesDefaultToFalse() {
-        let env = AppEnvironment.shared
-
-        // Reset state
-        env.isShowingOnboarding = false
-        env.isShowingSettings = false
-        env.isShowingHelp = false
-        env.isShowingAbout = false
+        let env = AppEnvironment()
+        addTeardownBlock { [env] in _ = env }
 
         XCTAssertFalse(env.isShowingOnboarding)
         XCTAssertFalse(env.isShowingSettings)
@@ -144,7 +143,8 @@ final class AppEnvironmentTests: XCTestCase {
     // MARK: - Component Initialization
 
     func testAppEnvironmentHasAllComponents() {
-        let env = AppEnvironment.shared
+        let env = AppEnvironment()
+        addTeardownBlock { [env] in _ = env }
 
         XCTAssertNotNil(env.pdfController, "PDFController should be initialized")
         XCTAssertNotNil(env.libraryStore, "LibraryStore should be initialized")
@@ -155,7 +155,8 @@ final class AppEnvironmentTests: XCTestCase {
     }
 
     func testPDFControllerHasOnPDFChangedWired() {
-        let env = AppEnvironment.shared
+        let env = AppEnvironment()
+        addTeardownBlock { [env] in _ = env }
 
         XCTAssertNotNil(env.pdfController.onPDFChanged,
                         "onPDFChanged should be wired in AppEnvironment")
@@ -164,7 +165,8 @@ final class AppEnvironmentTests: XCTestCase {
     // MARK: - Lifecycle Flush
 
     func testFlushPendingPersistenceDoesNotCrash() {
-        let env = AppEnvironment.shared
+        let env = AppEnvironment()
+        addTeardownBlock { [env] in _ = env }
 
         // Verify all four flush methods can be called without crashing
         env.pdfController.flushPendingPersistence()
@@ -175,22 +177,29 @@ final class AppEnvironmentTests: XCTestCase {
 
     // MARK: - PDF Load Error Notification
 
-    func testPDFLoadErrorNotificationPosted() async {
-        let expectation = expectation(forNotification: .pdfLoadError, object: nil)
+    func testPDFLoadErrorPublisherFires() async {
+        let pdfController = PDFController()
+        addTeardownBlock { [pdfController] in _ = pdfController }
+        let invalidURL = URL(fileURLWithPath: "/nonexistent/path/test.pdf")
+
+        let expectation = XCTestExpectation(description: "pdfLoadErrorPublisher should fire")
         expectation.assertForOverFulfill = false
 
-        let pdfController = PDFController()
-        let invalidURL = URL(fileURLWithPath: "/nonexistent/path/test.pdf")
+        let cancellable = pdfController.pdfLoadErrorPublisher.sink { _ in
+            expectation.fulfill()
+        }
 
         pdfController.load(url: invalidURL)
 
         await fulfillment(of: [expectation], timeout: 3.0)
+        _ = cancellable
     }
 
     // MARK: - Memory Pressure Handling
 
     func testMemoryPressureNotificationDoesNotCrash() {
         let pdfController = PDFController()
+        addTeardownBlock { [pdfController] in _ = pdfController }
 
         // Post memory pressure notification
         NotificationCenter.default.post(name: .memoryPressure, object: nil)

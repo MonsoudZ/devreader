@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 import AppKit
 
 // Right panel tabs — raw values are stored by @AppStorage; do not rename without migration.
-enum RightTab: String {
+nonisolated enum RightTab: String {
     case notes, code, web
 }
 
@@ -27,7 +27,6 @@ struct ContentView: View {
 
     // Autosave timer: we recreate it whenever the interval changes
     @State private var autosaveCancellable: AnyCancellable?
-    @State private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Computed Properties
 
@@ -53,9 +52,9 @@ struct ContentView: View {
                 LibraryPane(
                     library: appEnvironment.libraryStore,
                     pdf: appEnvironment.pdfController,
+                    toastCenter: appEnvironment.enhancedToastCenter,
                     open: { item in
-                        appEnvironment.pdfController.open(url: item.url)
-                        NotificationCenter.default.post(name: .currentPDFURLDidChange, object: nil, userInfo: ["url": item.url])
+                        appEnvironment.pdfController.load(libraryItem: item)
                     }
                 )
                 .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
@@ -140,23 +139,45 @@ struct ContentView: View {
         .onAppear {
             columnVisibility = showingLibrary ? .all : .detailOnly
             setupAutosaveTimer()
-            wireInternalNotifications()
+
+            // Register command callbacks
+            appEnvironment.onOpenPDF = { openPDF() }
+            appEnvironment.onImportPDFs = { importPDFs() }
+            appEnvironment.onToggleLibrary = { withAnimation { showingLibrary.toggle() } }
+            appEnvironment.onToggleNotes = {
+                withAnimation { showingRightPanel = true }
+                rightTab = .notes
+            }
+            appEnvironment.onToggleSearch = {
+                let wasShowing = showingSearch
+                withAnimation { showingSearch.toggle() }
+                if wasShowing {
+                    appEnvironment.pdfController.searchManager.clearSearch()
+                }
+            }
         }
-        // Command signal observers (replace NotificationCenter-based menu routing)
-        .onChange(of: appEnvironment.openPDFSignal) { _, _ in openPDF() }
-        .onChange(of: appEnvironment.importPDFsSignal) { _, _ in importPDFs() }
-        .onChange(of: appEnvironment.toggleLibrarySignal) { _, _ in
-            withAnimation { showingLibrary.toggle() }
+        // Internal event publishers from PDFController (replace NotificationCenter)
+        .onReceive(appEnvironment.pdfController.pdfLoadErrorPublisher) { url in
+            appEnvironment.enhancedToastCenter.showError(
+                "PDF Load Failed",
+                "Could not open \"\(url.lastPathComponent)\". The file may be missing, corrupted, or inaccessible.",
+                category: .fileOperation,
+                duration: 6
+            )
         }
-        .onChange(of: appEnvironment.toggleNotesSignal) { _, _ in
-            withAnimation { showingRightPanel = true }
-            rightTab = .notes
+        .onReceive(appEnvironment.pdfController.noteRequestPublisher) { note in
+            appEnvironment.notesStore.add(note)
         }
-        .onChange(of: appEnvironment.toggleSearchSignal) { _, _ in
-            let wasShowing = showingSearch
-            withAnimation { showingSearch.toggle() }
-            if wasShowing {
-                appEnvironment.pdfController.searchManager.clearSearch()
+        .onReceive(appEnvironment.pdfController.toastRequestPublisher) { toast in
+            switch toast.type {
+            case .success:
+                appEnvironment.enhancedToastCenter.showSuccess("Success", toast.message)
+            case .error:
+                appEnvironment.enhancedToastCenter.showError("Error", toast.message)
+            case .warning:
+                appEnvironment.enhancedToastCenter.showWarning("Warning", toast.message)
+            case .info:
+                appEnvironment.enhancedToastCenter.showInfo("Info", toast.message)
             }
         }
         .onChange(of: showingLibrary) { _, newValue in
@@ -192,7 +213,7 @@ struct ContentView: View {
             Group {
                 switch rightTab {
                 case .notes:
-                    NotesPane(pdf: appEnvironment.pdfController, notes: appEnvironment.notesStore)
+                    NotesPane(pdf: appEnvironment.pdfController, notes: appEnvironment.notesStore, bookmarkManager: appEnvironment.pdfController.bookmarkManager, outlineManager: appEnvironment.pdfController.outlineManager, toastCenter: appEnvironment.enhancedToastCenter)
                 case .code:
                     CodePane()
                 case .web:
@@ -202,50 +223,6 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(Color(NSColor.windowBackgroundColor))
-    }
-
-    // MARK: - Internal Notification Wiring
-    /// Subscribes to internal notifications (addNote, showToast, pdfLoadError) that are
-    /// posted from various parts of the app — NOT from menu commands.
-    private func wireInternalNotifications() {
-        guard cancellables.isEmpty else { return }
-
-        NotificationCenter.default.publisher(for: .addNote)
-            .sink { notification in
-                if let note = notification.object as? NoteItem {
-                    appEnvironment.notesStore.add(note)
-                }
-            }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .showToast)
-            .sink { notification in
-                if let toast = notification.object as? ToastMessage {
-                    switch toast.type {
-                    case .success:
-                        appEnvironment.enhancedToastCenter.showSuccess("Success", toast.message)
-                    case .error:
-                        appEnvironment.enhancedToastCenter.showError("Error", toast.message)
-                    case .warning:
-                        appEnvironment.enhancedToastCenter.showWarning("Warning", toast.message)
-                    case .info:
-                        appEnvironment.enhancedToastCenter.showInfo("Info", toast.message)
-                    }
-                }
-            }
-            .store(in: &cancellables)
-
-        NotificationCenter.default.publisher(for: .pdfLoadError)
-            .sink { notification in
-                let filename = (notification.object as? URL)?.lastPathComponent ?? "Unknown file"
-                appEnvironment.enhancedToastCenter.showError(
-                    "PDF Load Failed",
-                    "Could not open \"\(filename)\". The file may be missing, corrupted, or inaccessible.",
-                    category: .fileOperation,
-                    duration: 6
-                )
-            }
-            .store(in: &cancellables)
     }
 
     // MARK: - Autosave
@@ -259,7 +236,7 @@ struct ContentView: View {
             .autoconnect()
             .sink { _ in
                 Task { @MainActor in
-                    await LibraryPersistenceService.shared.saveLibraryItems(appEnvironment.libraryStore.items)
+                    await appEnvironment.libraryStore.backgroundService.saveLibraryItems(appEnvironment.libraryStore.items)
                 }
             }
     }
@@ -275,7 +252,6 @@ struct ContentView: View {
             DispatchQueue.main.async {
                 guard resp == .OK, let url = panel.url else { return }
                 appEnvironment.pdfController.open(url: url)
-                NotificationCenter.default.post(name: .currentPDFURLDidChange, object: nil, userInfo: ["url": url])
                 appEnvironment.libraryStore.add(urls: [url])
             }
         }
@@ -292,9 +268,9 @@ struct ContentView: View {
                 guard resp == .OK else { return }
                 let urls = panel.urls
                 Task { @MainActor in
-                    LoadingStateManager.shared.startImport("Importing PDFs\u{2026}")
-                    defer { LoadingStateManager.shared.stopImport() }
-                    _ = await LibraryPersistenceService.shared.importPDFs(urls)
+                    appEnvironment.loadingStateManager.startImport("Importing PDFs\u{2026}")
+                    defer { appEnvironment.loadingStateManager.stopImport() }
+                    _ = await appEnvironment.libraryStore.backgroundService.importPDFs(urls)
                     appEnvironment.libraryStore.add(urls: urls)
                 }
             }
@@ -314,7 +290,6 @@ struct ContentView: View {
                 else { return }
                 DispatchQueue.main.async {
                     appEnvironment.pdfController.open(url: url)
-                    NotificationCenter.default.post(name: .currentPDFURLDidChange, object: nil, userInfo: ["url": url])
                     appEnvironment.libraryStore.add(urls: [url])
                 }
             }

@@ -44,15 +44,15 @@ final class EnhancedPersistenceTests: XCTestCase {
         try? FileManager.default.removeItem(at: subdir2)
     }
     
-    func testKeyGenerationUsesPathOnly() async {
+    func testKeyGenerationUsesContentFingerprint() async {
         let pdf = createTempPDF(name: "test_attrs.pdf", content: "Original content")
         let key1 = persistenceService.generateKey("test.notes", for: pdf)
 
-        // Modify file content — key should NOT change (path-only hashing by design)
+        // Modify file content — key SHOULD change (content-based fingerprinting)
         try? "Modified content".write(to: pdf, atomically: true, encoding: .utf8)
         let key2 = persistenceService.generateKey("test.notes", for: pdf)
 
-        XCTAssertEqual(key1, key2, "Key should be stable when only file content changes (path-based hashing)")
+        XCTAssertNotEqual(key1, key2, "Key should change when file content changes (content-based fingerprinting)")
 
         // Clean up
         try? FileManager.default.removeItem(at: pdf)
@@ -93,26 +93,27 @@ final class EnhancedPersistenceTests: XCTestCase {
     func testAtomicWriteWithCorruption() async {
         let testData = ["key1": "value1", "key2": "value2"]
         let pdf = createTempPDF(name: "test.pdf", content: "Content")
-        
+
         do {
             try persistenceService.saveCodable(testData, forKey: "test.corruption", url: pdf)
-            
-            // Corrupt the file
-            let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("test.corruption.\(PersistenceService.stableHash(for: pdf)).json")
+
+            // Corrupt the file using the actual generated key
+            let actualKey = persistenceService.generateKey("test.corruption", for: pdf)
+            let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(actualKey).json")
             try? "corrupted data".write(to: fileURL, atomically: true, encoding: .utf8)
-            
+
             // Try to load corrupted data
             let loadedData: [String: String]? = persistenceService.loadCodable([String: String].self, forKey: "test.corruption", url: pdf)
             XCTAssertNil(loadedData, "Corrupted data should not be loaded")
-            
+
             // Validate data integrity
             let isValid = persistenceService.validateData(forKey: "test.corruption", url: pdf)
             XCTAssertFalse(isValid, "Corrupted data should be invalid")
-            
+
         } catch {
             XCTFail("Test setup should succeed: \(error)")
         }
-        
+
         // Clean up
         try? FileManager.default.removeItem(at: pdf)
     }
@@ -212,22 +213,23 @@ final class EnhancedPersistenceTests: XCTestCase {
     
     func testDataRecovery() async {
         let pdf = createTempPDF(name: "test.pdf", content: "Content")
-        
+
         // Save some data
         let testData = ["key1": "value1"]
         try? persistenceService.saveCodable(testData, forKey: "test.recovery", url: pdf)
-        
-        // Corrupt the data
-        let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("test.recovery.\(PersistenceService.stableHash(for: pdf)).json")
+
+        // Corrupt the data using the actual generated key
+        let actualKey = persistenceService.generateKey("test.recovery", for: pdf)
+        let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(actualKey).json")
         try? "corrupted data".write(to: fileURL, atomically: true, encoding: .utf8)
-        
+
         // Attempt recovery
         persistenceService.recoverCorruptedData(forKey: "test.recovery", url: pdf)
-        
+
         // Verify data was cleared
         let loadedData: [String: String]? = persistenceService.loadCodable([String: String].self, forKey: "test.recovery", url: pdf)
         XCTAssertNil(loadedData, "Corrupted data should be cleared after recovery")
-        
+
         // Clean up
         try? FileManager.default.removeItem(at: pdf)
     }

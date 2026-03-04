@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 struct LibraryPane: View {
 	@ObservedObject var library: LibraryStore
 	@ObservedObject var pdf: PDFController
+	var toastCenter: EnhancedToastCenter
 	var open: (LibraryItem) -> Void
 	@State private var filter = ""
     @State private var selection = Set<UUID>()
@@ -190,23 +191,17 @@ struct LibraryPane: View {
                     // Add validated PDFs to library on main thread
                     if !validURLs.isEmpty {
                         library.add(urls: validURLs)
-                        NotificationCenter.default.post(
-                            name: .showToast,
-                            object: ToastMessage(
-                                message: "Successfully imported \(validURLs.count) PDF\(validURLs.count == 1 ? "" : "s")",
-                                type: .success
-                            )
+                        toastCenter.showSuccess(
+                            "Import Complete",
+                            "Successfully imported \(validURLs.count) PDF\(validURLs.count == 1 ? "" : "s")"
                         )
                     }
 
                     if !errorMessages.isEmpty {
                         let errorMessage = errorMessages.joined(separator: "\n")
-                        NotificationCenter.default.post(
-                            name: .showToast,
-                            object: ToastMessage(
-                                message: "Failed to import \(errorMessages.count) file\(errorMessages.count == 1 ? "" : "s"): \(errorMessage)",
-                                type: .error
-                            )
+                        toastCenter.showError(
+                            "Import Failed",
+                            "Failed to import \(errorMessages.count) file\(errorMessages.count == 1 ? "" : "s"): \(errorMessage)"
                         )
                     }
                 }

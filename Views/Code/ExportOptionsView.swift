@@ -9,6 +9,8 @@ struct ExportOptionsView: View {
 	let fileName: String
 	@Environment(\.dismiss) private var dismiss
 
+	@State private var errorMessage: String?
+
 	var body: some View {
 		VStack(spacing: 20) {
 			Text("Export Code")
@@ -47,6 +49,14 @@ struct ExportOptionsView: View {
 		}
 		.padding()
 		.frame(width: 400, height: 300)
+		.alert("Export Failed", isPresented: Binding(
+			get: { errorMessage != nil },
+			set: { if !$0 { errorMessage = nil } }
+		)) {
+			Button("OK") { errorMessage = nil }
+		} message: {
+			Text(errorMessage ?? "An unknown error occurred.")
+		}
 	}
 
 	private func exportToVSCode() {
@@ -73,10 +83,8 @@ struct ExportOptionsView: View {
 
 		do {
 			try FileManager.default.createDirectory(at: projectPath, withIntermediateDirectories: true)
-
 			try code.write(to: sourceFile, atomically: true, encoding: .utf8)
 
-			// Create VSCode settings
 			let settingsPath = projectPath.appendingPathComponent(".vscode")
 			try FileManager.default.createDirectory(at: settingsPath, withIntermediateDirectories: true)
 
@@ -87,43 +95,38 @@ struct ExportOptionsView: View {
 				}
 			}
 			"""
-
 			try settings.write(to: settingsPath.appendingPathComponent("settings.json"), atomically: true, encoding: .utf8)
 
 			dismiss()
 		} catch {
 			logError(AppLog.code, "Error creating VSCode project: \(error)")
+			errorMessage = "Could not create VSCode project."
 		}
 	}
 
 	private func exportToVim() {
-		// Export as source file with vim modeline for syntax detection
 		let commentPrefix = language.lineCommentPrefix
 		let content = """
-		\(commentPrefix) vim: set ft=\(getVimSyntax()):
+		\(commentPrefix) vim: set ft=\(language.vimSyntax):
 		\(commentPrefix) Exported from DevReader - \(fileName)
 
 		\(code)
 		"""
-
 		saveExportFile(content, fileExtension: language.fileExtension)
 	}
 
 	private func exportToEmacs() {
-		// Export as source file with emacs modeline for mode detection
 		let commentPrefix = language.lineCommentPrefix
 		let content = """
-		\(commentPrefix) -*- mode: \(getEmacsMode()) -*-
+		\(commentPrefix) -*- mode: \(language.emacsMode) -*-
 		\(commentPrefix) Exported from DevReader - \(fileName)
 
 		\(code)
 		"""
-
 		saveExportFile(content, fileExtension: language.fileExtension)
 	}
 
 	private func exportToJetBrains() {
-		// Create IntelliJ project structure
 		let panel = NSOpenPanel()
 		panel.canChooseDirectories = true
 		panel.canChooseFiles = false
@@ -147,16 +150,15 @@ struct ExportOptionsView: View {
 
 		do {
 			try FileManager.default.createDirectory(at: projectPath, withIntermediateDirectories: true)
-
 			try code.write(to: sourceFile, atomically: true, encoding: .utf8)
 
-			// Create .idea directory with basic project configuration
 			let ideaPath = projectPath.appendingPathComponent(".idea")
 			try FileManager.default.createDirectory(at: ideaPath, withIntermediateDirectories: true)
 
 			dismiss()
 		} catch {
 			logError(AppLog.code, "Error creating JetBrains project: \(error)")
+			errorMessage = "Could not create JetBrains project."
 		}
 	}
 
@@ -172,6 +174,7 @@ struct ExportOptionsView: View {
 					dismiss()
 				} catch {
 					logError(AppLog.code, "Error saving file: \(error)")
+					errorMessage = "Could not save file."
 				}
 			}
 		}
@@ -189,15 +192,12 @@ struct ExportOptionsView: View {
 					dismiss()
 				} catch {
 					logError(AppLog.code, "Error saving export file: \(error)")
+					errorMessage = "Could not save export file."
 				}
 			}
 		}
 	}
 
-	private func getVimSyntax() -> String { language.vimSyntax }
-	private func getEmacsMode() -> String { language.emacsMode }
-
-	/// Shows a confirmation alert before overwriting an existing file. Returns true if the user confirms.
 	private func confirmOverwrite(_ file: URL) -> Bool {
 		let alert = NSAlert()
 		alert.messageText = "File Already Exists"

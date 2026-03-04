@@ -16,17 +16,35 @@ nonisolated enum PersistenceService {
         return digest.prefix(16).map { String(format: "%02x", $0) }.joined()
     }
 
-    // Builds a namespaced key with proper PDF scoping to prevent collisions
+    /// Content-based fingerprint: SHA256 of the first 64KB of the file.
+    /// Returns nil if the file can't be read or is empty.
+    static func contentFingerprint(for url: URL) -> String? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        let chunk = handle.readData(ofLength: 65_536)
+        guard !chunk.isEmpty else { return nil }
+        let digest = SHA256.hash(data: chunk)
+        return digest.prefix(16).map { String(format: "%02x", $0) }.joined()
+    }
+
+    // Builds a namespaced key with proper PDF scoping to prevent collisions.
+    // Prefers content fingerprint (survives file moves) with path-hash fallback.
     static func key(_ base: String, for url: URL?) -> String {
         guard let u = url else { return base }
-        let hash = stableHash(for: u)
+        let hash = contentFingerprint(for: u) ?? stableHash(for: u)
         return base + "." + hash
+    }
+
+    /// Legacy key using path-hash only (for migration fallback)
+    static func legacyKey(_ base: String, for url: URL?) -> String {
+        guard let u = url else { return base }
+        return base + "." + stableHash(for: u)
     }
 
     // Scoped key generation for namespacing
     static func key(_ base: String, for url: URL?, withScope scope: String) -> String {
         guard let u = url else { return base }
-        let hash = stableHash(for: u)
+        let hash = contentFingerprint(for: u) ?? stableHash(for: u)
         return base + "." + scope + "." + hash
     }
 
@@ -36,15 +54,12 @@ nonisolated enum PersistenceService {
     }
 
     // MARK: - JSON File-based Storage
-    static func saveCodable<T: Codable>(_ value: T, forKey key: String) {
-        // Determine file path based on key
+    @discardableResult
+    static func saveCodable<T: Codable>(_ value: T, forKey key: String) throws -> Bool {
         let url = getFilePath(for: key)
-        do {
-            try JSONStorageService.save(value, to: url)
-            os_log("Successfully saved data for key: %{public}@", log: logger, type: .debug, key)
-        } catch {
-            os_log("Failed to save data for key %{public}@: %{public}@", log: logger, type: .error, key, error.localizedDescription)
-        }
+        try JSONStorageService.save(value, to: url)
+        os_log("Successfully saved data for key: %{public}@", log: logger, type: .debug, key)
+        return true
     }
 
     static func loadCodable<T: Codable>(_ type: T.Type, forKey key: String) -> T? {
@@ -53,6 +68,21 @@ nonisolated enum PersistenceService {
         if result == nil {
             os_log("No data found for key: %{public}@", log: logger, type: .debug, key)
         }
+        return result
+    }
+
+    /// Tries loading with the given key first; if nil and legacyKey differs, tries the
+    /// legacy path-hash key and migrates data to the new key.
+    static func loadCodableWithMigration<T: Codable>(_ type: T.Type, forKey key: String, legacyKey: String) -> T? {
+        if let result = loadCodable(type, forKey: key) {
+            return result
+        }
+        guard key != legacyKey else { return nil }
+        guard let result = loadCodable(type, forKey: legacyKey) else { return nil }
+        // Migrate: save to new key and delete old
+        try? saveCodable(result, forKey: key)
+        delete(forKey: legacyKey)
+        os_log("Migrated data from legacy key %{public}@ to %{public}@", log: logger, type: .info, legacyKey, key)
         return result
     }
     
@@ -80,6 +110,9 @@ nonisolated enum PersistenceService {
         } else if key.hasPrefix("DevReader.Bookmarks.v1.") {
             let hash = String(key.dropFirst("DevReader.Bookmarks.v1.".count))
             return JSONStorageService.dataDirectory.appendingPathComponent("bookmarks_\(hash).json")
+        } else if key.hasPrefix("DevReader.Annotations.v1.") {
+            let hash = String(key.dropFirst("DevReader.Annotations.v1.".count))
+            return JSONStorageService.dataDirectory.appendingPathComponent("annotations_\(hash).json")
         } else {
             // Fallback to data directory
             return JSONStorageService.dataDirectory.appendingPathComponent("\(key).json")
@@ -87,14 +120,12 @@ nonisolated enum PersistenceService {
     }
 
     // MARK: - Primitives with JSON Storage
-    static func saveInt(_ value: Int, forKey key: String) { 
+    @discardableResult
+    static func saveInt(_ value: Int, forKey key: String) throws -> Bool {
         let url = getFilePath(for: key)
-        do {
-            try JSONStorageService.save(value, to: url)
-            os_log("Saved int %d for key: %{public}@", log: logger, type: .debug, value, key)
-        } catch {
-            os_log("Failed to save int for key %{public}@: %{public}@", log: logger, type: .error, key, error.localizedDescription)
-        }
+        try JSONStorageService.save(value, to: url)
+        os_log("Saved int %d for key: %{public}@", log: logger, type: .debug, value, key)
+        return true
     }
     
     static func loadInt(forKey key: String) -> Int? {
@@ -106,14 +137,12 @@ nonisolated enum PersistenceService {
         return result
     }
 
-    static func saveBool(_ value: Bool, forKey key: String) { 
+    @discardableResult
+    static func saveBool(_ value: Bool, forKey key: String) throws -> Bool {
         let url = getFilePath(for: key)
-        do {
-            try JSONStorageService.save(value, to: url)
-            os_log("Saved bool %{public}@ for key: %{public}@", log: logger, type: .debug, String(value), key)
-        } catch {
-            os_log("Failed to save bool for key %{public}@: %{public}@", log: logger, type: .error, key, error.localizedDescription)
-        }
+        try JSONStorageService.save(value, to: url)
+        os_log("Saved bool %{public}@ for key: %{public}@", log: logger, type: .debug, String(value), key)
+        return true
     }
     
     static func loadBool(forKey key: String) -> Bool? {
@@ -132,16 +161,36 @@ nonisolated enum PersistenceService {
     }
     
     // MARK: - Data Validation and Recovery
+    /// Typed validation — checks that the file decodes with JSONDecoder as the
+    /// expected type. Matches the strictness of loadCodable, avoiding false
+    /// positives from JSONSerialization's more permissive parsing.
+    static func validateData<T: Codable>(_ type: T.Type, forKey key: String) -> Bool {
+        let url = getFilePath(for: key)
+        guard FileManager.default.fileExists(atPath: url.path) else { return false }
+
+        do {
+            let data = try Data(contentsOf: url)
+            _ = try JSONDecoder().decode(type, from: data)
+            return true
+        } catch {
+            os_log("Invalid data for key %{public}@: %{public}@", log: logger, type: .error, key, error.localizedDescription)
+            return false
+        }
+    }
+
+    /// Untyped validation — checks that the file contains valid JSON via
+    /// JSONSerialization. Prefer the typed overload when the expected type is known.
     static func validateData(forKey key: String) -> Bool {
         let url = getFilePath(for: key)
         guard FileManager.default.fileExists(atPath: url.path) else { return false }
-        
+
         do {
             let data = try Data(contentsOf: url)
+            guard !data.isEmpty else { return false }
             _ = try JSONSerialization.jsonObject(with: data)
             return true
         } catch {
-            os_log("Invalid JSON data for key %{public}@: %{public}@", log: logger, type: .error, key, error.localizedDescription)
+            os_log("Invalid data for key %{public}@: %{public}@", log: logger, type: .error, key, error.localizedDescription)
             return false
         }
     }

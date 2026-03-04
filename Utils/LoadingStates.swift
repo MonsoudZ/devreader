@@ -33,8 +33,12 @@ class LoadingStateManager: ObservableObject {
         case restore
     }
     
-    private init() {}
-    
+    init() {}
+
+    deinit {
+        for task in timeoutTasks.values { task.cancel() }
+    }
+
     // MARK: - Loading Control
     func startLoading(_ type: LoadingType, message: String, progress: Double = 0.0) {
         let taskId = "\(type)"
@@ -94,7 +98,11 @@ class LoadingStateManager: ObservableObject {
 /// Non-blocking loading indicator shown as a small floating pill at the top
 /// of the window. Does NOT prevent user interaction with the rest of the UI.
 struct LoadingOverlay: View {
-    @ObservedObject var loadingManager = LoadingStateManager.shared
+    @ObservedObject var loadingManager: LoadingStateManager
+
+    init(loadingManager: LoadingStateManager = .shared) {
+        self.loadingManager = loadingManager
+    }
 
     var body: some View {
         if loadingManager.isLoading {
@@ -133,18 +141,20 @@ struct LoadingOverlay: View {
 struct LoadingButton<Label: View>: View {
     let action: () -> Void
     let label: Label
-    @ObservedObject var loadingManager = LoadingStateManager.shared
+    @ObservedObject var loadingManager: LoadingStateManager
     let loadingType: LoadingStateManager.LoadingType
     let loadingMessage: String
-    
+
     init(
         loadingType: LoadingStateManager.LoadingType,
         loadingMessage: String,
+        loadingManager: LoadingStateManager = .shared,
         action: @escaping () -> Void,
         @ViewBuilder label: () -> Label
     ) {
         self.loadingType = loadingType
         self.loadingMessage = loadingMessage
+        self.loadingManager = loadingManager
         self.action = action
         self.label = label()
     }
@@ -220,47 +230,21 @@ extension LoadingStateManager {
         stopLoading(.web)
     }
     
-    // Export Operations
-    func startExport(_ message: String = "Exporting...") {
-        startLoading(.export, message: message)
-    }
-    
-    func updateExportProgress(_ progress: Double, message: String? = nil) {
-        updateProgress(progress, message: message)
-    }
-    
-    func stopExport() {
-        stopLoading(.export)
-    }
-    
     // Import Operations
     func startImport(_ message: String = "Importing...") {
         startLoading(.import, message: message)
     }
-    
-    func updateImportProgress(_ progress: Double, message: String? = nil) {
-        updateProgress(progress, message: message)
-    }
-    
+
     func stopImport() {
         stopLoading(.import)
     }
-    
+
     // Backup Operations
     func startBackup(_ message: String = "Creating backup...") {
         startLoading(.backup, message: message)
     }
-    
+
     func stopBackup() {
         stopLoading(.backup)
-    }
-    
-    // Restore Operations
-    func startRestore(_ message: String = "Restoring from backup...") {
-        startLoading(.restore, message: message)
-    }
-    
-    func stopRestore() {
-        stopLoading(.restore)
     }
 }

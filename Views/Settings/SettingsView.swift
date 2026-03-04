@@ -10,7 +10,8 @@ struct SettingsView: View {
 	@AppStorage("autoSave") private var autoSave = true
 	@AppStorage("autosaveIntervalSeconds") private var autosaveIntervalSeconds: Double = 30
 	@AppStorage("appAppearance") private var appAppearance: String = "system"
-	@StateObject private var performanceMonitor = PerformanceMonitor.shared
+	@EnvironmentObject private var appEnvironment: AppEnvironment
+	private var performanceMonitor: PerformanceMonitor { appEnvironment.performanceMonitor }
 	@State private var alertMessage = ""
 	@State private var alertTitle = ""
 	@State private var showingAlert = false
@@ -177,7 +178,7 @@ struct SettingsView: View {
 	}
 
 	private func createBackup() {
-		LoadingStateManager.shared.startBackup("Creating backup...")
+		appEnvironment.loadingStateManager.startBackup("Creating backup...")
 
 		Task {
 			do {
@@ -186,21 +187,21 @@ struct SettingsView: View {
 					alertTitle = "Backup Created"
 					alertMessage = "Backup saved to: \(backupURL.lastPathComponent)"
 					showingAlert = true
-					LoadingStateManager.shared.stopBackup()
+					appEnvironment.loadingStateManager.stopBackup()
 				}
 			} catch {
 				await MainActor.run {
 					alertTitle = "Backup Failed"
-					alertMessage = error.localizedDescription
+					alertMessage = "Could not create backup."
 					showingAlert = true
-					LoadingStateManager.shared.stopBackup()
+					appEnvironment.loadingStateManager.stopBackup()
 				}
 			}
 		}
 	}
 
 	private func validateData() {
-		LoadingStateManager.shared.startLoading(.general, message: "Validating data integrity...")
+		appEnvironment.loadingStateManager.startLoading(.general, message: "Validating data integrity...")
 
 		Task {
 			let issues = PersistenceService.validateDataIntegrity()
@@ -213,7 +214,7 @@ struct SettingsView: View {
 					alertMessage = issues.joined(separator: "\n")
 				}
 				showingAlert = true
-				LoadingStateManager.shared.stopLoading(.general)
+				appEnvironment.loadingStateManager.stopLoading(.general)
 			}
 		}
 	}
@@ -259,7 +260,7 @@ struct SettingsView: View {
 				showingAlert = true
 			} catch {
 				alertTitle = "Export Failed"
-				alertMessage = error.localizedDescription
+				alertMessage = "Could not save the performance report."
 				showingAlert = true
 			}
 		}

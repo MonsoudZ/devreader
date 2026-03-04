@@ -14,6 +14,7 @@
 		C00100012F00000000000001 /* ViewModels/PDFSearchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00100002F00000000000001 /* ViewModels/PDFSearchManager.swift */; };
 		C00100032F00000000000002 /* ViewModels/PDFBookmarkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00100022F00000000000002 /* ViewModels/PDFBookmarkManager.swift */; };
 		C00100052F00000000000003 /* ViewModels/PDFOutlineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00100042F00000000000003 /* ViewModels/PDFOutlineManager.swift */; };
+		C00100072F00000000000004 /* ViewModels/PDFAnnotationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00100062F00000000000004 /* ViewModels/PDFAnnotationManager.swift */; };
 		A00100092F00000000000001 /* ViewModels/NotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100082F00000000000001 /* ViewModels/NotesStore.swift */; };
 		A001000B2F00000000000001 /* ViewModels/LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000A2F00000000000001 /* ViewModels/LibraryStore.swift */; };
 		A001000D2F00000000000001 /* Views/Notes/NotesPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000C2F00000000000001 /* Views/Notes/NotesPane.swift */; };
@@ -58,6 +59,12 @@
 		B001000D2F00000000000007 /* Models/SketchItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B001000C2F00000000000007 /* Models/SketchItem.swift */; };
 		B001000F2F00000000000008 /* Models/DevReaderData.swift in Sources */ = {isa = PBXBuildFile; fileRef = B001000E2F00000000000008 /* Models/DevReaderData.swift */; };
 		B00100152F00000000000011 /* Services/SketchPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B00100142F00000000000011 /* Services/SketchPersistenceService.swift */; };
+		C00100092F00000000000005 /* Services/NotesExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C00100082F00000000000005 /* Services/NotesExportService.swift */; };
+		C001000B2F00000000000006 /* Services/CodeFileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C001000A2F00000000000006 /* Services/CodeFileService.swift */; };
+		C001000D2F00000000000007 /* Services/SketchRenderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C001000C2F00000000000007 /* Services/SketchRenderService.swift */; };
+		C001000F2F00000000000008 /* ViewModels/MonacoEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C001000E2F00000000000008 /* ViewModels/MonacoEditorViewModel.swift */; };
+		D00100112F00000000000009 /* Models/PDFAnnotationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100102F00000000000009 /* Models/PDFAnnotationData.swift */; };
+		D00100132F00000000000010 /* Services/AnnotationPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -88,6 +95,7 @@
 		C00100002F00000000000001 /* ViewModels/PDFSearchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFSearchManager.swift; sourceTree = "<group>"; };
 		C00100022F00000000000002 /* ViewModels/PDFBookmarkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFBookmarkManager.swift; sourceTree = "<group>"; };
 		C00100042F00000000000003 /* ViewModels/PDFOutlineManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFOutlineManager.swift; sourceTree = "<group>"; };
+		C00100062F00000000000004 /* ViewModels/PDFAnnotationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/PDFAnnotationManager.swift; sourceTree = "<group>"; };
 		A00100082F00000000000001 /* ViewModels/NotesStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/NotesStore.swift; sourceTree = "<group>"; };
 		A001000A2F00000000000001 /* ViewModels/LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/LibraryStore.swift; sourceTree = "<group>"; };
 		A001000C2F00000000000001 /* Views/Notes/NotesPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/NotesPane.swift; sourceTree = "<group>"; };
@@ -133,6 +141,12 @@
 		B001000C2F00000000000007 /* Models/SketchItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/SketchItem.swift; sourceTree = "<group>"; };
 		B001000E2F00000000000008 /* Models/DevReaderData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/DevReaderData.swift; sourceTree = "<group>"; };
 		B00100142F00000000000011 /* Services/SketchPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SketchPersistenceService.swift; sourceTree = "<group>"; };
+		C00100082F00000000000005 /* Services/NotesExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/NotesExportService.swift; sourceTree = "<group>"; };
+		C001000A2F00000000000006 /* Services/CodeFileService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/CodeFileService.swift; sourceTree = "<group>"; };
+		C001000C2F00000000000007 /* Services/SketchRenderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SketchRenderService.swift; sourceTree = "<group>"; };
+		C001000E2F00000000000008 /* ViewModels/MonacoEditorViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/MonacoEditorViewModel.swift; sourceTree = "<group>"; };
+		D00100102F00000000000009 /* Models/PDFAnnotationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/PDFAnnotationData.swift; sourceTree = "<group>"; };
+		D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnnotationPersistenceService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -225,6 +239,7 @@
 				C00100002F00000000000001 /* ViewModels/PDFSearchManager.swift */,
 				C00100022F00000000000002 /* ViewModels/PDFBookmarkManager.swift */,
 				C00100042F00000000000003 /* ViewModels/PDFOutlineManager.swift */,
+				C00100062F00000000000004 /* ViewModels/PDFAnnotationManager.swift */,
 				A00100082F00000000000001 /* ViewModels/NotesStore.swift */,
 				A001000A2F00000000000001 /* ViewModels/LibraryStore.swift */,
 				A001000C2F00000000000001 /* Views/Notes/NotesPane.swift */,
@@ -239,6 +254,12 @@
 				B001000C2F00000000000007 /* Models/SketchItem.swift */,
 				B001000E2F00000000000008 /* Models/DevReaderData.swift */,
 				B00100142F00000000000011 /* Services/SketchPersistenceService.swift */,
+				C00100082F00000000000005 /* Services/NotesExportService.swift */,
+				C001000A2F00000000000006 /* Services/CodeFileService.swift */,
+				C001000C2F00000000000007 /* Services/SketchRenderService.swift */,
+				C001000E2F00000000000008 /* ViewModels/MonacoEditorViewModel.swift */,
+				D00100102F00000000000009 /* Models/PDFAnnotationData.swift */,
+				D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */,
 				A00100362F00000000000001 /* DevReader.entitlements */,
 				9932A80B2E823C66001C0FFE /* DevReader */,
 				9932A8192E823C67001C0FFE /* DevReaderTests */,
@@ -410,6 +431,7 @@
 				C00100012F00000000000001 /* ViewModels/PDFSearchManager.swift in Sources */,
 				C00100032F00000000000002 /* ViewModels/PDFBookmarkManager.swift in Sources */,
 				C00100052F00000000000003 /* ViewModels/PDFOutlineManager.swift in Sources */,
+				C00100072F00000000000004 /* ViewModels/PDFAnnotationManager.swift in Sources */,
 				A00100092F00000000000001 /* ViewModels/NotesStore.swift in Sources */,
 				A001000B2F00000000000001 /* ViewModels/LibraryStore.swift in Sources */,
 				A001000D2F00000000000001 /* Views/Notes/NotesPane.swift in Sources */,
@@ -454,6 +476,12 @@
 				B001000D2F00000000000007 /* Models/SketchItem.swift in Sources */,
 				B001000F2F00000000000008 /* Models/DevReaderData.swift in Sources */,
 				B00100152F00000000000011 /* Services/SketchPersistenceService.swift in Sources */,
+				C00100092F00000000000005 /* Services/NotesExportService.swift in Sources */,
+				C001000B2F00000000000006 /* Services/CodeFileService.swift in Sources */,
+				C001000D2F00000000000007 /* Services/SketchRenderService.swift in Sources */,
+				C001000F2F00000000000008 /* ViewModels/MonacoEditorViewModel.swift in Sources */,
+				D00100112F00000000000009 /* Models/PDFAnnotationData.swift in Sources */,
+				D00100132F00000000000010 /* Services/AnnotationPersistenceService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -626,7 +654,7 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.local.chace.DevReader;
+				PRODUCT_BUNDLE_IDENTIFIER = com.monsoud.devreader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -634,6 +662,7 @@
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 			};
@@ -660,13 +689,14 @@
 					"@executable_path/../Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.local.chace.DevReader;
+				PRODUCT_BUNDLE_IDENTIFIER = com.monsoud.devreader;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 6.0;
 			};
@@ -681,7 +711,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.local.chace.DevReaderTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.monsoud.devreader.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -701,7 +731,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 15.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.local.chace.DevReaderTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.monsoud.devreader.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -719,7 +749,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.local.chace.DevReaderUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.monsoud.devreader.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -737,7 +767,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.local.chace.DevReaderUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.monsoud.devreader.uitests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

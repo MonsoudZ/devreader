@@ -116,7 +116,7 @@ struct WebPane: View {
 	}
 	private func isBookmarked(_ url: URL?) -> Bool { guard let u = url else { return false }; return bookmarks.contains(u) }
 	private func loadBookmarks() { if let arr: [URL] = PersistenceService.loadCodable([URL].self, forKey: bookmarksKey) { bookmarks = arr } }
-	private func saveBookmarks() { PersistenceService.saveCodable(bookmarks, forKey: bookmarksKey) }
+	private func saveBookmarks() { try? PersistenceService.saveCodable(bookmarks, forKey: bookmarksKey) }
 }
 
 struct WebView: NSViewRepresentable {
@@ -169,6 +169,26 @@ struct WebView: NSViewRepresentable {
             showErrorPage(in: webView, error: error)
         }
         private func showErrorPage(in webView: WKWebView, error: Error) {
+            let nsError = error as NSError
+            // Show a user-friendly message based on error domain/code instead of
+            // localizedDescription which may expose internal file paths.
+            let message: String
+            switch (nsError.domain, nsError.code) {
+            case (NSURLErrorDomain, NSURLErrorNotConnectedToInternet),
+                 (NSURLErrorDomain, NSURLErrorNetworkConnectionLost):
+                message = "No internet connection."
+            case (NSURLErrorDomain, NSURLErrorTimedOut):
+                message = "The request timed out."
+            case (NSURLErrorDomain, NSURLErrorCannotFindHost):
+                message = "The server could not be found."
+            case (NSURLErrorDomain, NSURLErrorSecureConnectionFailed),
+                 (NSURLErrorDomain, NSURLErrorServerCertificateUntrusted):
+                message = "A secure connection could not be established."
+            case (NSURLErrorDomain, NSURLErrorCancelled):
+                return // User-initiated cancel — no error page needed
+            default:
+                message = "An error occurred while loading the page."
+            }
             let html = """
             <html><head><style>
             body { font-family: -apple-system; text-align: center; padding: 60px 20px; color: #888; background: \
@@ -176,7 +196,7 @@ struct WebView: NSViewRepresentable {
             h2 { color: #ccc; } p { margin-top: 8px; }
             </style></head><body>
             <h2>Page Failed to Load</h2>
-            <p>\(error.localizedDescription)</p>
+            <p>\(message)</p>
             <p style="margin-top:20px;font-size:13px;color:#666">Check your connection and try again.</p>
             </body></html>
             """

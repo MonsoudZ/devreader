@@ -10,57 +10,72 @@ class LibraryPersistenceService: ObservableObject {
     @Published var isProcessing: Bool = false
     @Published var progress: Double = 0.0
     @Published var currentOperation: String = ""
+    @Published var lastError: Error?
 
     private let logger = OSLog(subsystem: Bundle.main.bundleIdentifier ?? "DevReader", category: "BackgroundPersistence")
 
     /// Pending items to save after the current operation finishes
     private var pendingLibraryItems: [LibraryItem]?
 
-    private init() {}
+    init() {}
 
     // MARK: - Batch Operations
 
     /// Save library items in background to prevent UI blocking.
     /// If a save is already in progress, queues the latest items to save when it finishes.
-    func saveLibraryItems(_ items: [LibraryItem]) async {
+    @discardableResult
+    func saveLibraryItems(_ items: [LibraryItem]) async -> Bool {
         if isProcessing {
             // Queue the latest items so they're saved when the current op finishes
             pendingLibraryItems = items
-            return
+            return true
         }
 
+        lastError = nil
         isProcessing = true
         progress = 0.0
         currentOperation = "Saving library items..."
 
         // Use background queue for large operations
-        await Task.detached(priority: .utility) {
+        let saveSucceeded: Bool = await Task.detached(priority: .utility) {
             let envelope = LibraryEnvelope(items: items)
             do {
                 try JSONStorageService.save(envelope, to: JSONStorageService.libraryPath())
+                return true
             } catch {
                 await MainActor.run {
                     logError(AppLog.app, "Failed to save library items in background: \(error)")
                 }
+                return false
             }
         }.value
+
+        if !saveSucceeded {
+            lastError = NSError(domain: "LibraryPersistence", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to save library items"])
+        }
 
         // Complete
         isProcessing = false
         progress = 1.0
-        currentOperation = "Save completed"
+        currentOperation = saveSucceeded ? "Save completed" : "Save failed"
 
-        // If new items arrived while we were saving, save them now
+        // Only process pending items if save succeeded; otherwise retry current items
         if let pending = pendingLibraryItems {
             pendingLibraryItems = nil
-            await saveLibraryItems(pending)
+            return await saveLibraryItems(pending)
+        } else if !saveSucceeded {
+            // Re-queue failed items so they're retried on the next save call
+            pendingLibraryItems = items
         }
+
+        return saveSucceeded
     }
 
     /// Import multiple PDFs with background processing
     func importPDFs(_ urls: [URL]) async -> [LibraryItem] {
         guard !isProcessing else { return [] }
 
+        lastError = nil
         isProcessing = true
         progress = 0.0
         currentOperation = "Importing PDFs..."
@@ -82,10 +97,15 @@ class LibraryPersistenceService: ObservableObject {
             }
         }.value
 
+        let skippedCount = urls.count - importedItems.count
+        if skippedCount > 0 {
+            logError(AppLog.app, "Import skipped \(skippedCount) of \(urls.count) PDFs (files not found)")
+        }
+
         // Complete
         isProcessing = false
         progress = 1.0
-        currentOperation = "Import completed"
+        currentOperation = "Imported \(importedItems.count) of \(urls.count) PDFs"
 
         return importedItems
     }
@@ -94,6 +114,7 @@ class LibraryPersistenceService: ObservableObject {
     func removeDuplicates(from items: [LibraryItem]) async -> [LibraryItem] {
         guard !isProcessing else { return items }
 
+        lastError = nil
         isProcessing = true
         progress = 0.0
         currentOperation = "Removing duplicates..."

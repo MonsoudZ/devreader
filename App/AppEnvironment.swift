@@ -6,7 +6,6 @@ import Combine
 /// Injected via `@EnvironmentObject` from `DevReaderApp`.
 @MainActor
 final class AppEnvironment: ObservableObject {
-    static let shared = AppEnvironment()
 
     // MARK: - Core Controllers & Stores
     let pdfController: PDFController
@@ -27,9 +26,17 @@ final class AppEnvironment: ObservableObject {
     @Published var isShowingAbout = false
 
     // MARK: - Init
-    private init() {
-        let pdf = PDFController()
-        let library = LibraryStore()
+    init(
+        loadingStateManager: LoadingStateManager = .shared,
+        performanceMonitor: PerformanceMonitor = .shared,
+        errorMessageManager: ErrorMessageManager = ErrorMessageManager()
+    ) {
+        self.loadingStateManager = loadingStateManager
+        self.performanceMonitor = performanceMonitor
+        self.errorMessageManager = errorMessageManager
+
+        let pdf = PDFController(loadingStateManager: loadingStateManager, performanceMonitor: performanceMonitor)
+        let library = LibraryStore(loadingStateManager: loadingStateManager)
         let notes = NotesStore()
 
         self.pdfController = pdf
@@ -37,9 +44,6 @@ final class AppEnvironment: ObservableObject {
         self.notesStore = notes
         self.sketchStore = SketchStore()
         self.enhancedToastCenter = EnhancedToastCenter()
-        self.errorMessageManager = ErrorMessageManager.shared
-        self.loadingStateManager = LoadingStateManager.shared
-        self.performanceMonitor = PerformanceMonitor.shared
 
         // Wire PDF changes to notes store
         pdf.onPDFChanged = { [weak notes] url in
@@ -52,24 +56,23 @@ final class AppEnvironment: ObservableObject {
         }
     }
 
-    // MARK: - Command Signals
-    // Monotonic counters that ContentView observes via onChange to react to menu commands
-    // that require local-state changes (toggles, panels, file dialogs).
-    @Published var openPDFSignal = 0
-    @Published var importPDFsSignal = 0
-    @Published var toggleLibrarySignal = 0
-    @Published var toggleNotesSignal = 0
-    @Published var toggleSearchSignal = 0
+    // MARK: - Command Callbacks
+    // Closures registered by ContentView to handle menu commands
+    var onOpenPDF: (() -> Void)?
+    var onImportPDFs: (() -> Void)?
+    var onToggleLibrary: (() -> Void)?
+    var onToggleNotes: (() -> Void)?
+    var onToggleSearch: (() -> Void)?
 
     // MARK: - Command Actions (called from menu commands)
 
     func openHelp() { isShowingHelp = true }
 
-    func commandOpenPDF() { openPDFSignal += 1 }
-    func commandImportPDFs() { importPDFsSignal += 1 }
-    func commandToggleLibrary() { toggleLibrarySignal += 1 }
-    func commandToggleNotes() { toggleNotesSignal += 1 }
-    func commandToggleSearch() { toggleSearchSignal += 1 }
+    func commandOpenPDF() { onOpenPDF?() }
+    func commandImportPDFs() { onImportPDFs?() }
+    func commandToggleLibrary() { onToggleLibrary?() }
+    func commandToggleNotes() { onToggleNotes?() }
+    func commandToggleSearch() { onToggleSearch?() }
 
     func commandClosePDF() {
         pdfController.document = nil
@@ -104,7 +107,8 @@ final class AppEnvironment: ObservableObject {
         let sketchWindow = SketchWindow(
             size: CGSize(width: 800, height: 600),
             pdfURL: url,
-            pageIndex: pageIndex
+            pageIndex: pageIndex,
+            sketchStore: sketchStore
         ) { [weak self] _ in
             self?.currentSketchWindow = nil
         }

@@ -1,18 +1,19 @@
 import SwiftUI
 
 private struct OutlineEntry: Identifiable {
-    let id = UUID()
+    var id: Int { page }
     let page: Int
     let title: String
 }
 
 struct OutlinePane: View {
     @ObservedObject var pdf: PDFController
+    @ObservedObject var outlineManager: PDFOutlineManager
     @State private var searchText = ""
     @State private var expandedSections: Set<String> = []
 
     private var entries: [OutlineEntry] {
-        let allEntries = pdf.outlineManager.outlineMap.keys.sorted().map { OutlineEntry(page: $0, title: pdf.outlineManager.outlineMap[$0] ?? "") }
+        let allEntries = outlineManager.outlineMap.keys.sorted().map { OutlineEntry(page: $0, title: outlineManager.outlineMap[$0] ?? "") }
 
         // For large PDFs, limit visible entries and add search
         if pdf.isLargePDF {
@@ -45,7 +46,7 @@ struct OutlinePane: View {
             HStack {
                 Text("Outline").font(.headline)
                 if pdf.isLargePDF {
-                    Text("(\(pdf.outlineManager.outlineMap.count) items)")
+                    Text("(\(outlineManager.outlineMap.count) items)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

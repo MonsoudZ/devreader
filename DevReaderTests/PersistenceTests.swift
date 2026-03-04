@@ -12,12 +12,12 @@ final class PersistenceTests: XCTestCase {
 
     // MARK: - Atomic Persistence Tests
 
-    func testAtomicWriteSuccess() async {
+    func testAtomicWriteSuccess() async throws {
         let testData = ["key1": "value1", "key2": "value2"]
         let key = "test.atomic.success"
 
         // Save data
-        PersistenceService.saveCodable(testData, forKey: key)
+        try PersistenceService.saveCodable(testData, forKey: key)
 
         // Load data
         let loadedData: [String: String]? = PersistenceService.loadCodable([String: String].self, forKey: key)
@@ -28,38 +28,35 @@ final class PersistenceTests: XCTestCase {
     }
 
     func testAtomicWriteFailure() async {
-        let key = "test.atomic.failure"
-        let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(key).json")
-        // The atomic save writes to a .tmp file first, then moves it into place.
-        // Block the temp file path with a non-empty directory so Data.write fails.
-        let tempURL = fileURL.appendingPathExtension("tmp")
+        // Use a path inside a non-existent, non-creatable directory to force write failure.
+        // Saving with a key whose data directory cannot be written to should throw.
+        let blockedDir = FileManager.default.temporaryDirectory.appendingPathComponent("devreader_blocked_\(UUID().uuidString)")
+        try? FileManager.default.createDirectory(at: blockedDir, withIntermediateDirectories: true)
 
-        JSONStorageService.ensureDirectories()
-        try? FileManager.default.createDirectory(at: tempURL, withIntermediateDirectories: true)
-        try? "blocker".write(
-            to: tempURL.appendingPathComponent("blocker.txt"),
-            atomically: true, encoding: .utf8
-        )
+        // Make the directory read-only so the temp file write fails
+        try? FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: blockedDir.path)
 
-        // Save data (should handle failure gracefully, not crash)
+        let blockedURL = blockedDir.appendingPathComponent("blocked.json")
         let testData = ["key1": "value1", "key2": "value2"]
-        PersistenceService.saveCodable(testData, forKey: key)
 
-        // Data should not be loadable since the write was blocked
-        let loadedData: [String: String]? = PersistenceService.loadCodable([String: String].self, forKey: key)
+        XCTAssertThrowsError(try JSONStorageService.save(testData, to: blockedURL),
+                             "Save should throw when directory is read-only")
+
+        // Data should not be loadable
+        let loadedData: [String: String]? = JSONStorageService.loadOptional([String: String].self, from: blockedURL)
         XCTAssertNil(loadedData, "Data should not be loaded after write failure")
 
-        // Clean up
-        try? FileManager.default.removeItem(at: tempURL)
-        try? FileManager.default.removeItem(at: fileURL)
+        // Restore permissions and clean up
+        try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: blockedDir.path)
+        try? FileManager.default.removeItem(at: blockedDir)
     }
 
-    func testCorruptedDataRecovery() async {
+    func testCorruptedDataRecovery() async throws {
         let testData = ["key1": "value1", "key2": "value2"]
         let key = "test.corrupted.recovery"
 
         // Save valid data first
-        PersistenceService.saveCodable(testData, forKey: key)
+        try PersistenceService.saveCodable(testData, forKey: key)
 
         // Corrupt the file
         let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(key).json")
@@ -76,7 +73,7 @@ final class PersistenceTests: XCTestCase {
 
     // MARK: - Schema Versioning Tests
 
-    func testSchemaVersioning() async {
+    func testSchemaVersioning() async throws {
         let items = [
             LibraryItem(url: URL(fileURLWithPath: "/test1.pdf")),
             LibraryItem(url: URL(fileURLWithPath: "/test2.pdf"))
@@ -86,7 +83,7 @@ final class PersistenceTests: XCTestCase {
 
         // Save envelope
         let key = "test.schema.versioning"
-        PersistenceService.saveCodable(envelope, forKey: key)
+        try PersistenceService.saveCodable(envelope, forKey: key)
 
         // Load envelope
         let loadedEnvelope: LibraryEnvelope? = PersistenceService.loadCodable(LibraryEnvelope.self, forKey: key)
@@ -96,7 +93,7 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(loadedEnvelope?.items.count, 2, "Items count should match")
     }
 
-    func testSchemaMigration() async {
+    func testSchemaMigration() async throws {
         // Create old format data
         let oldItems = [
             OldLibraryItem(
@@ -115,7 +112,7 @@ final class PersistenceTests: XCTestCase {
 
         // Save old format data
         let key = "test.schema.migration"
-        PersistenceService.saveCodable(oldItems, forKey: key)
+        try PersistenceService.saveCodable(oldItems, forKey: key)
 
         // Load and migrate
         let data = try? Data(contentsOf: JSONStorageService.dataDirectory.appendingPathComponent("\(key).json"))
@@ -250,7 +247,7 @@ final class PersistenceTests: XCTestCase {
 
     // MARK: - Round-Trip Tests
 
-    func testRoundTripEncodeDecode() async {
+    func testRoundTripEncodeDecode() async throws {
         let originalItems = [
             LibraryItem(
                 url: URL(fileURLWithPath: "/test1.pdf"),
@@ -280,7 +277,7 @@ final class PersistenceTests: XCTestCase {
 
         // Save envelope
         let key = "test.roundtrip"
-        PersistenceService.saveCodable(envelope, forKey: key)
+        try PersistenceService.saveCodable(envelope, forKey: key)
 
         // Load envelope
         let loadedEnvelope: LibraryEnvelope? = PersistenceService.loadCodable(LibraryEnvelope.self, forKey: key)
@@ -328,12 +325,12 @@ final class PersistenceTests: XCTestCase {
         XCTAssertFalse(isValid, "Invalid data should be invalid")
     }
 
-    func testDataRecovery() async {
+    func testDataRecovery() async throws {
         let key = "test.data.recovery"
         let testData = ["key1": "value1", "key2": "value2"]
 
         // Save valid data first
-        PersistenceService.saveCodable(testData, forKey: key)
+        try PersistenceService.saveCodable(testData, forKey: key)
 
         // Corrupt the data
         try? "corrupted data".write(to: JSONStorageService.dataDirectory.appendingPathComponent("\(key).json"), atomically: true, encoding: .utf8)

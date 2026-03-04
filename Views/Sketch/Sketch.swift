@@ -9,8 +9,8 @@ final class SketchWindow: NSObject, NSWindowDelegate {
 	private var size: CGSize
 	private var pdfURL: URL?
 	private var pageIndex: Int
-	
-	init(size: CGSize, pdfURL: URL? = nil, pageIndex: Int = 0, onDone: @escaping (NSImage) -> Void) {
+
+	init(size: CGSize, pdfURL: URL? = nil, pageIndex: Int = 0, sketchStore: SketchStore? = nil, onDone: @escaping (NSImage) -> Void) {
 		self.size = size
 		self.pdfURL = pdfURL
 		self.pageIndex = pageIndex
@@ -31,12 +31,13 @@ final class SketchWindow: NSObject, NSWindowDelegate {
 				self?.window.close()
 			},
 			pdfURL: pdfURL,
-			pageIndex: pageIndex
+			pageIndex: pageIndex,
+			sketchStore: sketchStore
 		))
 		window.contentView = vc
 		window.delegate = self
 	}
-	
+
 	func show() { window.makeKeyAndOrderFront(nil) }
 }
 
@@ -45,8 +46,8 @@ struct SketchView: View {
 	var onInsert: (NSImage) -> Void
 	var pdfURL: URL? = nil
 	var pageIndex: Int = 0
-	
-    struct Stroke: Identifiable, Codable {
+
+	struct Stroke: Identifiable, Codable {
 		let id: UUID
 		var path: Path
 		var color: Color
@@ -76,7 +77,6 @@ struct SketchView: View {
 			id = try container.decode(UUID.self, forKey: .id)
 			lineWidth = try container.decode(CGFloat.self, forKey: .lineWidth)
 
-			// Decode path
 			let pathData = try container.decode(Data.self, forKey: .pathData)
 			let commands = try JSONDecoder().decode([PathCommand].self, from: pathData)
 			var decodedPath = Path()
@@ -96,7 +96,6 @@ struct SketchView: View {
 			}
 			path = decodedPath
 
-			// Decode color
 			let colorData = try container.decode(Data.self, forKey: .colorData)
 			let components = try JSONDecoder().decode([CGFloat].self, from: colorData)
 			if components.count == 4 {
@@ -111,7 +110,6 @@ struct SketchView: View {
 			try container.encode(id, forKey: .id)
 			try container.encode(lineWidth, forKey: .lineWidth)
 
-			// Encode path
 			var commands: [PathCommand] = []
 			path.forEach { element in
 				switch element {
@@ -130,7 +128,6 @@ struct SketchView: View {
 			let pathData = try JSONEncoder().encode(commands)
 			try container.encode(pathData, forKey: .pathData)
 
-			// Encode color
 			guard let nsColor = NSColor(color).usingColorSpace(.deviceRGB) ?? NSColor.black.usingColorSpace(.deviceRGB) else {
 				try container.encode(Data(), forKey: .colorData)
 				return
@@ -140,17 +137,17 @@ struct SketchView: View {
 			try container.encode(colorData, forKey: .colorData)
 		}
 	}
-	
-    @State private var strokes: [Stroke] = []
-    @State private var current: Stroke = Stroke(path: Path(), color: .black, lineWidth: 2)
-    @State private var penColor: Color = .black
-    @State private var penWidth: CGFloat = 2
-    @State private var canvasSize: CGSize = .zero
-	
+
+	@State private var strokes: [Stroke] = []
+	@State private var current: Stroke = Stroke(path: Path(), color: .black, lineWidth: 2)
+	@State private var penColor: Color = .black
+	@State private var penWidth: CGFloat = 2
+	@State private var canvasSize: CGSize = .zero
+
 	// Undo/Redo stacks
 	@State private var undoStack: [[Stroke]] = []
 	@State private var redoStack: [[Stroke]] = []
-	
+
 	// Persistence — use shared store from AppEnvironment for lifecycle flush support
 	@ObservedObject private var sketchStore: SketchStore
 
@@ -159,236 +156,168 @@ struct SketchView: View {
 		self.onInsert = onInsert
 		self.pdfURL = pdfURL
 		self.pageIndex = pageIndex
-		self.sketchStore = sketchStore ?? AppEnvironment.shared.sketchStore
+		self._sketchStore = ObservedObject(wrappedValue: sketchStore ?? SketchStore())
 	}
-	
+
 	var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 12) {
-                Text("Sketch")
-                Divider()
-                ColorPicker("Ink", selection: $penColor)
-                    .labelsHidden()
-                    .accessibilityIdentifier("sketchColorPicker")
-                    .accessibilityLabel("Pen Color")
-                    .accessibilityHint("Choose the color for drawing strokes")
-                HStack { 
-                    Text("Width")
-                    Slider(value: $penWidth, in: 1...16, step: 1)
-                        .frame(width: 140)
-                        .accessibilityIdentifier("sketchWidthSlider")
-                        .accessibilityLabel("Pen Width")
-                        .accessibilityValue("\(Int(penWidth)) pixels")
-                    Text("\(Int(penWidth))") 
-                }
-                Divider()
-                Button("Undo") { undo() }
-                    .accessibilityIdentifier("sketchUndo")
-                    .accessibilityLabel("Undo Last Stroke")
-                    .accessibilityHint("Remove the most recent drawing stroke")
-                    .disabled(strokes.isEmpty && undoStack.isEmpty)
-                Button("Redo") { redo() }
-                    .accessibilityIdentifier("sketchRedo")
-                    .accessibilityLabel("Redo Stroke")
-                    .accessibilityHint("Restore the most recently undone stroke")
-                    .disabled(redoStack.isEmpty)
-                Button("Clear") { clearAll() }
-                    .accessibilityIdentifier("sketchClear")
-                    .accessibilityLabel("Clear All Strokes")
-                    .accessibilityHint("Remove all drawing strokes from the canvas")
-                    .disabled(strokes.isEmpty)
-                Spacer()
-                Menu("Export") {
-                    Button("Save as PNG") { exportAsPNG() }
-                    Button("Save as PDF") { exportAsPDF() }
-                    Button("Save to PDF Page") { saveToPDFPage() }
-                }
-                .accessibilityIdentifier("sketchExportMenu")
-                .accessibilityLabel("Export Options")
-                .accessibilityHint("Save the sketch as an image file")
-                Button("Insert") { 
-                    let img = render()
-                    onInsert(img)
-                    saveSketch()
-                }
-                .accessibilityIdentifier("sketchInsert")
-                .accessibilityLabel("Insert Sketch")
-                .accessibilityHint("Insert the sketch into the current document")
-            }.padding(8)
-            Divider()
-            GeometryReader { proxy in
-                let sz = proxy.size
-                ZStack(alignment: .topLeading) {
-                    Color.white
-                    ForEach(strokes) { s in s.path.stroke(s.color, lineWidth: s.lineWidth) }
-                    current.path.stroke(current.color, lineWidth: current.lineWidth)
-                }
-                .contentShape(Rectangle())
-                .gesture(DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        if current.path.isEmpty {
-                            current = Stroke(path: Path(), color: penColor, lineWidth: penWidth)
-                            current.path.move(to: value.location)
-                        } else {
-                            current.path.addLine(to: value.location)
-                        }
-                    }
-                    .onEnded { _ in
-                        strokes.append(current)
-                        current = Stroke(path: Path(), color: penColor, lineWidth: penWidth)
-                    }
-                )
-                .onAppear { 
-                    canvasSize = sz
-                    loadSketch()
-                }
-                .onChange(of: sz) { _, newSize in
-                    scaleStrokesToNewSize(newSize)
-                    canvasSize = newSize
-                }
-            }
-        }
-        .frame(minWidth: size.width * 0.7, minHeight: size.height * 0.7)
+		VStack(spacing: 0) {
+			HStack(spacing: 12) {
+				Text("Sketch")
+				Divider()
+				ColorPicker("Ink", selection: $penColor)
+					.labelsHidden()
+					.accessibilityIdentifier("sketchColorPicker")
+					.accessibilityLabel("Pen Color")
+					.accessibilityHint("Choose the color for drawing strokes")
+				HStack {
+					Text("Width")
+					Slider(value: $penWidth, in: 1...16, step: 1)
+						.frame(width: 140)
+						.accessibilityIdentifier("sketchWidthSlider")
+						.accessibilityLabel("Pen Width")
+						.accessibilityValue("\(Int(penWidth)) pixels")
+					Text("\(Int(penWidth))")
+				}
+				Divider()
+				Button("Undo") { undo() }
+					.accessibilityIdentifier("sketchUndo")
+					.accessibilityLabel("Undo Last Stroke")
+					.accessibilityHint("Remove the most recent drawing stroke")
+					.disabled(strokes.isEmpty && undoStack.isEmpty)
+				Button("Redo") { redo() }
+					.accessibilityIdentifier("sketchRedo")
+					.accessibilityLabel("Redo Stroke")
+					.accessibilityHint("Restore the most recently undone stroke")
+					.disabled(redoStack.isEmpty)
+				Button("Clear") { clearAll() }
+					.accessibilityIdentifier("sketchClear")
+					.accessibilityLabel("Clear All Strokes")
+					.accessibilityHint("Remove all drawing strokes from the canvas")
+					.disabled(strokes.isEmpty)
+				Spacer()
+				Menu("Export") {
+					Button("Save as PNG") {
+						SketchRenderService.exportAsPNG(image: renderImage())
+					}
+					Button("Save as PDF") {
+						SketchRenderService.exportAsPDF(image: renderImage())
+					}
+					Button("Save to PDF Page") { saveToPDFPage() }
+				}
+				.accessibilityIdentifier("sketchExportMenu")
+				.accessibilityLabel("Export Options")
+				.accessibilityHint("Save the sketch as an image file")
+				Button("Insert") {
+					let img = renderImage()
+					onInsert(img)
+					saveSketch()
+				}
+				.accessibilityIdentifier("sketchInsert")
+				.accessibilityLabel("Insert Sketch")
+				.accessibilityHint("Insert the sketch into the current document")
+			}.padding(8)
+			Divider()
+			GeometryReader { proxy in
+				let sz = proxy.size
+				ZStack(alignment: .topLeading) {
+					Color.white
+					ForEach(strokes) { s in s.path.stroke(s.color, lineWidth: s.lineWidth) }
+					current.path.stroke(current.color, lineWidth: current.lineWidth)
+				}
+				.contentShape(Rectangle())
+				.gesture(DragGesture(minimumDistance: 0)
+					.onChanged { value in
+						if current.path.isEmpty {
+							current = Stroke(path: Path(), color: penColor, lineWidth: penWidth)
+							current.path.move(to: value.location)
+						} else {
+							current.path.addLine(to: value.location)
+						}
+					}
+					.onEnded { _ in
+						strokes.append(current)
+						current = Stroke(path: Path(), color: penColor, lineWidth: penWidth)
+					}
+				)
+				.onAppear {
+					canvasSize = sz
+					loadSketch()
+				}
+				.onChange(of: sz) { _, newSize in
+					scaleStrokesToNewSize(newSize)
+					canvasSize = newSize
+				}
+			}
+		}
+		.frame(minWidth: size.width * 0.7, minHeight: size.height * 0.7)
 	}
-	
-	func render() -> NSImage {
-        let targetSize = canvasSize == .zero ? size : canvasSize
-        let rect = CGRect(origin: .zero, size: targetSize)
-        let img = NSImage(size: targetSize)
-		img.lockFocus()
-		NSColor.white.setFill(); rect.fill()
-        for s in strokes {
-            let nsPath = s.path.nsBezierPath()
-            nsPath.lineWidth = s.lineWidth
-            NSColor(s.color).setStroke()
-            nsPath.stroke()
-        }
-		img.unlockFocus(); return img
+
+	// MARK: - Rendering (delegates to service)
+
+	private func renderImage() -> NSImage {
+		SketchRenderService.render(strokes: strokes, canvasSize: canvasSize, fallbackSize: size)
 	}
-	
-	// MARK: - Undo/Redo Methods
-	
+
+	// MARK: - Undo/Redo
+
 	private func undo() {
 		guard !strokes.isEmpty || !undoStack.isEmpty else { return }
-		
-		// Save current state to redo stack
 		redoStack.append(strokes)
-		
 		if !strokes.isEmpty {
-			// Remove last stroke
 			strokes.removeLast()
 		} else if !undoStack.isEmpty {
-			// Restore from undo stack
 			strokes = undoStack.removeLast()
 		}
 	}
-	
+
 	private func redo() {
 		guard !redoStack.isEmpty else { return }
-		
-		// Save current state to undo stack
 		undoStack.append(strokes)
-		
-		// Restore from redo stack
 		strokes = redoStack.removeLast()
 	}
-	
+
 	private func clearAll() {
-		// Save current state to undo stack
 		undoStack.append(strokes)
 		redoStack.removeAll()
 		strokes.removeAll()
 	}
-	
-	// MARK: - Persistence Methods
-	
+
+	// MARK: - Persistence (delegates to service)
+
 	private func saveSketch() {
 		guard let pdfURL = pdfURL else { return }
-
-		// Encode strokes to JSON
-		let strokesData: Data?
-		do {
-			strokesData = try JSONEncoder().encode(strokes)
-		} catch {
-			logError(AppLog.sketch, "Failed to encode sketch strokes: \(error.localizedDescription)")
-			strokesData = nil
-		}
-
-		// Render canvas image as TIFF data
-		let image = render()
-		let canvasData = image.tiffRepresentation ?? Data()
-
-		sketchStore.createSketch(for: pdfURL, pageIndex: pageIndex, canvasData: canvasData, strokesData: strokesData)
+		SketchRenderService.saveSketch(
+			strokes: strokes,
+			canvasSize: canvasSize,
+			fallbackSize: size,
+			pdfURL: pdfURL,
+			pageIndex: pageIndex,
+			sketchStore: sketchStore
+		)
 	}
 
 	private func loadSketch() {
 		guard let pdfURL = pdfURL else { return }
-
-		let existing = sketchStore.getSketches(for: pdfURL, pageIndex: pageIndex)
-		guard let latest = existing.last, let data = latest.strokesData else { return }
-
-		if let decoded = try? JSONDecoder().decode([Stroke].self, from: data) {
-			strokes = decoded
+		if let loaded = SketchRenderService.loadStrokes(pdfURL: pdfURL, pageIndex: pageIndex, sketchStore: sketchStore) {
+			strokes = loaded
 		}
 	}
-	
-	// MARK: - Window Resizing Support
-	
+
+	// MARK: - Window Resizing
+
 	private func scaleStrokesToNewSize(_ newSize: CGSize) {
 		guard canvasSize != .zero && newSize != canvasSize else { return }
-
 		let scaleX = newSize.width / canvasSize.width
 		let scaleY = newSize.height / canvasSize.height
 		let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
-
 		for i in strokes.indices {
 			strokes[i].path = strokes[i].path.applying(transform)
 			strokes[i].lineWidth *= min(scaleX, scaleY)
 		}
 	}
-	
-	// MARK: - Export Methods
-	
-	private func exportAsPNG() {
-		let image = render()
-		let savePanel = NSSavePanel()
-		savePanel.allowedContentTypes = [.png]
-		savePanel.nameFieldStringValue = "Sketch.png"
-		
-		savePanel.begin { response in
-			if response == .OK, let url = savePanel.url {
-				if let tiffData = image.tiffRepresentation,
-				   let bitmapRep = NSBitmapImageRep(data: tiffData),
-				   let pngData = bitmapRep.representation(using: .png, properties: [:]) {
-					try? pngData.write(to: url)
-				}
-			}
-		}
-	}
-	
-	private func exportAsPDF() {
-		let image = render()
-		let savePanel = NSSavePanel()
-		savePanel.allowedContentTypes = [.pdf]
-		savePanel.nameFieldStringValue = "Sketch.pdf"
-		
-		savePanel.begin { response in
-			if response == .OK, let url = savePanel.url {
-				let pdfDocument = PDFDocument()
-				if let pdfPage = PDFPage(image: image) {
-					pdfDocument.insert(pdfPage, at: 0)
-					pdfDocument.write(to: url)
-				}
-			}
-		}
-	}
-	
+
 	private func saveToPDFPage() {
 		guard pdfURL != nil else { return }
-		
-		// This would integrate with the PDF annotation system
-		// For now, just save as a sketch item
 		saveSketch()
 	}
 }
-

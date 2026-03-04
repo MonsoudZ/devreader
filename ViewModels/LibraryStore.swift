@@ -9,13 +9,21 @@ final class LibraryStore: ObservableObject {
 	@Published var currentOperation: String = ""
 
 	private let key = "DevReader.Library.v1"
-	private let backgroundService = LibraryPersistenceService.shared
-	private var persistWorkItem: DispatchWorkItem?
+	let backgroundService: LibraryPersistenceService
+	let loadingStateManager: LoadingStateManager
+	nonisolated(unsafe) private var persistWorkItem: DispatchWorkItem?
 	private var isRestoring = false
 
-	init() {
+	init(backgroundService: LibraryPersistenceService = .shared,
+		 loadingStateManager: LoadingStateManager = .shared) {
+		self.backgroundService = backgroundService
+		self.loadingStateManager = loadingStateManager
 		restore()
 		setupBackgroundService()
+	}
+
+	deinit {
+		persistWorkItem?.cancel()
 	}
 	
 	private func setupBackgroundService() {
@@ -31,7 +39,7 @@ final class LibraryStore: ObservableObject {
 	}
 
 	func add(urls: [URL]) {
-		LoadingStateManager.shared.startLoading(.general, message: "Adding PDFs to library...")
+		loadingStateManager.startLoading(.general, message: "Adding PDFs to library...")
 		
 		Task {
 			// Use background service for large imports
@@ -41,7 +49,7 @@ final class LibraryStore: ObservableObject {
 				await addSmallBatch(urls)
 			}
 			
-			LoadingStateManager.shared.stopLoading(.general)
+			loadingStateManager.stopLoading(.general)
 		}
 	}
 	
@@ -50,6 +58,7 @@ final class LibraryStore: ObservableObject {
 		let newItems = pdfs.map { url in
 			LibraryItem(
 				url: url,
+				securityScopedBookmark: LibraryItem(url: url).createSecurityScopedBookmark(),
 				title: url.lastPathComponent,
 				fileSize: getFileSize(for: url),
 				addedDate: Date(),
@@ -57,11 +66,13 @@ final class LibraryStore: ObservableObject {
 			)
 		}
 
-		// Remove duplicates using enhanced duplicate detection
+		// O(1) lookup for the common case (matching standardized URL)
+		let existingURLs = Set(items.map { $0.url.standardizedFileURL })
 		let uniqueNewItems = newItems.filter { newItem in
-			!items.contains { existingItem in
-				newItem.isDuplicate(of: existingItem)
-			}
+			// Fast path: most duplicates are caught by URL match
+			guard !existingURLs.contains(newItem.url.standardizedFileURL) else { return false }
+			// Slow path: fallback checks (symlinks, bookmarks, filename+size)
+			return !items.contains { $0.isDuplicate(of: newItem) }
 		}
 
 		let merged = items + uniqueNewItems
@@ -80,17 +91,17 @@ final class LibraryStore: ObservableObject {
 	}
 
 	func remove(_ item: LibraryItem) {
-		LoadingStateManager.shared.startLoading(.general, message: "Removing PDF from library...")
+		loadingStateManager.startLoading(.general, message: "Removing PDF from library...")
 		items.removeAll { $0.id == item.id }
 		schedulePersist()
-		LoadingStateManager.shared.stopLoading(.general)
+		loadingStateManager.stopLoading(.general)
 	}
 
 	func remove(ids: Set<LibraryItem.ID>) {
-		LoadingStateManager.shared.startLoading(.general, message: "Removing PDFs from library...")
+		loadingStateManager.startLoading(.general, message: "Removing PDFs from library...")
 		items.removeAll { ids.contains($0.id) }
 		schedulePersist()
-		LoadingStateManager.shared.stopLoading(.general)
+		loadingStateManager.stopLoading(.general)
 	}
 
 	func refreshItem(_ item: LibraryItem) {
@@ -113,6 +124,29 @@ final class LibraryStore: ObservableObject {
 			items[index] = updatedItem
 			schedulePersist()
 		}
+	}
+
+	/// Refresh the security-scoped bookmark for an item when its resolved URL differs from the stored URL.
+	func refreshBookmark(for item: LibraryItem, resolvedURL: URL) {
+		guard let index = items.firstIndex(where: { $0.id == item.id }),
+			  resolvedURL != item.url else { return }
+		let newBookmark = LibraryItem(url: resolvedURL).createSecurityScopedBookmark()
+		let updated = LibraryItem(
+			id: item.id,
+			url: resolvedURL,
+			securityScopedBookmark: newBookmark,
+			title: item.title,
+			author: item.author,
+			pageCount: item.pageCount,
+			fileSize: item.fileSize,
+			addedDate: item.addedDate,
+			lastOpened: item.lastOpened,
+			tags: item.tags,
+			isPinned: item.isPinned,
+			thumbnailData: item.thumbnailData
+		)
+		items[index] = updated
+		schedulePersist()
 	}
 
 	// MARK: - Debounced Persistence
@@ -148,7 +182,11 @@ final class LibraryStore: ObservableObject {
 		} else {
 			// Use synchronous persistence for small datasets
 			let envelope = LibraryEnvelope(items: items)
-			PersistenceService.saveCodable(envelope, forKey: key)
+			do {
+				try PersistenceService.saveCodable(envelope, forKey: key)
+			} catch {
+				logError(AppLog.app, "Library persist failed: \(error.localizedDescription)")
+			}
 		}
 	}
 
@@ -167,7 +205,7 @@ final class LibraryStore: ObservableObject {
 			items = oldItems
 			// Migrate to new format
 			let envelope = LibraryEnvelope(items: oldItems)
-			PersistenceService.saveCodable(envelope, forKey: key)
+			try? PersistenceService.saveCodable(envelope, forKey: key)
 			return
 		}
 
@@ -175,7 +213,7 @@ final class LibraryStore: ObservableObject {
 		if let envelope = JSONStorageService.loadOptional(LibraryEnvelope.self, from: JSONStorageService.libraryPath()) {
 			items = envelope.items
 			// Migrate back to PersistenceService so future restores find it immediately
-			PersistenceService.saveCodable(envelope, forKey: key)
+			try? PersistenceService.saveCodable(envelope, forKey: key)
 		}
 	}
 	

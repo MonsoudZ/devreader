@@ -65,23 +65,27 @@ final class ProductionTests: XCTestCase {
 
     // MARK: - Search Correctness Tests
 
-    func testSearchCaseInsensitive() async {
+    func testSearchCaseInsensitive() async throws {
         let pdfController = PDFController()
         let testURL = createSearchableTestPDF()
         let document = PDFDocument(url: testURL)!
+        defer { try? FileManager.default.removeItem(at: testURL) }
 
         // Use loadForTesting to bypass async debounce
         pdfController.loadForTesting(document: document, url: testURL)
 
         XCTAssertNotNil(pdfController.document, "Document should be loaded")
 
-        // Use performSearch directly
+        // performSearch launches an internal Task — wait for it to complete
         pdfController.searchManager.performSearch("Hello", in: pdfController.document)
 
-        XCTAssertGreaterThan(pdfController.searchManager.searchResults.count, 0, "Should find search results")
+        let deadline = CFAbsoluteTimeGetCurrent() + 5.0
+        while pdfController.searchManager.isSearching && CFAbsoluteTimeGetCurrent() < deadline {
+            try await Task.sleep(nanoseconds: 50_000_000) // 50ms
+        }
 
-        // Clean up
-        try? FileManager.default.removeItem(at: testURL)
+        XCTAssertFalse(pdfController.searchManager.isSearching, "Search should have completed")
+        XCTAssertGreaterThan(pdfController.searchManager.searchResults.count, 0, "Should find search results")
     }
 
     func testSearchHighlights() async {
@@ -203,12 +207,12 @@ final class ProductionTests: XCTestCase {
 
     // MARK: - Persistence Tests
 
-    func testAtomicWrites() async {
+    func testAtomicWrites() async throws {
         let testData: [String: String] = ["test": "value", "number": "42"]
         let key = "test.atomic.writes"
 
         // Save data
-        PersistenceService.saveCodable(testData, forKey: key)
+        try PersistenceService.saveCodable(testData, forKey: key)
 
         // Load data
         let loadedData: [String: String]? = PersistenceService.loadCodable([String: String].self, forKey: key)

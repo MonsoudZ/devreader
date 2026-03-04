@@ -21,7 +21,7 @@ class PerformanceMonitor: ObservableObject {
     @Published var averageMemoryUsage: UInt64 = 0
 
     private let logger = AppLog.performance
-    private var monitoringTimer: Timer?
+    nonisolated(unsafe) private var monitoringTimer: Timer?
     private var memoryHistory: [UInt64] = []
     private static let maxHistorySize = 50
     private static let memoryWarningThreshold: UInt64 = 500 * 1024 * 1024  // 500 MB
@@ -34,13 +34,20 @@ class PerformanceMonitor: ObservableObject {
         case normal, warning, critical
     }
 
-    private var appStateObservers: [Any] = []
+    nonisolated(unsafe) private var appStateObservers: [Any] = []
 
-    private init() {
+    init() {
         if !ProcessInfo.processInfo.isLowPowerModeEnabled {
             startMonitoring()
         }
         observeAppState()
+    }
+
+    deinit {
+        monitoringTimer?.invalidate()
+        for observer in appStateObservers {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     private func observeAppState() {
@@ -142,11 +149,15 @@ class PerformanceMonitor: ObservableObject {
         return 0
     }
 
+    private static let byteFormatter: ByteCountFormatter = {
+        let f = ByteCountFormatter()
+        f.allowedUnits = [.useMB, .useGB]
+        f.countStyle = .memory
+        return f
+    }()
+
     func formatBytes(_ bytes: UInt64) -> String {
-        let formatter = ByteCountFormatter()
-        formatter.allowedUnits = [.useMB, .useGB]
-        formatter.countStyle = .memory
-        return formatter.string(fromByteCount: Int64(bytes))
+        Self.byteFormatter.string(fromByteCount: Int64(bytes))
     }
 
     func getMemoryPressure() -> String {

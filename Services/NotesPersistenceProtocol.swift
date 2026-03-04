@@ -19,7 +19,11 @@ protocol NotesPersistenceProtocol {
 /// Production implementation using EnhancedPersistenceService
 @MainActor
 class NotesPersistenceService: NotesPersistenceProtocol {
-    private let persistenceService = EnhancedPersistenceService.shared
+    private let persistenceService: EnhancedPersistenceService
+
+    init(persistenceService: EnhancedPersistenceService = .shared) {
+        self.persistenceService = persistenceService
+    }
     
     private let notesKey = "DevReader.Notes.v1"
     private let pageNotesKey = "DevReader.PageNotes.v1"
@@ -30,7 +34,7 @@ class NotesPersistenceService: NotesPersistenceProtocol {
     }
     
     func loadNotes(for url: URL) -> [NoteItem] {
-        return persistenceService.loadCodable([NoteItem].self, forKey: notesKey, url: url) ?? []
+        return persistenceService.loadCodableWithMigration([NoteItem].self, forKey: notesKey, url: url) ?? []
     }
     
     func savePageNotes(_ pageNotes: [Int: String], for url: URL) throws {
@@ -38,7 +42,7 @@ class NotesPersistenceService: NotesPersistenceProtocol {
     }
     
     func loadPageNotes(for url: URL) -> [Int: String] {
-        return persistenceService.loadCodable([Int: String].self, forKey: pageNotesKey, url: url) ?? [:]
+        return persistenceService.loadCodableWithMigration([Int: String].self, forKey: pageNotesKey, url: url) ?? [:]
     }
     
     func saveTags(_ tags: Set<String>, for url: URL) throws {
@@ -46,7 +50,7 @@ class NotesPersistenceService: NotesPersistenceProtocol {
     }
     
     func loadTags(for url: URL) -> Set<String> {
-        return Set(persistenceService.loadCodable([String].self, forKey: tagsKey, url: url) ?? [])
+        return Set(persistenceService.loadCodableWithMigration([String].self, forKey: tagsKey, url: url) ?? [])
     }
     
     func clearData(for url: URL) {

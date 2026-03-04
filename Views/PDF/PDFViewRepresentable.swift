@@ -4,7 +4,6 @@ import Combine
 
 @MainActor
 final class PDFSelectionBridge {
-	static let shared = PDFSelectionBridge()
 	weak var pdfView: PDFView?
 	var cancellables = Set<AnyCancellable>()
 	var currentSelection: PDFSelection? { pdfView?.currentSelection }
@@ -43,8 +42,8 @@ struct PDFViewRepresentable: NSViewRepresentable {
 		v.displayMode = .singlePageContinuous
 		v.backgroundColor = .windowBackgroundColor
 		v.delegate = context.coordinator
-		PDFSelectionBridge.shared.pdfView = v
-		PDFSelectionBridge.shared.observeSelectionChanges(from: v)
+		pdf.selectionBridge.pdfView = v
+		pdf.selectionBridge.observeSelectionChanges(from: v)
 
 		// Aggressive memory optimization
 		v.interpolationQuality = .low
