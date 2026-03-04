@@ -129,10 +129,8 @@ struct WebView: NSViewRepresentable {
         // Configure JavaScript settings (modern API)
         config.preferences.javaScriptCanOpenWindowsAutomatically = false
 
-        // Configure website data store
-        config.websiteDataStore = WKWebsiteDataStore.default()
-
-        // Process pool is no longer needed in modern WebKit
+        // Ephemeral data store — no persistent cookies or cache across sessions
+        config.websiteDataStore = WKWebsiteDataStore.nonPersistent()
 
         // Set user agent
         config.applicationNameForUserAgent = "DevReader/1.0"
