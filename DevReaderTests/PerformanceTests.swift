@@ -13,6 +13,8 @@ final class PerformanceTests: XCTestCase {
                 defaults.removeObject(forKey: key)
             }
         }
+        // Clear file-based persistence to prevent cross-test data leakage
+        EnhancedPersistenceService.shared.clearAllData()
     }
     
     // MARK: - Large PDF Performance Tests

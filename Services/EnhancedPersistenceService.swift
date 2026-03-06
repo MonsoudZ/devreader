@@ -168,13 +168,33 @@ class EnhancedPersistenceService: ObservableObject {
 
         for baseKey in baseKeys {
             let finalKey = generateKey(baseKey, for: url)
-            let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
-            guard fileManager.fileExists(atPath: fileURL.path) else { continue }
-            do {
-                try fileManager.removeItem(at: fileURL)
-            } catch {
-                failures += 1
-                os_log("Failed to delete %{public}@: %{public}@", log: logger, type: .error, finalKey, error.localizedDescription)
+            let primaryURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
+
+            // Delete primary file and associated .bak/.tmp files
+            for fileURL in [primaryURL,
+                            primaryURL.appendingPathExtension(JSONStorageService.backupExtension),
+                            primaryURL.appendingPathExtension(JSONStorageService.tempExtension)] {
+                guard fileManager.fileExists(atPath: fileURL.path) else { continue }
+                do {
+                    try fileManager.removeItem(at: fileURL)
+                } catch {
+                    failures += 1
+                    os_log("Failed to delete %{public}@: %{public}@", log: logger, type: .error, fileURL.lastPathComponent, error.localizedDescription)
+                }
+            }
+        }
+
+        // Also clean up legacy-keyed files (path-hash format) if different from content-fingerprint key
+        let hash = PersistenceService.stableHash(for: url)
+        let legacyPrefixes = ["notes_", "page_notes_", "tags_", "annotations_", "bookmarks_", "session_"]
+        for prefix in legacyPrefixes {
+            let legacyURL = JSONStorageService.dataDirectory.appendingPathComponent("\(prefix)\(hash).json")
+            if fileManager.fileExists(atPath: legacyURL.path) {
+                do {
+                    try fileManager.removeItem(at: legacyURL)
+                } catch {
+                    failures += 1
+                }
             }
         }
 

@@ -209,7 +209,11 @@ final class PDFController: ObservableObject {
 		self.document = loadedDoc
 		self.currentPDFURL = url
 
-		try? PersistenceService.saveCodable(url, forKey: lastOpenedPDFKey)
+		do {
+			try PersistenceService.saveCodable(url, forKey: lastOpenedPDFKey)
+		} catch {
+			logError(AppLog.persistence, "Failed to save last-opened PDF: \(error.localizedDescription)")
+		}
 
 		if isLargePDF {
 			loadingStateManager.updatePDFProgress(0.8, message: "Building outline for large PDF...")
@@ -306,7 +310,11 @@ final class PDFController: ObservableObject {
 
     func savePageForPDF(_ url: URL) {
         let pageKey = PersistenceService.key(sessionKey, for: url)
-        try? PersistenceService.saveInt(currentPageIndex, forKey: pageKey)
+        do {
+            try PersistenceService.saveInt(currentPageIndex, forKey: pageKey)
+        } catch {
+            logError(AppLog.persistence, "Failed to save page position: \(error.localizedDescription)")
+        }
     }
 
     private func loadPageForPDF(_ url: URL) {

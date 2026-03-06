@@ -70,16 +70,16 @@ nonisolated enum JSONStorageService {
         }
     }
     
-    /// Serial queue that serializes all file writes to prevent concurrent save corruption.
-    private static let writeQueue = DispatchQueue(label: "com.monsoud.devreader.json-storage-write")
+    /// Concurrent queue with barrier writes — readers proceed in parallel, writes get exclusive access.
+    private static let ioQueue = DispatchQueue(label: "com.monsoud.devreader.json-storage-io", attributes: .concurrent)
 
     // MARK: - JSON Operations
     static func save<T: Codable>(_ data: T, to url: URL) throws {
         ensureDirectories()
         let jsonData = try JSONEncoder().encode(data)
 
-        // Serialize writes to the same destination to prevent race conditions
-        try writeQueue.sync {
+        // Barrier write: blocks all concurrent readers/writers until complete
+        try ioQueue.sync(flags: .barrier) {
             // Atomic write to prevent corruption — UUID avoids collision on concurrent saves
             let tempURL = url.deletingPathExtension()
                 .appendingPathExtension(UUID().uuidString)
@@ -111,24 +111,32 @@ nonisolated enum JSONStorageService {
             }
         }
     }
-    
+
     static func load<T: Codable>(_ type: T.Type, from url: URL) throws -> T {
-        let jsonData = try Data(contentsOf: url)
-        let result = try JSONDecoder().decode(type, from: jsonData)
-        os_log("Loaded data from: %{public}@", log: logger, type: .debug, url.path)
-        return result
-    }
-    
-    static func loadOptional<T: Codable>(_ type: T.Type, from url: URL) -> T? {
-        guard FileManager.default.fileExists(atPath: url.path) else { 
-            os_log("File does not exist: %{public}@", log: logger, type: .debug, url.path)
-            return nil 
+        // Read through ioQueue so reads are serialized against barrier writes
+        try ioQueue.sync {
+            let jsonData = try Data(contentsOf: url)
+            let result = try JSONDecoder().decode(type, from: jsonData)
+            os_log("Loaded data from: %{public}@", log: logger, type: .debug, url.path)
+            return result
         }
-        do {
-            return try load(type, from: url)
-        } catch {
-            os_log("Failed to load data from %{public}@: %{public}@", log: logger, type: .error, url.path, error.localizedDescription)
-            return nil
+    }
+
+    static func loadOptional<T: Codable>(_ type: T.Type, from url: URL) -> T? {
+        ioQueue.sync {
+            guard FileManager.default.fileExists(atPath: url.path) else {
+                os_log("File does not exist: %{public}@", log: logger, type: .debug, url.path)
+                return nil
+            }
+            do {
+                let jsonData = try Data(contentsOf: url)
+                let result = try JSONDecoder().decode(type, from: jsonData)
+                os_log("Loaded data from: %{public}@", log: logger, type: .debug, url.path)
+                return result
+            } catch {
+                os_log("Failed to load data from %{public}@: %{public}@", log: logger, type: .error, url.path, error.localizedDescription)
+                return nil
+            }
         }
     }
     
@@ -421,72 +429,95 @@ nonisolated enum JSONStorageService {
     static func importAllData(_ data: DevReaderData) throws {
         ensureDirectories()
 
-        // Import library
-        try save(data.library, to: libraryPath())
+        // Write everything to a staging directory first so a crash can't leave partial state
+        let stagingDir = appSupportURL.appendingPathComponent("ImportStaging-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: stagingDir, withIntermediateDirectories: true)
 
-        // Import recent and pinned documents
-        let recentURLs = data.recentDocuments.compactMap { URL(string: $0) }
-        let pinnedURLs = data.pinnedDocuments.compactMap { URL(string: $0) }
-        try save(recentURLs, to: recentsPath())
-        try save(pinnedURLs, to: pinnedPath())
+        do {
+            // Stage library
+            try saveToDir(data.library, filename: "library.json", in: stagingDir)
 
-        // Import web bookmarks (optional field for backward compatibility)
-        if let webBookmarkStrings = data.webBookmarks {
-            let webBookmarkURLs = webBookmarkStrings.compactMap { URL(string: $0) }
-            try save(webBookmarkURLs, to: webBookmarksPath())
-        }
+            // Stage recent and pinned
+            let recentURLs = data.recentDocuments.compactMap { URL(string: $0) }
+            let pinnedURLs = data.pinnedDocuments.compactMap { URL(string: $0) }
+            try saveToDir(recentURLs, filename: "recents.json", in: stagingDir)
+            try saveToDir(pinnedURLs, filename: "pinned.json", in: stagingDir)
 
-        // Import annotation bundles
-        if let bundles = data.annotationBundles {
-            for bundle in bundles {
-                let fileURL = dataDirectory.appendingPathComponent("annotations_\(bundle.hash).json")
-                try save(bundle.annotations, to: fileURL)
+            // Stage web bookmarks
+            if let webBookmarkStrings = data.webBookmarks {
+                let webBookmarkURLs = webBookmarkStrings.compactMap { URL(string: $0) }
+                try saveToDir(webBookmarkURLs, filename: "web_bookmarks.json", in: stagingDir)
             }
-        }
 
-        // Import notes bundles
-        if let bundles = data.notesBundles {
-            for bundle in bundles {
-                let notesFile = dataDirectory.appendingPathComponent("DevReader.Notes.v1.\(bundle.hash).json")
-                try save(bundle.notes, to: notesFile)
-                if let pageNotes = bundle.pageNotes {
-                    let pageNotesFile = dataDirectory.appendingPathComponent("DevReader.PageNotes.v1.\(bundle.hash).json")
-                    try save(pageNotes, to: pageNotesFile)
-                }
-                if let tags = bundle.tags {
-                    let tagsFile = dataDirectory.appendingPathComponent("DevReader.Tags.v1.\(bundle.hash).json")
-                    try save(tags, to: tagsFile)
+            // Stage annotation bundles
+            if let bundles = data.annotationBundles {
+                for bundle in bundles {
+                    try saveToDir(bundle.annotations, filename: "annotations_\(bundle.hash).json", in: stagingDir)
                 }
             }
-        }
 
-        // Import bookmarks bundles
-        if let bundles = data.bookmarksBundles {
-            for bundle in bundles {
-                let fileURL = dataDirectory.appendingPathComponent("bookmarks_\(bundle.hash).json")
-                try save(bundle.bookmarks, to: fileURL)
+            // Stage notes bundles
+            if let bundles = data.notesBundles {
+                for bundle in bundles {
+                    try saveToDir(bundle.notes, filename: "DevReader.Notes.v1.\(bundle.hash).json", in: stagingDir)
+                    if let pageNotes = bundle.pageNotes {
+                        try saveToDir(pageNotes, filename: "DevReader.PageNotes.v1.\(bundle.hash).json", in: stagingDir)
+                    }
+                    if let tags = bundle.tags {
+                        try saveToDir(tags, filename: "DevReader.Tags.v1.\(bundle.hash).json", in: stagingDir)
+                    }
+                }
             }
-        }
 
-        // Import session bundles
-        if let bundles = data.sessionBundles {
-            for bundle in bundles {
-                let fileURL = dataDirectory.appendingPathComponent("session_\(bundle.hash).json")
-                try bundle.data.write(to: fileURL)
+            // Stage bookmarks bundles
+            if let bundles = data.bookmarksBundles {
+                for bundle in bundles {
+                    try saveToDir(bundle.bookmarks, filename: "bookmarks_\(bundle.hash).json", in: stagingDir)
+                }
             }
-        }
 
-        // Import sketches
-        if let sketches = data.sketches {
-            let sketchesFile = dataDirectory.appendingPathComponent("DevReader.Sketches.v1.json")
-            try save(sketches, to: sketchesFile)
-        }
+            // Stage session bundles
+            if let bundles = data.sessionBundles {
+                for bundle in bundles {
+                    try bundle.data.write(to: stagingDir.appendingPathComponent("session_\(bundle.hash).json"))
+                }
+            }
 
-        os_log("Imported data with %d library items, %d note bundles, %d sketches",
-               log: logger, type: .info,
-               data.library.count,
-               data.notesBundles?.count ?? 0,
-               data.sketches?.count ?? 0)
+            // Stage sketches
+            if let sketches = data.sketches {
+                try saveToDir(sketches, filename: "DevReader.Sketches.v1.json", in: stagingDir)
+            }
+
+            // All staging writes succeeded — move files into live data directory
+            let stagedFiles = try FileManager.default.contentsOfDirectory(at: stagingDir, includingPropertiesForKeys: nil)
+            for file in stagedFiles {
+                let dest = dataDirectory.appendingPathComponent(file.lastPathComponent)
+                if FileManager.default.fileExists(atPath: dest.path) {
+                    _ = try FileManager.default.replaceItem(at: dest, withItemAt: file, backupItemName: nil, options: [], resultingItemURL: nil)
+                } else {
+                    try FileManager.default.moveItem(at: file, to: dest)
+                }
+            }
+
+            // Clean up staging directory
+            try? FileManager.default.removeItem(at: stagingDir)
+
+            os_log("Imported data with %d library items, %d note bundles, %d sketches",
+                   log: logger, type: .info,
+                   data.library.count,
+                   data.notesBundles?.count ?? 0,
+                   data.sketches?.count ?? 0)
+        } catch {
+            // Clean up staging directory on failure — live data is untouched
+            try? FileManager.default.removeItem(at: stagingDir)
+            throw error
+        }
+    }
+
+    /// Encodes and writes data to a file in the given directory (used for staged imports).
+    private static func saveToDir<T: Codable>(_ data: T, filename: String, in dir: URL) throws {
+        let jsonData = try JSONEncoder().encode(data)
+        try jsonData.write(to: dir.appendingPathComponent(filename))
     }
     
     // MARK: - Cleanup

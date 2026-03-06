@@ -71,7 +71,7 @@ class PerformanceMonitor: ObservableObject {
         isMonitoring = true
 
         monitoringTimer = Timer.scheduledTimer(withTimeInterval: Self.monitoringInterval, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated {
+            Task { @MainActor in
                 self?.updateMemoryUsage()
             }
         }

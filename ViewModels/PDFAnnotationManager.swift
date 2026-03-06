@@ -62,18 +62,8 @@ final class PDFAnnotationManager: ObservableObject {
 		}
 
 		let colorName = UserDefaults.standard.string(forKey: "highlightColor") ?? "yellow"
-		let color: NSColor = switch colorName {
-		case "green": .systemGreen.withAlphaComponent(0.3)
-		case "blue": .systemBlue.withAlphaComponent(0.3)
-		case "pink": .systemPink.withAlphaComponent(0.3)
-		default: .systemYellow.withAlphaComponent(0.3)
-		}
-
-		let pdfAnnotationType: PDFAnnotationSubtype = switch type {
-		case .highlight: .highlight
-		case .underline: .underline
-		case .strikethrough: .strikeOut
-		}
+		let color = Self.annotationColor(for: colorName)
+		let pdfAnnotationType = Self.pdfSubtype(for: type)
 
 		var didApply = false
 		for page in selection.pages {
@@ -115,20 +105,8 @@ final class PDFAnnotationManager: ObservableObject {
 			guard record.pageIndex >= 0, record.pageIndex < doc.pageCount,
 				  let page = doc.page(at: record.pageIndex) else { continue }
 
-			let color: NSColor = switch record.colorName {
-			case "green": .systemGreen.withAlphaComponent(0.3)
-			case "blue": .systemBlue.withAlphaComponent(0.3)
-			case "pink": .systemPink.withAlphaComponent(0.3)
-			default: .systemYellow.withAlphaComponent(0.3)
-			}
-
-			let pdfSubtype: PDFAnnotationSubtype = switch record.type {
-			case .highlight: .highlight
-			case .underline: .underline
-			case .strikethrough: .strikeOut
-			}
-			let pdfAnnotation = PDFAnnotation(bounds: record.bounds.cgRect, forType: pdfSubtype, withProperties: nil)
-			pdfAnnotation.color = color
+			let pdfAnnotation = PDFAnnotation(bounds: record.bounds.cgRect, forType: Self.pdfSubtype(for: record.type), withProperties: nil)
+			pdfAnnotation.color = Self.annotationColor(for: record.colorName)
 			page.addAnnotation(pdfAnnotation)
 		}
 	}
@@ -247,5 +225,24 @@ final class PDFAnnotationManager: ObservableObject {
 		ctrl.toastRequestPublisher.send(
 			ToastMessage(message: "Sticky note added", type: .success)
 		)
+	}
+
+	// MARK: - Shared Helpers
+
+	private static func annotationColor(for name: String) -> NSColor {
+		switch name {
+		case "green": .systemGreen.withAlphaComponent(0.3)
+		case "blue": .systemBlue.withAlphaComponent(0.3)
+		case "pink": .systemPink.withAlphaComponent(0.3)
+		default: .systemYellow.withAlphaComponent(0.3)
+		}
+	}
+
+	private static func pdfSubtype(for type: PDFAnnotationData.AnnotationType) -> PDFAnnotationSubtype {
+		switch type {
+		case .highlight: .highlight
+		case .underline: .underline
+		case .strikethrough: .strikeOut
+		}
 	}
 }

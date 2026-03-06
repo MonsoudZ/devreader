@@ -192,17 +192,10 @@ final class NotesStore: ObservableObject {
 	}
 
 	private func persistForPDF(_ url: URL) {
-		// Write a journal marker before multi-file save so we know if a crash
-		// interrupted the operation. On next load we can detect partial writes.
-		let journalKey = "DevReader.NotesJournal.\(PersistenceService.stableHash(for: url))"
-		UserDefaults.standard.set(true, forKey: journalKey)
-
 		do {
 			try persistenceService.saveNotes(items, for: url)
 			try persistenceService.savePageNotes(pageNotes, for: url)
 			try persistenceService.saveTags(availableTags, for: url)
-			// All three writes succeeded — remove journal marker
-			UserDefaults.standard.removeObject(forKey: journalKey)
 			SpotlightService.shared.indexNotes(items, pdfTitle: url.deletingPathExtension().lastPathComponent, pdfURL: url)
 		} catch {
 			logError(AppLog.notes, "Failed to persist notes for PDF: \(url.lastPathComponent), error: \(error)")

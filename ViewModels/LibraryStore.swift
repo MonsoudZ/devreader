@@ -202,7 +202,11 @@ final class LibraryStore: ObservableObject {
 			items = oldItems
 			// Migrate to new format
 			let envelope = LibraryEnvelope(items: oldItems)
-			try? PersistenceService.saveCodable(envelope, forKey: key)
+			do {
+				try PersistenceService.saveCodable(envelope, forKey: key)
+			} catch {
+				logError(AppLog.persistence, "Library migration save failed: \(error.localizedDescription)")
+			}
 			return
 		}
 
@@ -210,7 +214,11 @@ final class LibraryStore: ObservableObject {
 		if let envelope = JSONStorageService.loadOptional(LibraryEnvelope.self, from: JSONStorageService.libraryPath()) {
 			items = envelope.items
 			// Migrate back to PersistenceService so future restores find it immediately
-			try? PersistenceService.saveCodable(envelope, forKey: key)
+			do {
+				try PersistenceService.saveCodable(envelope, forKey: key)
+			} catch {
+				logError(AppLog.persistence, "Library migration save failed: \(error.localizedDescription)")
+			}
 		}
 	}
 	

@@ -40,12 +40,24 @@
 		<string>/usr/bin/java</string>
 		<string>/usr/bin/sqlite3</string>
 		<string>/usr/bin/env</string>
-		<string>/usr/local/bin/</string>
-		<string>/opt/homebrew/bin/</string>
+		<string>/usr/local/bin/npx</string>
+		<string>/usr/local/bin/kotlinc</string>
+		<string>/usr/local/bin/dart</string>
+		<string>/usr/local/bin/rustc</string>
+		<string>/usr/local/bin/node</string>
+		<string>/usr/local/go/bin/go</string>
+		<string>/opt/homebrew/bin/node</string>
+		<string>/opt/homebrew/bin/npx</string>
+		<string>/opt/homebrew/bin/go</string>
+		<string>/opt/homebrew/bin/rustc</string>
+		<string>/opt/homebrew/bin/kotlinc</string>
+		<string>/opt/homebrew/bin/dart</string>
+		<string>/opt/homebrew/bin/python3</string>
+		<string>/opt/homebrew/bin/ruby</string>
 		<string>/bin/bash</string>
 	</array>
 	<key>com.apple.security.cs.allow-jit</key>
-	<true/>
+	<false/>
 	<key>com.apple.security.cs.disable-library-validation</key>
 	<false/>
 </dict>

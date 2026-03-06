@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import os.log
 
 @MainActor
 final class PDFBookmarkManager: ObservableObject {
@@ -37,7 +38,11 @@ final class PDFBookmarkManager: ObservableObject {
     func saveBookmarks(for url: URL?) {
         guard let url = url else { return }
         let key = PersistenceService.key(bookmarksKey, for: url)
-        try? PersistenceService.saveCodable(Array(bookmarks), forKey: key)
+        do {
+            try PersistenceService.saveCodable(Array(bookmarks), forKey: key)
+        } catch {
+            logError(AppLog.persistence, "Failed to save bookmarks: \(error.localizedDescription)")
+        }
     }
 
     func loadRecents() {
@@ -61,8 +66,16 @@ final class PDFBookmarkManager: ObservableObject {
     }
 
     func saveRecents() {
-        try? PersistenceService.saveCodable(recentDocuments, forKey: recentsKey)
-        try? PersistenceService.saveCodable(pinnedDocuments, forKey: pinnedKey)
+        do {
+            try PersistenceService.saveCodable(recentDocuments, forKey: recentsKey)
+        } catch {
+            logError(AppLog.persistence, "Failed to save recents: \(error.localizedDescription)")
+        }
+        do {
+            try PersistenceService.saveCodable(pinnedDocuments, forKey: pinnedKey)
+        } catch {
+            logError(AppLog.persistence, "Failed to save pinned: \(error.localizedDescription)")
+        }
     }
 
     func addRecent(_ url: URL) {

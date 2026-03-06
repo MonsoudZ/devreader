@@ -125,7 +125,13 @@ struct WebPane: View {
 	}
 	private func isBookmarked(_ url: URL?) -> Bool { guard let u = url else { return false }; return bookmarks.contains(u) }
 	private func loadBookmarks() { if let arr: [URL] = PersistenceService.loadCodable([URL].self, forKey: bookmarksKey) { bookmarks = arr } }
-	private func saveBookmarks() { try? PersistenceService.saveCodable(bookmarks, forKey: bookmarksKey) }
+	private func saveBookmarks() {
+		do {
+			try PersistenceService.saveCodable(bookmarks, forKey: bookmarksKey)
+		} catch {
+			logError(AppLog.persistence, "Failed to save web bookmarks: \(error.localizedDescription)")
+		}
+	}
 }
 
 struct WebView: NSViewRepresentable {
