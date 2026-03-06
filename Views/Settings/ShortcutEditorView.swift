@@ -42,7 +42,7 @@ private struct ShortcutRow: View {
 	let action: ShortcutAction
 	@ObservedObject var store: KeyboardShortcutStore
 	@State private var isRecording = false
-	@State private var recordedBinding: ShortcutBinding?
+	@State private var conflictWarning: String?
 
 	private var binding: ShortcutBinding {
 		store.binding(for: action)
@@ -52,47 +52,78 @@ private struct ShortcutRow: View {
 		binding == KeyboardShortcutStore.defaults[action]
 	}
 
-	var body: some View {
-		HStack {
-			Text(action.displayName)
-				.font(.caption)
-				.frame(width: 160, alignment: .leading)
+	private var conflicts: [ShortcutAction] {
+		store.conflictingActions(for: binding, excluding: action)
+	}
 
-			if isRecording {
-				ShortcutRecorder { newBinding in
-					if let b = newBinding {
-						store.update(action, to: b)
+	var body: some View {
+		VStack(alignment: .leading, spacing: 2) {
+			HStack {
+				Text(action.displayName)
+					.font(.caption)
+					.frame(width: 160, alignment: .leading)
+
+				if isRecording {
+					ShortcutRecorder { newBinding in
+						if let b = newBinding {
+							let existing = store.conflictingActions(for: b, excluding: action)
+							if !existing.isEmpty {
+								conflictWarning = "Conflicts with: \(existing.map(\.displayName).joined(separator: ", "))"
+							} else {
+								conflictWarning = nil
+							}
+							store.update(action, to: b)
+						}
+						isRecording = false
 					}
-					isRecording = false
+					.frame(width: 120, height: 22)
+				} else {
+					Button {
+						isRecording = true
+					} label: {
+						Text(binding.displayString)
+							.font(.system(.caption, design: .monospaced))
+							.frame(width: 100)
+							.padding(.horizontal, 6)
+							.padding(.vertical, 2)
+							.background(Color(NSColor.controlBackgroundColor))
+							.cornerRadius(4)
+							.overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(conflicts.isEmpty ? Color.gray.opacity(0.2) : Color.orange))
+					}
+					.buttonStyle(.plain)
+					.accessibilityLabel("Shortcut for \(action.displayName): \(binding.displayString)")
+					.accessibilityHint("Click to record a new shortcut")
 				}
-				.frame(width: 120, height: 22)
-			} else {
-				Button {
-					isRecording = true
-				} label: {
-					Text(binding.displayString)
-						.font(.system(.caption, design: .monospaced))
-						.frame(width: 100)
-						.padding(.horizontal, 6)
-						.padding(.vertical, 2)
-						.background(Color(NSColor.controlBackgroundColor))
-						.cornerRadius(4)
-						.overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(.quaternary))
+
+				if !isDefault {
+					Button {
+						store.resetAction(action)
+						conflictWarning = nil
+					} label: {
+						Image(systemName: "arrow.counterclockwise")
+							.font(.caption)
+					}
+					.buttonStyle(.borderless)
+					.accessibilityLabel("Reset to default")
 				}
-				.buttonStyle(.plain)
-				.accessibilityLabel("Shortcut for \(action.displayName): \(binding.displayString)")
-				.accessibilityHint("Click to record a new shortcut")
 			}
 
-			if !isDefault {
-				Button {
-					store.resetAction(action)
-				} label: {
-					Image(systemName: "arrow.counterclockwise")
-						.font(.caption)
-				}
-				.buttonStyle(.borderless)
-				.accessibilityLabel("Reset to default")
+			if !conflicts.isEmpty {
+				Text("Conflicts with: \(conflicts.map(\.displayName).joined(separator: ", "))")
+					.font(.caption2)
+					.foregroundStyle(.orange)
+			}
+
+			if let warning = conflictWarning {
+				Text(warning)
+					.font(.caption2)
+					.foregroundStyle(.orange)
+					.onAppear {
+						Task { @MainActor in
+							try? await Task.sleep(nanoseconds: 3_000_000_000)
+							conflictWarning = nil
+						}
+					}
 			}
 		}
 	}

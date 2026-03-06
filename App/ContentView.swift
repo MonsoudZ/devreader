@@ -24,6 +24,7 @@ struct ContentView: View {
     @AppStorage("ui.rightTab") private var rightTab: RightTab = .notes
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var showingSearch = false
+    @State private var showingThumbnails = false
 
     // Autosave timer: we recreate it whenever the interval changes
     @State private var autosaveCancellable: AnyCancellable?
@@ -59,7 +60,15 @@ struct ContentView: View {
                 )
                 .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
             } detail: {
-                // Center: PDF viewer
+                // Center: PDF viewer with optional thumbnail pane
+                HStack(spacing: 0) {
+                    if showingThumbnails, appEnvironment.pdfController.document != nil {
+                        PDFThumbnailPane(pdf: appEnvironment.pdfController)
+                            .frame(width: 160)
+                            .transition(.move(edge: .leading))
+                        Divider()
+                    }
+
                 ZStack {
                     PDFViewRepresentable(pdf: appEnvironment.pdfController)
                         .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
@@ -92,6 +101,8 @@ struct ContentView: View {
                 }
                 .animation(.easeInOut(duration: 0.2), value: showingSearch)
                 .animation(.easeInOut(duration: 0.2), value: appEnvironment.pdfController.document != nil)
+                }
+                .animation(.easeInOut(duration: 0.2), value: showingThumbnails)
                     .navigationTitle(documentTitle)
                     .navigationSubtitle(pageInfo)
                     // Right: Tools inspector
@@ -118,6 +129,16 @@ struct ContentView: View {
                         }
 
                         ToolbarItemGroup(placement: .primaryAction) {
+                            Button {
+                                withAnimation {
+                                    showingThumbnails.toggle()
+                                }
+                            } label: {
+                                Label("Thumbnails", systemImage: "rectangle.grid.1x2")
+                            }
+                            .help("Toggle Page Thumbnails")
+                            .accessibilityIdentifier("toggleThumbnails")
+
                             Button {
                                 withAnimation {
                                     showingLibrary.toggle()

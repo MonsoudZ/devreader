@@ -13,6 +13,9 @@ struct SettingsView: View {
 	@AppStorage("pdfDarkMode") private var pdfDarkMode: String = "off"
 	@EnvironmentObject private var appEnvironment: AppEnvironment
 	private var performanceMonitor: PerformanceMonitor { appEnvironment.performanceMonitor }
+	@AppStorage("autoBackupEnabled") private var autoBackupEnabled = false
+	@AppStorage("autoBackupIntervalHours") private var autoBackupIntervalHours: Double = 24
+	@AppStorage("lastAutoBackupDate") private var lastAutoBackupTimestamp: Double = 0
 	@State private var alertMessage = ""
 	@State private var alertTitle = ""
 	@State private var showingAlert = false
@@ -139,6 +142,32 @@ struct SettingsView: View {
 					.accessibilityIdentifier("exportPerformanceReport")
 					.accessibilityLabel("Export performance report")
 					.accessibilityHint("Export a performance report for large PDF loading")
+				}
+
+				Section("Automatic Backups") {
+					Toggle("Enable Auto-Backup", isOn: $autoBackupEnabled)
+						.accessibilityLabel("Enable automatic backups")
+					if autoBackupEnabled {
+						Picker("Backup Interval", selection: $autoBackupIntervalHours) {
+							Text("Every 6 hours").tag(6.0)
+							Text("Every 12 hours").tag(12.0)
+							Text("Daily").tag(24.0)
+							Text("Weekly").tag(168.0)
+						}
+						.pickerStyle(.segmented)
+						.accessibilityLabel("Backup interval")
+
+						if lastAutoBackupTimestamp > 0 {
+							let lastDate = Date(timeIntervalSince1970: lastAutoBackupTimestamp)
+							Text("Last backup: \(lastDate.formatted(date: .abbreviated, time: .shortened))")
+								.font(.caption)
+								.foregroundStyle(.secondary)
+						} else {
+							Text("No automatic backup yet")
+								.font(.caption)
+								.foregroundStyle(.secondary)
+						}
+					}
 				}
 
 				Section("Data Management") {

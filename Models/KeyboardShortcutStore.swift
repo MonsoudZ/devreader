@@ -117,6 +117,13 @@ final class KeyboardShortcutStore: ObservableObject {
 		bindings[action] = binding
 	}
 
+	/// Returns actions (excluding `excluded`) that already use the same key combo.
+	func conflictingActions(for binding: ShortcutBinding, excluding: ShortcutAction) -> [ShortcutAction] {
+		bindings.compactMap { (action, existing) in
+			action != excluding && existing == binding ? action : nil
+		}
+	}
+
 	func resetToDefaults() {
 		bindings = Self.defaults
 	}

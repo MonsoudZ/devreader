@@ -142,11 +142,37 @@ struct SketchView: View {
 		}
 	}
 
+	enum SketchTool: String, CaseIterable {
+		case pen, eraser, rectangle, circle, line
+
+		var icon: String {
+			switch self {
+			case .pen: "pencil"
+			case .eraser: "eraser"
+			case .rectangle: "rectangle"
+			case .circle: "circle"
+			case .line: "line.diagonal"
+			}
+		}
+
+		var label: String {
+			switch self {
+			case .pen: "Pen"
+			case .eraser: "Eraser"
+			case .rectangle: "Rectangle"
+			case .circle: "Circle"
+			case .line: "Line"
+			}
+		}
+	}
+
 	@State private var strokes: [Stroke] = []
 	@State private var current: Stroke = Stroke(path: Path(), color: .black, lineWidth: 2)
 	@State private var penColor: Color = .black
 	@State private var penWidth: CGFloat = 2
 	@State private var canvasSize: CGSize = .zero
+	@State private var activeTool: SketchTool = .pen
+	@State private var dragStart: CGPoint = .zero
 
 	// Undo/Redo stacks
 	@State private var undoStack: [[Stroke]] = []
@@ -167,6 +193,21 @@ struct SketchView: View {
 		VStack(spacing: 0) {
 			HStack(spacing: 12) {
 				Text("Sketch")
+				Divider()
+
+				// Tool picker
+				ForEach(SketchTool.allCases, id: \.self) { tool in
+					Button {
+						activeTool = tool
+					} label: {
+						Image(systemName: tool.icon)
+					}
+					.buttonStyle(.borderless)
+					.foregroundColor(activeTool == tool ? .accentColor : .secondary)
+					.help(tool.label)
+					.accessibilityLabel(tool.label)
+				}
+
 				Divider()
 				ColorPicker("Ink", selection: $penColor)
 					.labelsHidden()
@@ -231,16 +272,48 @@ struct SketchView: View {
 				.contentShape(Rectangle())
 				.gesture(DragGesture(minimumDistance: 0)
 					.onChanged { value in
-						if current.path.isEmpty {
-							current = Stroke(path: Path(), color: penColor, lineWidth: penWidth)
-							current.path.move(to: value.location)
-						} else {
-							current.path.addLine(to: value.location)
+						switch activeTool {
+						case .pen:
+							if current.path.isEmpty {
+								current = Stroke(path: Path(), color: penColor, lineWidth: penWidth)
+								current.path.move(to: value.location)
+							} else {
+								current.path.addLine(to: value.location)
+							}
+						case .eraser:
+							// Remove strokes whose bounding box contains the drag point
+							strokes.removeAll { stroke in
+								stroke.path.boundingRect.insetBy(dx: -stroke.lineWidth, dy: -stroke.lineWidth).contains(value.location)
+							}
+						case .rectangle, .circle, .line:
+							if dragStart == .zero { dragStart = value.startLocation }
+							var shapePath = Path()
+							let rect = CGRect(
+								x: min(dragStart.x, value.location.x),
+								y: min(dragStart.y, value.location.y),
+								width: abs(value.location.x - dragStart.x),
+								height: abs(value.location.y - dragStart.y)
+							)
+							switch activeTool {
+							case .rectangle: shapePath.addRect(rect)
+							case .circle: shapePath.addEllipse(in: rect)
+							case .line:
+								shapePath.move(to: dragStart)
+								shapePath.addLine(to: value.location)
+							default: break
+							}
+							current = Stroke(path: shapePath, color: penColor, lineWidth: penWidth)
 						}
 					}
 					.onEnded { _ in
-						strokes.append(current)
+						if activeTool == .eraser {
+							return
+						}
+						if !current.path.isEmpty {
+							strokes.append(current)
+						}
 						current = Stroke(path: Path(), color: penColor, lineWidth: penWidth)
+						dragStart = .zero
 					}
 				)
 				.onAppear {

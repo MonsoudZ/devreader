@@ -152,12 +152,24 @@ struct NotesPane: View {
 				.accessibilityLabel("Filter notes")
 				.accessibilityHint("Enter text to filter notes by content")
 			Spacer()
-			Button("Add Note") { addCustomNote() }
-				.buttonStyle(.borderedProminent)
+			Menu {
+				Button("Blank Note") { addCustomNote() }
+				Divider()
+				ForEach(NoteItem.templates, id: \.name) { template in
+					Button {
+						addFromTemplate(template)
+					} label: {
+						Label(template.name, systemImage: template.icon)
+					}
+				}
+			} label: {
+				Text("Add Note")
+			}
+				.menuStyle(.borderedButton)
 				.controlSize(.small)
 				.accessibilityIdentifier("addNoteButton")
 				.accessibilityLabel("Add Note")
-				.accessibilityHint("Create a new note")
+				.accessibilityHint("Create a new note or use a template")
 			if !notes.availableTags.isEmpty {
 				Button {
 					showingTagManagement = true
@@ -292,6 +304,14 @@ struct NotesPane: View {
 		let pageIndex = pdf.currentPageIndex
 		let chapter = outlineManager.outlineMap[pageIndex] ?? ""
 		let note = NoteItem(text: "", pageIndex: pageIndex, chapter: chapter)
+		notes.add(note)
+	}
+
+	func addFromTemplate(_ template: NoteItem.Template) {
+		guard pdf.document != nil else { return }
+		let pageIndex = pdf.currentPageIndex
+		let chapter = outlineManager.outlineMap[pageIndex] ?? ""
+		let note = NoteItem.fromTemplate(template, pageIndex: pageIndex, chapter: chapter)
 		notes.add(note)
 	}
 

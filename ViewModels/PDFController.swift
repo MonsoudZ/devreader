@@ -357,6 +357,68 @@ final class PDFController: ObservableObject {
 		displayMode = mode
 	}
 
+	// MARK: - Page Rotation
+
+	func rotateCurrentPageRight() {
+		guard let doc = document, let page = doc.page(at: currentPageIndex) else { return }
+		page.rotation = (page.rotation + 90) % 360
+		selectionBridge.pdfView?.layoutDocumentView()
+	}
+
+	func rotateCurrentPageLeft() {
+		guard let doc = document, let page = doc.page(at: currentPageIndex) else { return }
+		page.rotation = (page.rotation + 270) % 360
+		selectionBridge.pdfView?.layoutDocumentView()
+	}
+
+	// MARK: - Document Properties
+
+	func documentProperties() -> [(String, String)] {
+		guard let doc = document else { return [] }
+		var props: [(String, String)] = []
+		if let attrs = doc.documentAttributes {
+			if let title = attrs[PDFDocumentAttribute.titleAttribute] as? String, !title.isEmpty {
+				props.append(("Title", title))
+			}
+			if let author = attrs[PDFDocumentAttribute.authorAttribute] as? String, !author.isEmpty {
+				props.append(("Author", author))
+			}
+			if let subject = attrs[PDFDocumentAttribute.subjectAttribute] as? String, !subject.isEmpty {
+				props.append(("Subject", subject))
+			}
+			if let creator = attrs[PDFDocumentAttribute.creatorAttribute] as? String, !creator.isEmpty {
+				props.append(("Creator", creator))
+			}
+			if let producer = attrs[PDFDocumentAttribute.producerAttribute] as? String, !producer.isEmpty {
+				props.append(("Producer", producer))
+			}
+			if let created = attrs[PDFDocumentAttribute.creationDateAttribute] as? Date {
+				props.append(("Created", created.formatted(date: .long, time: .shortened)))
+			}
+			if let modified = attrs[PDFDocumentAttribute.modificationDateAttribute] as? Date {
+				props.append(("Modified", modified.formatted(date: .long, time: .shortened)))
+			}
+			if let keywords = attrs[PDFDocumentAttribute.keywordsAttribute] as? [String], !keywords.isEmpty {
+				props.append(("Keywords", keywords.joined(separator: ", ")))
+			}
+		}
+		props.append(("Pages", "\(doc.pageCount)"))
+		if let url = currentPDFURL {
+			props.append(("File", url.lastPathComponent))
+			if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+			   let size = attrs[.size] as? UInt64 {
+				props.append(("Size", ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file)))
+			}
+		}
+		if doc.isEncrypted {
+			props.append(("Encrypted", "Yes"))
+		}
+		if doc.isLocked {
+			props.append(("Locked", "Yes"))
+		}
+		return props
+	}
+
 	// MARK: - Debounced Page Persistence
 
 	func didScrollToPage(_ index: Int) {

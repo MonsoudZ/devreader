@@ -53,7 +53,10 @@ struct DevReaderApp: App {
                 .frame(minWidth: 780, minHeight: 520)
 
                 // First appearance: show any init error we captured in init()
-                .onAppear(perform: checkInitializationError)
+                .onAppear {
+                    checkInitializationError()
+                    appEnvironment.setupAutoBackupTimer()
+                }
 
                 // Handle Spotlight search result clicks
                 .onContinueUserActivity(CSSearchableItemActionType) { activity in
@@ -78,6 +81,10 @@ struct DevReaderApp: App {
                 }
                 .sheet(isPresented: $appEnvironment.isShowingAbout) {
                     AboutView(isPresented: $appEnvironment.isShowingAbout)
+                }
+                .sheet(isPresented: $appEnvironment.isShowingProperties) {
+                    PDFPropertiesView(properties: appEnvironment.pdfController.documentProperties())
+                        .frame(minWidth: 400, minHeight: 300)
                 }
 
                 // Hard fail alert (only for init-time persistence failure)
@@ -196,6 +203,27 @@ struct DevReaderApp: App {
                 Button("Previous Page") { appEnvironment.pdfController.goToPreviousPage() }
                     .keyboardShortcut(.upArrow, modifiers: [.command])
                     .accessibilityLabel("Previous page")
+
+                Divider()
+
+                Button("Rotate Page Right") { appEnvironment.commandRotateRight() }
+                    .keyboardShortcut("r", modifiers: [.command, .shift])
+                    .accessibilityLabel("Rotate page right")
+
+                Button("Rotate Page Left") { appEnvironment.commandRotateLeft() }
+                    .keyboardShortcut("r", modifiers: [.command, .shift, .option])
+                    .accessibilityLabel("Rotate page left")
+
+                Divider()
+
+                Button("Document Properties\u{2026}") { appEnvironment.commandShowProperties() }
+                    .keyboardShortcut("i", modifiers: [.command, .shift])
+                    .accessibilityLabel("Document properties")
+
+                Divider()
+
+                Button("Remove Annotations on Page") { appEnvironment.commandRemoveAnnotationsOnPage() }
+                    .accessibilityLabel("Remove annotations on current page")
 
                 Divider()
 

@@ -24,6 +24,7 @@ final class AppEnvironment: ObservableObject {
     @Published var isShowingSettings = false
     @Published var isShowingHelp = false
     @Published var isShowingAbout = false
+    @Published var isShowingProperties = false
 
     // MARK: - Init
     init(
@@ -53,6 +54,42 @@ final class AppEnvironment: ObservableObject {
         // Restore last-opened PDF after init completes and wiring is in place
         Task { @MainActor in
             pdf.restoreLastOpenedPDF()
+        }
+    }
+
+    // MARK: - Auto-Backup
+    private var autoBackupCancellable: AnyCancellable?
+
+    func setupAutoBackupTimer() {
+        autoBackupCancellable?.cancel()
+        let enabled = UserDefaults.standard.bool(forKey: "autoBackupEnabled")
+        guard enabled else { return }
+        let intervalHours = UserDefaults.standard.double(forKey: "autoBackupIntervalHours")
+        let interval = max(intervalHours, 1) * 3600
+        autoBackupCancellable = Timer
+            .publish(every: interval, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.performAutoBackup()
+            }
+        // Check if backup is overdue on setup
+        let lastTimestamp = UserDefaults.standard.double(forKey: "lastAutoBackupDate")
+        if lastTimestamp > 0 {
+            let elapsed = Date().timeIntervalSince1970 - lastTimestamp
+            if elapsed > interval { performAutoBackup() }
+        } else {
+            performAutoBackup()
+        }
+    }
+
+    private func performAutoBackup() {
+        Task {
+            do {
+                _ = try PersistenceService.createBackup()
+                UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastAutoBackupDate")
+            } catch {
+                logError(AppLog.persistence, "Auto-backup failed: \(error)")
+            }
         }
     }
 
@@ -100,6 +137,22 @@ final class AppEnvironment: ObservableObject {
 
     func commandExportAnnotatedPDF() {
         pdfController.exportAnnotatedPDF()
+    }
+
+    func commandShowProperties() {
+        isShowingProperties = true
+    }
+
+    func commandRotateRight() {
+        pdfController.rotateCurrentPageRight()
+    }
+
+    func commandRotateLeft() {
+        pdfController.rotateCurrentPageLeft()
+    }
+
+    func commandRemoveAnnotationsOnPage() {
+        pdfController.annotationManager.removeAnnotationsOnCurrentPage()
     }
 
     func commandPrintPDF() {

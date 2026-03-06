@@ -18,6 +18,11 @@ struct PDFToolbar: View {
 
 			Divider().frame(height: 18)
 
+			// Rotation
+			rotationControls
+
+			Divider().frame(height: 18)
+
 			// Zoom controls
 			zoomControls
 		}
@@ -167,6 +172,32 @@ struct PDFToolbar: View {
 			.buttonStyle(.borderless)
 			.help("Fit to Window")
 			.accessibilityLabel("Fit to window")
+		}
+	}
+
+	// MARK: - Rotation
+
+	private var rotationControls: some View {
+		HStack(spacing: 4) {
+			Button {
+				pdf.rotateCurrentPageLeft()
+			} label: {
+				Image(systemName: "rotate.left")
+			}
+			.buttonStyle(.borderless)
+			.disabled(pdf.document == nil)
+			.help("Rotate Left")
+			.accessibilityLabel("Rotate page left")
+
+			Button {
+				pdf.rotateCurrentPageRight()
+			} label: {
+				Image(systemName: "rotate.right")
+			}
+			.buttonStyle(.borderless)
+			.disabled(pdf.document == nil)
+			.help("Rotate Right")
+			.accessibilityLabel("Rotate page right")
 		}
 	}
 

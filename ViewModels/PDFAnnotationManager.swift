@@ -116,6 +116,69 @@ final class PDFAnnotationManager: ObservableObject {
 		persister = nil
 	}
 
+	/// Removes the annotation at the given index and its visual counterpart from the PDF page.
+	func removeAnnotation(at index: Int) {
+		guard let ctrl = pdfController, let doc = ctrl.document,
+			  index >= 0, index < annotations.count else { return }
+		let record = annotations[index]
+
+		// Remove visual annotation from PDF page
+		if let page = doc.page(at: record.pageIndex) {
+			let matchingAnnotations = page.annotations.filter { ann in
+				ann.bounds == record.bounds.cgRect &&
+				ann.type == Self.pdfSubtype(for: record.type).rawValue
+			}
+			for ann in matchingAnnotations {
+				page.removeAnnotation(ann)
+			}
+		}
+
+		annotations.remove(at: index)
+		if let url = ctrl.currentPDFURL { schedulePersist(for: url) }
+		ctrl.toastRequestPublisher.send(
+			ToastMessage(message: "Annotation removed", type: .success)
+		)
+	}
+
+	/// Removes all annotations from the current page.
+	func removeAnnotationsOnCurrentPage() {
+		guard let ctrl = pdfController, let doc = ctrl.document,
+			  let url = ctrl.currentPDFURL else { return }
+		let pageIndex = ctrl.currentPageIndex
+
+		// Remove visual annotations
+		if let page = doc.page(at: pageIndex) {
+			let toRemove = page.annotations.filter { ann in
+				[PDFAnnotationSubtype.highlight.rawValue,
+				 PDFAnnotationSubtype.underline.rawValue,
+				 PDFAnnotationSubtype.strikeOut.rawValue].contains(ann.type)
+			}
+			for ann in toRemove {
+				page.removeAnnotation(ann)
+			}
+		}
+
+		// Remove from data records
+		let before = annotations.count
+		annotations.removeAll { $0.pageIndex == pageIndex }
+		let removed = before - annotations.count
+
+		if removed > 0 {
+			schedulePersist(for: url)
+			ctrl.toastRequestPublisher.send(
+				ToastMessage(message: "\(removed) annotation(s) removed from page \(pageIndex + 1)", type: .success)
+			)
+		}
+	}
+
+	/// Returns annotation records for the current page (for UI listing).
+	func annotationsOnCurrentPage() -> [(index: Int, record: PDFAnnotationData)] {
+		guard let ctrl = pdfController else { return [] }
+		return annotations.enumerated().compactMap { (i, record) in
+			record.pageIndex == ctrl.currentPageIndex ? (i, record) : nil
+		}
+	}
+
 	// MARK: - Debounced Persistence
 
 	func flushPendingPersistence() {

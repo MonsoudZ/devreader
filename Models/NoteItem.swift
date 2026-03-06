@@ -30,4 +30,32 @@ nonisolated struct NoteItem: Identifiable, Hashable, Codable, Sendable {
     var displayTitle: String {
         return title.isEmpty ? "Note on page \(pageIndex + 1)" : title
     }
+
+    // MARK: - Templates
+
+    nonisolated struct Template: Sendable {
+        let name: String
+        let icon: String
+        let titleTemplate: String
+        let textTemplate: String
+        let tags: [String]
+    }
+
+    static let templates: [Template] = [
+        Template(name: "Summary", icon: "doc.text", titleTemplate: "Summary", textTemplate: "Key points:\n- \n\nConclusion:\n", tags: ["summary"]),
+        Template(name: "Question", icon: "questionmark.circle", titleTemplate: "Question", textTemplate: "Question:\n\nContext:\n\nPossible answer:\n", tags: ["question"]),
+        Template(name: "Definition", icon: "textformat.abc", titleTemplate: "Definition", textTemplate: "Term:\n\nDefinition:\n\nExample:\n", tags: ["definition"]),
+        Template(name: "TODO", icon: "checklist", titleTemplate: "TODO", textTemplate: "- [ ] \n- [ ] \n- [ ] \n", tags: ["todo"]),
+        Template(name: "Code Note", icon: "chevron.left.forwardslash.chevron.right", titleTemplate: "Code Note", textTemplate: "Language:\n\nCode:\n```\n\n```\n\nExplanation:\n", tags: ["code"]),
+    ]
+
+    static func fromTemplate(_ template: Template, pageIndex: Int, chapter: String) -> NoteItem {
+        NoteItem(
+            title: template.titleTemplate,
+            text: template.textTemplate,
+            pageIndex: pageIndex,
+            chapter: chapter,
+            tags: template.tags
+        )
+    }
 }
