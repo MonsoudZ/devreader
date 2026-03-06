@@ -25,6 +25,8 @@ struct ContentView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var showingSearch = false
     @State private var showingThumbnails = false
+    @State private var showingSplitView = false
+    @State private var showingFormFields = false
 
     // Autosave timer: we recreate it whenever the interval changes
     @State private var autosaveCancellable: AnyCancellable?
@@ -70,10 +72,21 @@ struct ContentView: View {
                     }
 
                 ZStack {
-                    PDFViewRepresentable(pdf: appEnvironment.pdfController)
+                    if showingSplitView {
+                        PDFSplitView(
+                            primaryPDF: appEnvironment.pdfController,
+                            secondaryPDF: appEnvironment.secondaryPDFController,
+                            isSplitActive: $showingSplitView
+                        )
                         .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
                         .background(Color(NSColor.textBackgroundColor))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    } else {
+                        PDFViewRepresentable(pdf: appEnvironment.pdfController)
+                            .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
+                            .background(Color(NSColor.textBackgroundColor))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
 
                     VStack {
                         if showingSearch {
@@ -91,15 +104,23 @@ struct ContentView: View {
 
                         Spacer()
 
-                        if appEnvironment.pdfController.document != nil {
-                            PDFToolbar(pdf: appEnvironment.pdfController)
-                                .padding(.horizontal, 40)
-                                .padding(.bottom, 8)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                        HStack(alignment: .bottom) {
+                            if appEnvironment.pdfController.document != nil {
+                                PDFToolbar(pdf: appEnvironment.pdfController)
+                                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                            }
+
+                            if appEnvironment.ttsService.isSpeaking || appEnvironment.ttsService.isPaused {
+                                ttsControls
+                                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                            }
                         }
+                        .padding(.horizontal, 40)
+                        .padding(.bottom, 8)
                     }
                 }
                 .animation(.easeInOut(duration: 0.2), value: showingSearch)
+                .animation(.easeInOut(duration: 0.2), value: showingSplitView)
                 .animation(.easeInOut(duration: 0.2), value: appEnvironment.pdfController.document != nil)
                 }
                 .animation(.easeInOut(duration: 0.2), value: showingThumbnails)
@@ -138,6 +159,16 @@ struct ContentView: View {
                             }
                             .help("Toggle Page Thumbnails")
                             .accessibilityIdentifier("toggleThumbnails")
+
+                            Button {
+                                withAnimation {
+                                    showingSplitView.toggle()
+                                }
+                            } label: {
+                                Label("Split View", systemImage: "rectangle.split.2x1")
+                            }
+                            .help("Toggle Split View")
+                            .accessibilityIdentifier("toggleSplitView")
 
                             Button {
                                 withAnimation {
@@ -270,6 +301,39 @@ struct ContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(Color(NSColor.windowBackgroundColor))
+    }
+
+    // MARK: - TTS Controls
+    private var ttsControls: some View {
+        HStack(spacing: 8) {
+            Button {
+                appEnvironment.commandPauseSpeech()
+            } label: {
+                Image(systemName: appEnvironment.ttsService.isPaused ? "play.fill" : "pause.fill")
+            }
+            .buttonStyle(.borderless)
+            .help(appEnvironment.ttsService.isPaused ? "Resume" : "Pause")
+            .accessibilityLabel(appEnvironment.ttsService.isPaused ? "Resume reading" : "Pause reading")
+
+            Button {
+                appEnvironment.commandStopSpeech()
+            } label: {
+                Image(systemName: "stop.fill")
+            }
+            .buttonStyle(.borderless)
+            .help("Stop")
+            .accessibilityLabel("Stop reading")
+
+            Text("Reading page \(appEnvironment.ttsService.currentPage + 1)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .shadow(color: .black.opacity(0.15), radius: 4, y: -2)
     }
 
     // MARK: - Autosave

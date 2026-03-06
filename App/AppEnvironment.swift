@@ -9,9 +9,11 @@ final class AppEnvironment: ObservableObject {
 
     // MARK: - Core Controllers & Stores
     private(set) var pdfController: PDFController
+    private(set) var secondaryPDFController: PDFController
     private(set) var libraryStore: LibraryStore
     private(set) var notesStore: NotesStore
     private(set) var sketchStore: SketchStore
+    private(set) var ttsService: TextToSpeechService
 
     // MARK: - UI Services
     private(set) var enhancedToastCenter: EnhancedToastCenter
@@ -25,6 +27,7 @@ final class AppEnvironment: ObservableObject {
     @Published var isShowingHelp = false
     @Published var isShowingAbout = false
     @Published var isShowingProperties = false
+    @Published var isShowingFormFields = false
 
     // MARK: - Init
     init(
@@ -41,9 +44,11 @@ final class AppEnvironment: ObservableObject {
         let notes = NotesStore()
 
         self.pdfController = pdf
+        self.secondaryPDFController = PDFController(loadingStateManager: loadingStateManager, performanceMonitor: performanceMonitor)
         self.libraryStore = library
         self.notesStore = notes
         self.sketchStore = SketchStore()
+        self.ttsService = TextToSpeechService()
         self.enhancedToastCenter = EnhancedToastCenter()
 
         // Wire PDF changes to notes store
@@ -153,6 +158,38 @@ final class AppEnvironment: ObservableObject {
 
     func commandRemoveAnnotationsOnPage() {
         pdfController.annotationManager.removeAnnotationsOnCurrentPage()
+    }
+
+    // MARK: - Text-to-Speech Commands
+
+    func commandReadAloud() {
+        guard let doc = pdfController.document else { return }
+        if ttsService.isSpeaking {
+            ttsService.stop()
+        } else {
+            ttsService.startReading(document: doc, fromPage: pdfController.currentPageIndex)
+        }
+    }
+
+    func commandReadCurrentPage() {
+        guard let doc = pdfController.document else { return }
+        ttsService.readCurrentPage(document: doc, pageIndex: pdfController.currentPageIndex)
+    }
+
+    func commandPauseSpeech() {
+        if ttsService.isPaused {
+            ttsService.resume()
+        } else {
+            ttsService.pause()
+        }
+    }
+
+    func commandStopSpeech() {
+        ttsService.stop()
+    }
+
+    func commandShowFormFields() {
+        isShowingFormFields = true
     }
 
     func commandPrintPDF() {

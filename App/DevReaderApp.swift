@@ -86,6 +86,10 @@ struct DevReaderApp: App {
                     PDFPropertiesView(properties: appEnvironment.pdfController.documentProperties())
                         .frame(minWidth: 400, minHeight: 300)
                 }
+                .sheet(isPresented: $appEnvironment.isShowingFormFields) {
+                    PDFFormView(pdf: appEnvironment.pdfController)
+                        .frame(minWidth: 350, minHeight: 400)
+                }
 
                 // Hard fail alert (only for init-time persistence failure)
                 .alert("Initialization Error", isPresented: $showingErrorAlert) {
@@ -220,10 +224,32 @@ struct DevReaderApp: App {
                     .keyboardShortcut("i", modifiers: [.command, .shift])
                     .accessibilityLabel("Document properties")
 
+                Button("Form Fields\u{2026}") { appEnvironment.commandShowFormFields() }
+                    .accessibilityLabel("Show form fields")
+
                 Divider()
 
                 Button("Remove Annotations on Page") { appEnvironment.commandRemoveAnnotationsOnPage() }
                     .accessibilityLabel("Remove annotations on current page")
+
+                Divider()
+
+                Button(appEnvironment.ttsService.isSpeaking ? "Stop Reading Aloud" : "Read Aloud from Here") {
+                    appEnvironment.commandReadAloud()
+                }
+                    .keyboardShortcut("r", modifiers: [.command, .option])
+                    .accessibilityLabel("Read aloud")
+
+                Button("Read Current Page") { appEnvironment.commandReadCurrentPage() }
+                    .accessibilityLabel("Read current page aloud")
+
+                if appEnvironment.ttsService.isSpeaking || appEnvironment.ttsService.isPaused {
+                    Button(appEnvironment.ttsService.isPaused ? "Resume Speech" : "Pause Speech") {
+                        appEnvironment.commandPauseSpeech()
+                    }
+                        .keyboardShortcut(".", modifiers: [.command])
+                        .accessibilityLabel("Pause or resume speech")
+                }
 
                 Divider()
 
