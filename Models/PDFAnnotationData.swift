@@ -26,7 +26,7 @@ nonisolated struct PDFAnnotationData: Codable, Identifiable, Hashable, Sendable 
 	let createdDate: Date
 
 	nonisolated enum AnnotationType: String, Codable, Sendable {
-		case highlight, underline
+		case highlight, underline, strikethrough
 	}
 
 	init(id: UUID = UUID(), pageIndex: Int, bounds: CodableRect, type: AnnotationType = .highlight, colorName: String, text: String? = nil, createdDate: Date = Date()) {

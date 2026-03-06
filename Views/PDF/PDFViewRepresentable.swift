@@ -30,12 +30,40 @@ final class PDFSelectionBridge {
 	}
 }
 
+/// PDFView subclass that posts a notification after the standard copy action.
+final class CopyAwarePDFView: PDFView {
+	static let didCopyNotification = Notification.Name("DevReader.PDFView.didCopy")
+
+	override func copy(_ sender: Any?) {
+		super.copy(sender)
+		NotificationCenter.default.post(name: Self.didCopyNotification, object: self)
+	}
+}
+
+/// PDF dark mode rendering options.
+/// "auto" follows system appearance, "off" always renders normally, "sepia" applies a warm tint.
+nonisolated enum PDFDarkModeStyle: String, CaseIterable, Sendable {
+	case off = "off"
+	case auto = "auto"
+	case sepia = "sepia"
+
+	var displayName: String {
+		switch self {
+		case .off: "Normal"
+		case .auto: "Dark (invert)"
+		case .sepia: "Sepia"
+		}
+	}
+}
+
 struct PDFViewRepresentable: NSViewRepresentable {
     @ObservedObject var pdf: PDFController
     @AppStorage("defaultZoom") private var defaultZoom: Double = 1.0
+    @AppStorage("pdfDarkMode") private var pdfDarkMode: String = "off"
+    @Environment(\.colorScheme) private var colorScheme
 
 	func makeNSView(context: Context) -> PDFView {
-		let v = PDFView()
+		let v = CopyAwarePDFView()
 
 		// Basic configuration
 		v.autoScales = false
@@ -60,12 +88,8 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			v.scaleFactor = min(defaultZoom, 1.5)
 		}
 
-		// Large PDF optimizations
-		if pdf.isLargePDF {
-			v.pageShadowsEnabled = false
-			v.interpolationQuality = .low
-			v.autoScales = false
-		}
+		// Enable layer-backing for Core Image filters
+		v.wantsLayer = true
 
 		// Accessibility support
 		v.setAccessibilityLabel("PDF Document")
@@ -100,6 +124,36 @@ struct PDFViewRepresentable: NSViewRepresentable {
 				nsView.scaleFactor = safeZoom
 			}
 			context.coordinator.hasSetInitialZoom = true
+		}
+
+		// Apply dark mode filter
+		applyAppearanceFilter(to: nsView)
+	}
+
+	private func applyAppearanceFilter(to view: PDFView) {
+		let style = PDFDarkModeStyle(rawValue: pdfDarkMode) ?? .off
+		let isDark = colorScheme == .dark
+
+		switch style {
+		case .off:
+			view.layer?.compositingFilter = nil
+			view.backgroundColor = .windowBackgroundColor
+		case .auto where isDark:
+			// Invert colors + shift hue to make white pages dark and black text light
+			if let filter = CIFilter(name: "CIColorInvert") {
+				view.layer?.compositingFilter = filter
+			}
+			view.backgroundColor = .windowBackgroundColor
+		case .auto:
+			// Light mode — no filter needed
+			view.layer?.compositingFilter = nil
+			view.backgroundColor = .windowBackgroundColor
+		case .sepia:
+			if let filter = CIFilter(name: "CISepiaTone") {
+				filter.setValue(0.4, forKey: kCIInputIntensityKey)
+				view.layer?.compositingFilter = filter
+			}
+			view.backgroundColor = NSColor(red: 0.96, green: 0.93, blue: 0.88, alpha: 1.0)
 		}
 	}
 

@@ -1,8 +1,13 @@
 import Foundation
 
 nonisolated enum Shell {
-    /// Default execution timeout in seconds
-    private static let executionTimeout: TimeInterval = 30
+    // MARK: - Configurable Limits (read from UserDefaults, with sensible defaults)
+
+    /// Execution timeout in seconds (configurable via Settings)
+    static var executionTimeout: TimeInterval {
+        let stored = UserDefaults.standard.double(forKey: "codeExecTimeout")
+        return stored > 0 ? stored : 30
+    }
 
     private struct RunResult {
         let output: String
@@ -55,6 +60,18 @@ nonisolated enum Shell {
         }
         if waitGroup.wait(timeout: .now() + executionTimeout) == .timedOut {
             process.terminate()
+            // Give the process 2s to exit after SIGTERM; kill hard if it doesn't
+            let killGroup = DispatchGroup()
+            killGroup.enter()
+            DispatchQueue.global(qos: .utility).async {
+                process.waitUntilExit()
+                killGroup.leave()
+            }
+            if killGroup.wait(timeout: .now() + 2) == .timedOut {
+                // Process ignored SIGTERM — force kill via SIGKILL
+                kill(process.processIdentifier, SIGKILL)
+            }
+            ioGroup.wait()
             return RunResult(output: "[Execution timed out after \(Int(executionTimeout))s]", exitCode: -1)
         }
 
@@ -106,10 +123,18 @@ nonisolated enum Shell {
 
     // MARK: - Sandboxed Execution
 
-    /// Maximum virtual memory for sandboxed code execution (512 MB, in KB for ulimit -v)
-    private static let sandboxMemoryLimitKB = 512 * 1024
-    /// Maximum output file size for sandboxed code execution (10 MB, in 512-byte blocks for ulimit -f)
-    private static let sandboxFileSizeBlocks = 10 * 1024 * 2
+    /// Maximum virtual memory for sandboxed code execution (in KB for ulimit -v)
+    static var sandboxMemoryLimitKB: Int {
+        let stored = UserDefaults.standard.integer(forKey: "codeExecMemoryMB")
+        let mb = stored > 0 ? stored : 512
+        return mb * 1024
+    }
+    /// Maximum output file size for sandboxed code execution (in 512-byte blocks for ulimit -f)
+    static var sandboxFileSizeBlocks: Int {
+        let stored = UserDefaults.standard.integer(forKey: "codeExecFileSizeMB")
+        let mb = stored > 0 ? stored : 10
+        return mb * 1024 * 2
+    }
 
     /// Escapes a string for safe inclusion in a single-quoted shell argument.
     private static func escapeShellArg(_ arg: String) -> String {

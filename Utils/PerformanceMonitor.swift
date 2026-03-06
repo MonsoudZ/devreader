@@ -21,7 +21,7 @@ class PerformanceMonitor: ObservableObject {
     @Published var averageMemoryUsage: UInt64 = 0
 
     private let logger = AppLog.performance
-    nonisolated(unsafe) private var monitoringTimer: Timer?
+    private var monitoringTimer: Timer?
     private var memoryHistory: [UInt64] = []
     private static let maxHistorySize = 50
     private static let memoryWarningThreshold: UInt64 = 500 * 1024 * 1024  // 500 MB
@@ -34,7 +34,7 @@ class PerformanceMonitor: ObservableObject {
         case normal, warning, critical
     }
 
-    nonisolated(unsafe) private var appStateObservers: [Any] = []
+    private var appStateObservers: [any NSObjectProtocol] = []
 
     init() {
         if !ProcessInfo.processInfo.isLowPowerModeEnabled {
@@ -43,11 +43,13 @@ class PerformanceMonitor: ObservableObject {
         observeAppState()
     }
 
-    deinit {
+    func tearDown() {
         monitoringTimer?.invalidate()
+        monitoringTimer = nil
         for observer in appStateObservers {
             NotificationCenter.default.removeObserver(observer)
         }
+        appStateObservers.removeAll()
     }
 
     private func observeAppState() {
@@ -68,8 +70,8 @@ class PerformanceMonitor: ObservableObject {
         guard !isMonitoring else { return }
         isMonitoring = true
 
-        monitoringTimer = Timer.scheduledTimer(withTimeInterval: Self.monitoringInterval, repeats: true) { @Sendable [weak self] _ in
-            Task { @MainActor in
+        monitoringTimer = Timer.scheduledTimer(withTimeInterval: Self.monitoringInterval, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
                 self?.updateMemoryUsage()
             }
         }

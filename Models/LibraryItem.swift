@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os.log
 
 /// Enhanced LibraryItem with stable identity and security-scoped bookmarks
 nonisolated struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
@@ -68,22 +69,24 @@ nonisolated struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
         }
     }
     
+    private static let logger = AppLog.persistence
+
     /// Resolve URL from security-scoped bookmark
     func resolveURLFromBookmark() -> URL? {
         guard let bookmarkData = securityScopedBookmark else { return url }
-        
+
         do {
             var isStale = false
             let resolvedURL = try URL(resolvingBookmarkData: bookmarkData, options: [.withSecurityScope], relativeTo: nil, bookmarkDataIsStale: &isStale)
-            
+
             if isStale {
-                // Bookmark is stale, return original URL
+                os_log("Stale bookmark for %{public}@, falling back to original URL", log: Self.logger, type: .info, url.lastPathComponent)
                 return url
             }
-            
+
             return resolvedURL
         } catch {
-            // Bookmark resolution failed, return original URL
+            os_log("Bookmark resolution failed for %{public}@: %{public}@", log: Self.logger, type: .error, url.lastPathComponent, error.localizedDescription)
             return url
         }
     }

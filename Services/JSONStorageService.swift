@@ -70,39 +70,45 @@ nonisolated enum JSONStorageService {
         }
     }
     
+    /// Serial queue that serializes all file writes to prevent concurrent save corruption.
+    private static let writeQueue = DispatchQueue(label: "com.monsoud.devreader.json-storage-write")
+
     // MARK: - JSON Operations
     static func save<T: Codable>(_ data: T, to url: URL) throws {
         ensureDirectories()
         let jsonData = try JSONEncoder().encode(data)
-        
-        // Atomic write to prevent corruption — UUID avoids collision on concurrent saves
-        let tempURL = url.deletingPathExtension()
-            .appendingPathExtension(UUID().uuidString)
-            .appendingPathExtension(tempExtension)
-        
-        do {
-            // Write to temporary file first
-            try jsonData.write(to: tempURL)
 
-            // Try atomic replace (works when target exists)
+        // Serialize writes to the same destination to prevent race conditions
+        try writeQueue.sync {
+            // Atomic write to prevent corruption — UUID avoids collision on concurrent saves
+            let tempURL = url.deletingPathExtension()
+                .appendingPathExtension(UUID().uuidString)
+                .appendingPathExtension(tempExtension)
+
             do {
-                _ = try FileManager.default.replaceItem(
-                    at: url, withItemAt: tempURL,
-                    backupItemName: nil, options: [], resultingItemURL: nil
-                )
-            } catch let replaceError as NSError where replaceError.domain == NSCocoaErrorDomain
-                && (replaceError.code == NSFileNoSuchFileError || replaceError.code == NSFileReadNoSuchFileError) {
-                // Target doesn't exist yet — move temp file into place
-                try FileManager.default.moveItem(at: tempURL, to: url)
+                // Write to temporary file first
+                try jsonData.write(to: tempURL)
+
+                // Try atomic replace (works when target exists)
+                do {
+                    _ = try FileManager.default.replaceItem(
+                        at: url, withItemAt: tempURL,
+                        backupItemName: nil, options: [], resultingItemURL: nil
+                    )
+                } catch let replaceError as NSError where replaceError.domain == NSCocoaErrorDomain
+                    && (replaceError.code == NSFileNoSuchFileError || replaceError.code == NSFileReadNoSuchFileError) {
+                    // Target doesn't exist yet — move temp file into place
+                    try FileManager.default.moveItem(at: tempURL, to: url)
+                }
+
+                os_log("Saved data atomically to: %{public}@", log: logger, type: .debug, url.path)
+            } catch {
+                // Clean up temporary file on failure
+                try? FileManager.default.removeItem(at: tempURL)
+
+                os_log("Failed to save data atomically: %{public}@", log: logger, type: .error, error.localizedDescription)
+                throw error
             }
-
-            os_log("Saved data atomically to: %{public}@", log: logger, type: .debug, url.path)
-        } catch {
-            // Clean up temporary file on failure
-            try? FileManager.default.removeItem(at: tempURL)
-
-            os_log("Failed to save data atomically: %{public}@", log: logger, type: .error, error.localizedDescription)
-            throw error
         }
     }
     
@@ -287,8 +293,23 @@ nonisolated enum JSONStorageService {
         let pinnedDocs = loadOptional([URL].self, from: pinnedPath()) ?? []
         let webBookmarks = loadOptional([URL].self, from: webBookmarksPath()) ?? []
 
-        // Export annotation files
-        let annotationBundles = exportAnnotationBundles()
+        // Export all per-PDF data files
+        let annotationBundles = exportBundles(prefix: "annotations_") { (hash, file) -> AnnotationBundle? in
+            guard let annotations = loadOptional([PDFAnnotationData].self, from: file), !annotations.isEmpty else { return nil }
+            return AnnotationBundle(hash: hash, annotations: annotations)
+        }
+
+        let notesBundles = exportPerPDFNotes()
+        let bookmarksBundles = exportBundles(prefix: "bookmarks_") { (hash, file) -> BookmarksBundle? in
+            guard let bookmarks = loadOptional([Int].self, from: file), !bookmarks.isEmpty else { return nil }
+            return BookmarksBundle(hash: hash, bookmarks: bookmarks)
+        }
+        let sessionBundles = exportSessionBundles()
+
+        // Export sketches
+        let sketchesKey = "DevReader.Sketches.v1"
+        let sketchesFile = dataDirectory.appendingPathComponent("\(sketchesKey).json")
+        let sketches = loadOptional([SketchItem].self, from: sketchesFile)
 
         return DevReaderData(
             library: library,
@@ -296,22 +317,107 @@ nonisolated enum JSONStorageService {
             pinnedDocuments: pinnedDocs.map { $0.absoluteString },
             webBookmarks: webBookmarks.map { $0.absoluteString },
             annotationBundles: annotationBundles.isEmpty ? nil : annotationBundles,
+            notesBundles: notesBundles.isEmpty ? nil : notesBundles,
+            bookmarksBundles: bookmarksBundles.isEmpty ? nil : bookmarksBundles,
+            sessionBundles: sessionBundles.isEmpty ? nil : sessionBundles,
+            sketches: sketches?.isEmpty == false ? sketches : nil,
             exportDate: Date(),
-            version: "2.0"
+            version: "3.0"
         )
     }
 
-    private static func exportAnnotationBundles() -> [AnnotationBundle] {
+    /// Generic helper to export per-PDF data files matching a filename prefix.
+    private static func exportBundles<T>(prefix: String, transform: (String, URL) -> T?) -> [T] {
         let files = (try? FileManager.default.contentsOfDirectory(at: dataDirectory, includingPropertiesForKeys: nil)) ?? []
-        return files.compactMap { file -> AnnotationBundle? in
+        return files.compactMap { file -> T? in
             let name = file.deletingPathExtension().lastPathComponent
-            guard name.hasPrefix("annotations_") else { return nil }
-            let hash = String(name.dropFirst("annotations_".count))
-            guard let annotations = loadOptional([PDFAnnotationData].self, from: file), !annotations.isEmpty else { return nil }
-            return AnnotationBundle(hash: hash, annotations: annotations)
+            guard name.hasPrefix(prefix) else { return nil }
+            let hash = String(name.dropFirst(prefix.count))
+            return transform(hash, file)
         }
     }
-    
+
+    private static func exportPerPDFNotes() -> [NotesBundle] {
+        let files = (try? FileManager.default.contentsOfDirectory(at: dataDirectory, includingPropertiesForKeys: nil)) ?? []
+        // Group notes, page_notes, and tags by hash
+        var notesMap: [String: [NoteItem]] = [:]
+        var pageNotesMap: [String: [Int: String]] = [:]
+        var tagsMap: [String: [String]] = [:]
+
+        for file in files {
+            let name = file.deletingPathExtension().lastPathComponent
+            if name.hasPrefix("notes_") {
+                // Skip page_notes_ files
+                continue
+            }
+        }
+
+        // Scan for notes files using the key pattern from NotesPersistenceService
+        for file in files {
+            let name = file.deletingPathExtension().lastPathComponent
+            if name.hasPrefix("DevReader.Notes.v1.") {
+                let hash = String(name.dropFirst("DevReader.Notes.v1.".count))
+                if let notes = loadOptional([NoteItem].self, from: file) {
+                    notesMap[hash] = notes
+                }
+            } else if name.hasPrefix("DevReader.PageNotes.v1.") {
+                let hash = String(name.dropFirst("DevReader.PageNotes.v1.".count))
+                if let pageNotes = loadOptional([Int: String].self, from: file) {
+                    pageNotesMap[hash] = pageNotes
+                }
+            } else if name.hasPrefix("DevReader.Tags.v1.") {
+                let hash = String(name.dropFirst("DevReader.Tags.v1.".count))
+                if let tags = loadOptional([String].self, from: file) {
+                    tagsMap[hash] = tags
+                }
+            }
+            // Also check legacy notes_ format from migration
+            else if name.hasPrefix("notes_") {
+                let hash = String(name.dropFirst("notes_".count))
+                if let notes = loadOptional([NoteItem].self, from: file) {
+                    notesMap[hash] = notes
+                }
+            } else if name.hasPrefix("page_notes_") {
+                let hash = String(name.dropFirst("page_notes_".count))
+                if let pageNotes = loadOptional([Int: String].self, from: file) {
+                    pageNotesMap[hash] = pageNotes
+                }
+            } else if name.hasPrefix("tags_") {
+                let hash = String(name.dropFirst("tags_".count))
+                if let tags = loadOptional([String].self, from: file) {
+                    tagsMap[hash] = tags
+                }
+            }
+        }
+
+        let allHashes = Set(notesMap.keys).union(pageNotesMap.keys).union(tagsMap.keys)
+        return allHashes.compactMap { hash -> NotesBundle? in
+            let notes = notesMap[hash] ?? []
+            let pageNotes = pageNotesMap[hash]
+            let tags = tagsMap[hash]
+            guard !notes.isEmpty || pageNotes != nil || tags != nil else { return nil }
+            return NotesBundle(hash: hash, notes: notes, pageNotes: pageNotes, tags: tags)
+        }
+    }
+
+    private static func exportSessionBundles() -> [SessionBundle] {
+        let files = (try? FileManager.default.contentsOfDirectory(at: dataDirectory, includingPropertiesForKeys: nil)) ?? []
+        return files.compactMap { file -> SessionBundle? in
+            let name = file.deletingPathExtension().lastPathComponent
+            // Match both session_ and DevReader.Session.v1. prefixed files
+            let hash: String
+            if name.hasPrefix("session_") {
+                hash = String(name.dropFirst("session_".count))
+            } else if name.hasPrefix("DevReader.Session.v1.") {
+                hash = String(name.dropFirst("DevReader.Session.v1.".count))
+            } else {
+                return nil
+            }
+            guard let data = try? Data(contentsOf: file), !data.isEmpty else { return nil }
+            return SessionBundle(hash: hash, data: data)
+        }
+    }
+
     static func importAllData(_ data: DevReaderData) throws {
         ensureDirectories()
 
@@ -338,7 +444,49 @@ nonisolated enum JSONStorageService {
             }
         }
 
-        os_log("Imported data with %d library items", log: logger, type: .info, data.library.count)
+        // Import notes bundles
+        if let bundles = data.notesBundles {
+            for bundle in bundles {
+                let notesFile = dataDirectory.appendingPathComponent("DevReader.Notes.v1.\(bundle.hash).json")
+                try save(bundle.notes, to: notesFile)
+                if let pageNotes = bundle.pageNotes {
+                    let pageNotesFile = dataDirectory.appendingPathComponent("DevReader.PageNotes.v1.\(bundle.hash).json")
+                    try save(pageNotes, to: pageNotesFile)
+                }
+                if let tags = bundle.tags {
+                    let tagsFile = dataDirectory.appendingPathComponent("DevReader.Tags.v1.\(bundle.hash).json")
+                    try save(tags, to: tagsFile)
+                }
+            }
+        }
+
+        // Import bookmarks bundles
+        if let bundles = data.bookmarksBundles {
+            for bundle in bundles {
+                let fileURL = dataDirectory.appendingPathComponent("bookmarks_\(bundle.hash).json")
+                try save(bundle.bookmarks, to: fileURL)
+            }
+        }
+
+        // Import session bundles
+        if let bundles = data.sessionBundles {
+            for bundle in bundles {
+                let fileURL = dataDirectory.appendingPathComponent("session_\(bundle.hash).json")
+                try bundle.data.write(to: fileURL)
+            }
+        }
+
+        // Import sketches
+        if let sketches = data.sketches {
+            let sketchesFile = dataDirectory.appendingPathComponent("DevReader.Sketches.v1.json")
+            try save(sketches, to: sketchesFile)
+        }
+
+        os_log("Imported data with %d library items, %d note bundles, %d sketches",
+               log: logger, type: .info,
+               data.library.count,
+               data.notesBundles?.count ?? 0,
+               data.sketches?.count ?? 0)
     }
     
     // MARK: - Cleanup

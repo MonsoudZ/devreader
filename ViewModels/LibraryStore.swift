@@ -11,7 +11,7 @@ final class LibraryStore: ObservableObject {
 	private let key = "DevReader.Library.v1"
 	let backgroundService: LibraryPersistenceService
 	let loadingStateManager: LoadingStateManager
-	nonisolated(unsafe) private var persistWorkItem: DispatchWorkItem?
+	private var persister: DebouncedPersister?
 	private var isRestoring = false
 
 	init(backgroundService: LibraryPersistenceService = .shared,
@@ -22,10 +22,6 @@ final class LibraryStore: ObservableObject {
 		setupBackgroundService()
 	}
 
-	deinit {
-		persistWorkItem?.cancel()
-	}
-	
 	private func setupBackgroundService() {
 		// Monitor background service state
 		backgroundService.$isProcessing
@@ -77,6 +73,7 @@ final class LibraryStore: ObservableObject {
 
 		let merged = items + uniqueNewItems
 		items = merged.sorted { $0.addedDate > $1.addedDate }
+		SpotlightService.shared.indexLibraryItems(uniqueNewItems)
 		schedulePersist()
 	}
 
@@ -92,6 +89,8 @@ final class LibraryStore: ObservableObject {
 
 	func remove(_ item: LibraryItem) {
 		loadingStateManager.startLoading(.general, message: "Removing PDF from library...")
+		SpotlightService.shared.deindexLibraryItem(item)
+		EnhancedPersistenceService.shared.clearData(for: item.url)
 		items.removeAll { $0.id == item.id }
 		schedulePersist()
 		loadingStateManager.stopLoading(.general)
@@ -99,6 +98,11 @@ final class LibraryStore: ObservableObject {
 
 	func remove(ids: Set<LibraryItem.ID>) {
 		loadingStateManager.startLoading(.general, message: "Removing PDFs from library...")
+		SpotlightService.shared.deindexLibraryItems(ids)
+		let removedItems = items.filter { ids.contains($0.id) }
+		for item in removedItems {
+			EnhancedPersistenceService.shared.clearData(for: item.url)
+		}
 		items.removeAll { ids.contains($0.id) }
 		schedulePersist()
 		loadingStateManager.stopLoading(.general)
@@ -153,24 +157,17 @@ final class LibraryStore: ObservableObject {
 
 	private func schedulePersist() {
 		guard !isRestoring else { return }
-		persistWorkItem?.cancel()
-		let workItem = DispatchWorkItem { @Sendable [weak self] in
-			Task { @MainActor in
-				guard let self = self else { return }
-				self.persistNow()
+		if persister == nil {
+			persister = DebouncedPersister(delay: 0.5) { [weak self] in
+				self?.persistNow()
 			}
 		}
-		persistWorkItem = workItem
-		DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+		persister?.schedule()
 	}
 
 	/// Immediately flush any pending debounced persistence (call on lifecycle events).
 	func flushPendingPersistence() {
-		if let workItem = persistWorkItem {
-			workItem.cancel()
-			persistWorkItem = nil
-			persistNow()
-		}
+		persister?.flush()
 	}
 
 	private func persistNow() {

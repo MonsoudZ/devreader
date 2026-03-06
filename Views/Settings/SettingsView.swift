@@ -10,6 +10,7 @@ struct SettingsView: View {
 	@AppStorage("autoSave") private var autoSave = true
 	@AppStorage("autosaveIntervalSeconds") private var autosaveIntervalSeconds: Double = 30
 	@AppStorage("appAppearance") private var appAppearance: String = "system"
+	@AppStorage("pdfDarkMode") private var pdfDarkMode: String = "off"
 	@EnvironmentObject private var appEnvironment: AppEnvironment
 	private var performanceMonitor: PerformanceMonitor { appEnvironment.performanceMonitor }
 	@State private var alertMessage = ""
@@ -69,6 +70,15 @@ struct SettingsView: View {
 							.accessibilityValue("\(Int(defaultZoom * 100)) percent")
 						Text("\(Int(defaultZoom * 100))%").frame(width: 40)
 					}
+					Picker("PDF Appearance", selection: $pdfDarkMode) {
+						ForEach(PDFDarkModeStyle.allCases, id: \.rawValue) { style in
+							Text(style.displayName).tag(style.rawValue)
+						}
+					}
+					.pickerStyle(.segmented)
+					.accessibilityIdentifier("pdfDarkModePicker")
+					.accessibilityLabel("PDF appearance mode")
+					.accessibilityHint("Choose how PDFs render: Normal, Dark invert for dark mode, or Sepia tint")
 				}
 				Section("Data") {
 					Toggle("Auto-save Notes", isOn: $autoSave)
@@ -155,6 +165,15 @@ struct SettingsView: View {
 						.accessibilityLabel("Create backup")
 						.accessibilityHint("Create a backup of all app data")
 
+						Button("Restore Backup…") {
+							restoreBackup()
+						}
+						.buttonStyle(.bordered)
+						.controlSize(.small)
+						.accessibilityIdentifier("restoreBackup")
+						.accessibilityLabel("Restore backup")
+						.accessibilityHint("Restore app data from a previously created backup file")
+
 						Button("Validate Data") {
 							validateData()
 						}
@@ -166,7 +185,13 @@ struct SettingsView: View {
 					}
 					.padding(.top, 4)
 				}
-				Section("Keyboard Shortcuts") { VStack(alignment: .leading, spacing: 4) { Text("\u{2318}\u{21e7}J - Highlight Selection"); Text("\u{2318}\u{21e7}H - Highlight \u{2192} Note"); Text("\u{2318}\u{21e7}S - Add Sticky Note"); Text("\u{2318}\u{21e7}N - New Sketch Page"); Text("\u{2318}D - Toggle Page Bookmark") } .font(.caption).foregroundStyle(.secondary) }
+				Section("Code Execution Sandbox") {
+					CodeSandboxSettingsView()
+				}
+
+				Section("Keyboard Shortcuts") {
+					ShortcutEditorView(store: KeyboardShortcutStore.shared)
+				}
 			}
 			.formStyle(.grouped)
 		}
@@ -195,6 +220,39 @@ struct SettingsView: View {
 					alertMessage = "Could not create backup."
 					showingAlert = true
 					appEnvironment.loadingStateManager.stopBackup()
+				}
+			}
+		}
+	}
+
+	private func restoreBackup() {
+		let panel = NSOpenPanel()
+		panel.allowedContentTypes = [UTType(filenameExtension: "json") ?? .json]
+		panel.canChooseFiles = true
+		panel.allowsMultipleSelection = false
+		panel.canChooseDirectories = false
+		panel.message = "Select a DevReader backup file to restore"
+		panel.begin { response in
+			guard response == .OK, let url = panel.url else { return }
+			DispatchQueue.main.async {
+				appEnvironment.loadingStateManager.startLoading(.general, message: "Restoring backup…")
+				Task {
+					do {
+						try PersistenceService.restoreFromBackup(url)
+						await MainActor.run {
+							alertTitle = "Backup Restored"
+							alertMessage = "Data has been restored. Please restart the app for changes to take full effect."
+							showingAlert = true
+							appEnvironment.loadingStateManager.stopLoading(.general)
+						}
+					} catch {
+						await MainActor.run {
+							alertTitle = "Restore Failed"
+							alertMessage = "Could not restore from backup: \(error.localizedDescription)"
+							showingAlert = true
+							appEnvironment.loadingStateManager.stopLoading(.general)
+						}
+					}
 				}
 			}
 		}

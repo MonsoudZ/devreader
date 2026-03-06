@@ -8,16 +8,16 @@ import Combine
 final class AppEnvironment: ObservableObject {
 
     // MARK: - Core Controllers & Stores
-    let pdfController: PDFController
-    let libraryStore: LibraryStore
-    let notesStore: NotesStore
-    let sketchStore: SketchStore
+    private(set) var pdfController: PDFController
+    private(set) var libraryStore: LibraryStore
+    private(set) var notesStore: NotesStore
+    private(set) var sketchStore: SketchStore
 
     // MARK: - UI Services
-    let enhancedToastCenter: EnhancedToastCenter
-    let errorMessageManager: ErrorMessageManager
-    let loadingStateManager: LoadingStateManager
-    let performanceMonitor: PerformanceMonitor
+    private(set) var enhancedToastCenter: EnhancedToastCenter
+    private(set) var errorMessageManager: ErrorMessageManager
+    private(set) var loadingStateManager: LoadingStateManager
+    private(set) var performanceMonitor: PerformanceMonitor
 
     // MARK: - Sheet Toggles
     @Published var isShowingOnboarding = false
@@ -58,11 +58,11 @@ final class AppEnvironment: ObservableObject {
 
     // MARK: - Command Callbacks
     // Closures registered by ContentView to handle menu commands
-    var onOpenPDF: (() -> Void)?
-    var onImportPDFs: (() -> Void)?
-    var onToggleLibrary: (() -> Void)?
-    var onToggleNotes: (() -> Void)?
-    var onToggleSearch: (() -> Void)?
+    var onOpenPDF: (@MainActor () -> Void)?
+    var onImportPDFs: (@MainActor () -> Void)?
+    var onToggleLibrary: (@MainActor () -> Void)?
+    var onToggleNotes: (@MainActor () -> Void)?
+    var onToggleSearch: (@MainActor () -> Void)?
 
     // MARK: - Command Actions (called from menu commands)
 
@@ -86,8 +86,24 @@ final class AppEnvironment: ObservableObject {
         pdfController.highlightSelection()
     }
 
+    func commandUnderlineSelection() {
+        pdfController.underlineSelection()
+    }
+
+    func commandStrikethroughSelection() {
+        pdfController.strikethroughSelection()
+    }
+
     func commandAddStickyNote() {
         pdfController.addStickyNote()
+    }
+
+    func commandExportAnnotatedPDF() {
+        pdfController.exportAnnotatedPDF()
+    }
+
+    func commandPrintPDF() {
+        pdfController.printDocument()
     }
 
     func commandToggleBookmark() {

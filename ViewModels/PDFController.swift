@@ -72,7 +72,7 @@ final class PDFController: ObservableObject {
 	private var outlineTask: Task<Void, Never>?
 	private var isHandlingMemoryPressure = false
 	nonisolated(unsafe) private var memoryPressureObserver: Any?
-	nonisolated(unsafe) private var persistPageWorkItem: DispatchWorkItem?
+	private var pagePersister: DebouncedPersister?
 	private var isRestoringPage = false
 	private let lastOpenedPDFKey = "DevReader.LastOpenedPDF.v1"
 	init(loadingStateManager: LoadingStateManager = .shared, performanceMonitor: PerformanceMonitor = .shared) {
@@ -90,7 +90,6 @@ final class PDFController: ObservableObject {
 		}
 		loadingTask?.cancel()
 		outlineTask?.cancel()
-		persistPageWorkItem?.cancel()
 	}
 
 	func load(url: URL) {
@@ -117,6 +116,14 @@ final class PDFController: ObservableObject {
 			return
 		}
 		load(url: libraryItem.url)
+	}
+
+	/// Called after async load to release security scope if load failed.
+	private func releaseSecurityScopeIfNeeded() {
+		if document == nil, let scope = activeSecurityScope {
+			scope.stopAccessingSecurityScopedResource()
+			activeSecurityScope = nil
+		}
 	}
 
 	private func cleanupCurrentPDF() async {
@@ -158,6 +165,7 @@ final class PDFController: ObservableObject {
 		guard FileManager.default.fileExists(atPath: url.path) else {
 			logError(AppLog.pdf, "PDF file does not exist: \(url.path)")
 			pdfLoadErrorPublisher.send(url)
+			releaseSecurityScopeIfNeeded()
 			return
 		}
 
@@ -178,12 +186,14 @@ final class PDFController: ObservableObject {
 		guard let loadedDoc = doc else {
 			logError(AppLog.pdf, "All PDF loading strategies failed for: \(url.path)")
 			pdfLoadErrorPublisher.send(url)
+			releaseSecurityScopeIfNeeded()
 			return
 		}
 
 		guard validateDocument(loadedDoc) else {
 			logError(AppLog.pdf, "PDF document failed integrity check")
 			pdfLoadErrorPublisher.send(url)
+			releaseSecurityScopeIfNeeded()
 			return
 		}
 
@@ -263,6 +273,13 @@ final class PDFController: ObservableObject {
 		readingProgress = Double(currentPageIndex + 1) / Double(doc.pageCount)
 	}
 
+	// MARK: - Print
+
+	func printDocument() {
+		guard let pdfView = selectionBridge.pdfView, pdfView.document != nil else { return }
+		pdfView.print(with: .shared, autoRotate: true, pageScaling: .pageScaleToFit)
+	}
+
 	// MARK: - Debounced Page Persistence
 
 	func didScrollToPage(_ index: Int) {
@@ -274,25 +291,17 @@ final class PDFController: ObservableObject {
 
 	private func schedulePersistPage() {
 		guard !isRestoringPage else { return }
-		persistPageWorkItem?.cancel()
-		let workItem = DispatchWorkItem { @Sendable [weak self] in
-			Task { @MainActor in
-				guard let self = self, let url = self.currentPDFURL else { return }
+		if pagePersister == nil {
+			pagePersister = DebouncedPersister(delay: Self.persistPageDelay) { [weak self] in
+				guard let self, let url = self.currentPDFURL else { return }
 				self.savePageForPDF(url)
 			}
 		}
-		persistPageWorkItem = workItem
-		DispatchQueue.main.asyncAfter(deadline: .now() + Self.persistPageDelay, execute: workItem)
+		pagePersister?.schedule()
 	}
 
 	func flushPendingPersistence() {
-		if let workItem = persistPageWorkItem {
-			workItem.cancel()
-			persistPageWorkItem = nil
-			if let url = currentPDFURL {
-				savePageForPDF(url)
-			}
-		}
+		pagePersister?.flush()
 	}
 
     func savePageForPDF(_ url: URL) {
@@ -458,6 +467,9 @@ final class PDFController: ObservableObject {
 	// MARK: - PDF Annotation Layer (forwarding to annotationManager)
 
 	func highlightSelection() { annotationManager.highlightSelection() }
+	func underlineSelection() { annotationManager.underlineSelection() }
+	func strikethroughSelection() { annotationManager.strikethroughSelection() }
 	func captureHighlightToNotes() { annotationManager.captureHighlightToNotes() }
 	func addStickyNote() { annotationManager.addStickyNote() }
+	func exportAnnotatedPDF() { annotationManager.exportAnnotatedPDF() }
 }

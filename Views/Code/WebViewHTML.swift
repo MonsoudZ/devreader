@@ -42,7 +42,7 @@ struct WebViewHTML: NSViewRepresentable {
     }
     func updateNSView(_ view: WKWebView, context: Context) {
         if view.url == nil {
-            view.loadHTMLString(html, baseURL: URL(string: "https://cdn.jsdelivr.net"))
+            view.loadHTMLString(html, baseURL: URL(string: MonacoWebEditor.monacoBaseURL))
             context.coordinator.currentLanguage = language
             context.coordinator.currentTheme = theme
         } else {
@@ -94,20 +94,42 @@ struct WebViewHTML: NSViewRepresentable {
                 break
             }
         }
+        private func escapeForJS(_ code: String) -> String {
+            code
+                .replacingOccurrences(of: "\\", with: "\\\\")
+                .replacingOccurrences(of: "'", with: "\\'")
+                .replacingOccurrences(of: "\n", with: "\\n")
+                .replacingOccurrences(of: "\r", with: "\\r")
+                .replacingOccurrences(of: "\0", with: "\\0")
+                .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
+                .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
+        }
+
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                let escaped = self.savedCode
-                    .replacingOccurrences(of: "\\", with: "\\\\")
-                    .replacingOccurrences(of: "'", with: "\\'")
-                    .replacingOccurrences(of: "\n", with: "\\n")
-                    .replacingOccurrences(of: "\r", with: "\\r")
-                    .replacingOccurrences(of: "\0", with: "\\0")
-                    .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
-                    .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
-                let js = "if (window.editor) { window.editor.setValue('\(escaped)'); } else { window._code = '\(escaped)'; }"
-                webView.evaluateJavaScript(js) { result, error in
-                    if let error = error {
-                        logError(AppLog.code, "JavaScript evaluation failed: \(error.localizedDescription)")
+            // Set initial code via window._code as a fallback for before the editor loads,
+            // then poll until window.editor is available instead of using a hardcoded delay.
+            let escaped = escapeForJS(savedCode)
+            let setFallback = "window._code = '\(escaped)';"
+            webView.evaluateJavaScript(setFallback, completionHandler: nil)
+            setCodeWhenReady(webView: webView, escaped: escaped, attempts: 0)
+        }
+
+        /// Polls for window.editor availability, retrying up to 20 times (100ms apart = 2s max).
+        private func setCodeWhenReady(webView: WKWebView, escaped: String, attempts: Int) {
+            let maxAttempts = 20
+            guard attempts < maxAttempts else {
+                logError(AppLog.code, "Monaco editor did not become ready after \(maxAttempts) attempts")
+                return
+            }
+            let js = "if (window.editor) { window.editor.setValue('\(escaped)'); true; } else { false; }"
+            webView.evaluateJavaScript(js) { result, error in
+                if let error {
+                    logError(AppLog.code, "JavaScript evaluation failed: \(error.localizedDescription)")
+                    return
+                }
+                if let success = result as? Bool, !success {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        self.setCodeWhenReady(webView: webView, escaped: escaped, attempts: attempts + 1)
                     }
                 }
             }

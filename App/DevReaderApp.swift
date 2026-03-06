@@ -10,12 +10,16 @@ import SwiftUI
 import PDFKit
 import Combine
 import AppKit
+import CoreSpotlight
 
 // MARK: - App
 @main
 struct DevReaderApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+
     // Shared app-wide state (stores, controllers, services)
     @StateObject private var appEnvironment = AppEnvironment()              // DevReaderApp owns the single instance
+    @StateObject private var shortcuts = KeyboardShortcutStore.shared
     // Legacy ToastCenter removed — all toasts now use EnhancedToastCenter
 
     // App appearance
@@ -50,6 +54,11 @@ struct DevReaderApp: App {
 
                 // First appearance: show any init error we captured in init()
                 .onAppear(perform: checkInitializationError)
+
+                // Handle Spotlight search result clicks
+                .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                    handleSpotlightActivity(activity)
+                }
 
                 // Present global sheets based on AppEnvironment toggles
                 .sheet(isPresented: $appEnvironment.isShowingOnboarding) {
@@ -90,71 +99,81 @@ struct DevReaderApp: App {
             // File Menu
             CommandGroup(after: .newItem) {
                 Button("Open PDF…") { appEnvironment.commandOpenPDF() }
-                    .keyboardShortcut("o", modifiers: [.command])
+                    .keyboardShortcut(shortcuts.binding(for: .openPDF).keyEquivalent, modifiers: shortcuts.binding(for: .openPDF).modifiers)
                     .accessibilityLabel("Open PDF")
-                    .accessibilityHint("Open an existing PDF file")
 
                 Button("Import PDFs…") { appEnvironment.commandImportPDFs() }
-                    .keyboardShortcut("i", modifiers: [.command])
+                    .keyboardShortcut(shortcuts.binding(for: .importPDFs).keyEquivalent, modifiers: shortcuts.binding(for: .importPDFs).modifiers)
                     .accessibilityLabel("Import PDFs")
-                    .accessibilityHint("Import multiple PDF files into your library")
 
                 Divider()
 
                 Button("New Sketch Page") { appEnvironment.commandNewSketchPage() }
-                    .keyboardShortcut("n", modifiers: [.command, .shift])
+                    .keyboardShortcut(shortcuts.binding(for: .newSketch).keyEquivalent, modifiers: shortcuts.binding(for: .newSketch).modifiers)
                     .accessibilityLabel("New Sketch Page")
-                    .accessibilityHint("Create a new sketch page for the current PDF")
+
+                Divider()
+
+                Button("Export PDF with Annotations…") { appEnvironment.commandExportAnnotatedPDF() }
+                    .keyboardShortcut("e", modifiers: [.command, .shift])
+                    .accessibilityLabel("Export annotated PDF")
+                    .accessibilityHint("Save a copy of the PDF with all annotations embedded")
+
+                Divider()
+
+                Button("Print…") { appEnvironment.commandPrintPDF() }
+                    .keyboardShortcut("p", modifiers: [.command])
+                    .accessibilityLabel("Print PDF")
             }
 
             // Edit Menu
             CommandGroup(after: .textEditing) {
                 Button("Highlight Selection") { appEnvironment.commandHighlightSelection() }
-                    .keyboardShortcut("j", modifiers: [.command, .shift])
+                    .keyboardShortcut(shortcuts.binding(for: .highlightSelection).keyEquivalent, modifiers: shortcuts.binding(for: .highlightSelection).modifiers)
                     .accessibilityLabel("Highlight Selection")
-                    .accessibilityHint("Add a highlight annotation on the selected PDF text")
+
+                Button("Underline Selection") { appEnvironment.commandUnderlineSelection() }
+                    .keyboardShortcut(shortcuts.binding(for: .underlineSelection).keyEquivalent, modifiers: shortcuts.binding(for: .underlineSelection).modifiers)
+                    .accessibilityLabel("Underline Selection")
+
+                Button("Strikethrough Selection") { appEnvironment.commandStrikethroughSelection() }
+                    .keyboardShortcut(shortcuts.binding(for: .strikethroughSelection).keyEquivalent, modifiers: shortcuts.binding(for: .strikethroughSelection).modifiers)
+                    .accessibilityLabel("Strikethrough Selection")
 
                 Button("Highlight → Note") { appEnvironment.commandCaptureHighlight() }
-                    .keyboardShortcut("h", modifiers: [.command, .shift])
+                    .keyboardShortcut(shortcuts.binding(for: .captureHighlight).keyEquivalent, modifiers: shortcuts.binding(for: .captureHighlight).modifiers)
                     .accessibilityLabel("Capture Highlight to Note")
-                    .accessibilityHint("Convert selected text to a note and highlight it")
 
                 Button("Add Sticky Note") { appEnvironment.commandAddStickyNote() }
-                    .keyboardShortcut("s", modifiers: [.command, .shift])
+                    .keyboardShortcut(shortcuts.binding(for: .addStickyNote).keyEquivalent, modifiers: shortcuts.binding(for: .addStickyNote).modifiers)
                     .accessibilityLabel("Add Sticky Note")
-                    .accessibilityHint("Add a sticky note to the current page")
 
                 Divider()
 
                 Button("Toggle Page Bookmark") { appEnvironment.commandToggleBookmark() }
-                    .keyboardShortcut("d", modifiers: [.command])
+                    .keyboardShortcut(shortcuts.binding(for: .toggleBookmark).keyEquivalent, modifiers: shortcuts.binding(for: .toggleBookmark).modifiers)
                     .accessibilityLabel("Toggle Page Bookmark")
-                    .accessibilityHint("Bookmark or unbookmark the current PDF page")
             }
 
             // View Menu
             CommandGroup(after: .appVisibility) {
                 Button("Toggle Search") { appEnvironment.commandToggleSearch() }
-                    .keyboardShortcut("f", modifiers: [.command])
+                    .keyboardShortcut(shortcuts.binding(for: .toggleSearch).keyEquivalent, modifiers: shortcuts.binding(for: .toggleSearch).modifiers)
                     .accessibilityLabel("Toggle Search")
-                    .accessibilityHint("Show or hide the search panel")
 
                 Button("Toggle Library") { appEnvironment.commandToggleLibrary() }
-                    .keyboardShortcut("l", modifiers: [.command])
+                    .keyboardShortcut(shortcuts.binding(for: .toggleLibrary).keyEquivalent, modifiers: shortcuts.binding(for: .toggleLibrary).modifiers)
                     .accessibilityLabel("Toggle Library")
-                    .accessibilityHint("Show or hide the library panel")
 
                 Button("Toggle Notes") { appEnvironment.commandToggleNotes() }
-                    .keyboardShortcut("t", modifiers: [.command])
+                    .keyboardShortcut(shortcuts.binding(for: .toggleNotes).keyEquivalent, modifiers: shortcuts.binding(for: .toggleNotes).modifiers)
                     .accessibilityLabel("Toggle Notes")
-                    .accessibilityHint("Show or hide the notes panel")
 
                 Divider()
 
                 Button("Close PDF") { appEnvironment.commandClosePDF() }
-                    .keyboardShortcut("w", modifiers: [.command])
+                    .keyboardShortcut(shortcuts.binding(for: .closePDF).keyEquivalent, modifiers: shortcuts.binding(for: .closePDF).modifiers)
                     .accessibilityLabel("Close PDF")
-                    .accessibilityHint("Close the currently open PDF")
             }
 
             // Help Menu
@@ -180,8 +199,8 @@ struct DevReaderApp: App {
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
-                // Good place to refresh transient permissions or resume tasks
-                break
+                // Index library for Spotlight on first activation
+                SpotlightService.shared.indexLibraryItems(appEnvironment.libraryStore.items)
             case .inactive, .background:
                 // Flush any pending debounced persistence
                 appEnvironment.pdfController.flushPendingPersistence()
@@ -225,5 +244,19 @@ struct DevReaderApp: App {
             "App storage and services are ready.",
             category: .system
         )
+    }
+
+    // MARK: - Spotlight
+
+    private func handleSpotlightActivity(_ activity: NSUserActivity) {
+        guard let identifier = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String else { return }
+
+        if let itemID = SpotlightService.libraryItemID(from: identifier) {
+            // Open the PDF from library
+            if let item = appEnvironment.libraryStore.items.first(where: { $0.id == itemID }) {
+                appEnvironment.pdfController.load(libraryItem: item)
+            }
+        }
+        // Note results will open the app; the note is visible in the notes pane
     }
 }

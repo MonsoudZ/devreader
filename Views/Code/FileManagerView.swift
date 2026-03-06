@@ -82,19 +82,27 @@ struct FileManagerView: View {
 	}
 
 	private func loadFile(_ url: URL) {
-		do {
-			let content = try CodeFileService.loadFile(at: url)
-			savedCode = content
-			currentFileName = url.lastPathComponent
-
-			if let lang = CodeFileService.detectLanguage(for: url) {
-				selectedLanguage = lang
+		let fileURL = url
+		// Validate path on main thread (security check), then read content off main thread
+		guard CodeFileService.isPathAllowed(fileURL) else {
+			logError(AppLog.code, "Path not allowed: \(fileURL.path)")
+			return
+		}
+		Task {
+			do {
+				let content = try await Task.detached(priority: .userInitiated) {
+					try String(contentsOf: fileURL, encoding: .utf8)
+				}.value
+				savedCode = content
+				currentFileName = fileURL.lastPathComponent
+				if let lang = CodeFileService.detectLanguage(for: fileURL) {
+					selectedLanguage = lang
+				}
+				CodeFileService.addToRecentFiles(fileURL)
+				dismiss()
+			} catch {
+				logError(AppLog.code, "Error loading file: \(error)")
 			}
-
-			CodeFileService.addToRecentFiles(url)
-			dismiss()
-		} catch {
-			logError(AppLog.code, "Error loading file: \(error)")
 		}
 	}
 

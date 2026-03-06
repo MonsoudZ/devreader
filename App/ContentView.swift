@@ -180,6 +180,20 @@ struct ContentView: View {
                 appEnvironment.enhancedToastCenter.showInfo("Info", toast.message)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: CopyAwarePDFView.didCopyNotification)) { _ in
+            appEnvironment.enhancedToastCenter.showSuccess("Copied", "Text copied to clipboard")
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openRecentFromDock)) { notification in
+            if let url = notification.object as? URL {
+                appEnvironment.pdfController.open(url: url)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .clearRecentsFromDock)) { _ in
+            appEnvironment.pdfController.bookmarkManager.clearRecents()
+        }
+        .onReceive(appEnvironment.notesStore.persistenceFailurePublisher) { message in
+            appEnvironment.enhancedToastCenter.showError("Save Failed", message, duration: 6)
+        }
         .onChange(of: showingLibrary) { _, newValue in
             withAnimation {
                 columnVisibility = newValue ? .all : .detailOnly

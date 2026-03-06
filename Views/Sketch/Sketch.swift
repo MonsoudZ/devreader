@@ -111,22 +111,25 @@ struct SketchView: View {
 			try container.encode(id, forKey: .id)
 			try container.encode(lineWidth, forKey: .lineWidth)
 
-			var commands: [PathCommand] = []
-			path.forEach { element in
-				switch element {
-				case .move(to: let p):
-					commands.append(.move(x: p.x, y: p.y))
-				case .line(to: let p):
-					commands.append(.line(x: p.x, y: p.y))
-				case .quadCurve(to: let p, control: let c):
-					commands.append(.quadCurve(toX: p.x, toY: p.y, controlX: c.x, controlY: c.y))
-				case .curve(to: let p, control1: let c1, control2: let c2):
-					commands.append(.curve(toX: p.x, toY: p.y, c1X: c1.x, c1Y: c1.y, c2X: c2.x, c2Y: c2.y))
-				case .closeSubpath:
-					commands.append(.closeSubpath)
+			// Encode path elements directly to the keyed container via Data
+			let pathData: Data = try {
+				var commands: [PathCommand] = []
+				path.forEach { element in
+					switch element {
+					case .move(to: let p):
+						commands.append(.move(x: p.x, y: p.y))
+					case .line(to: let p):
+						commands.append(.line(x: p.x, y: p.y))
+					case .quadCurve(to: let p, control: let c):
+						commands.append(.quadCurve(toX: p.x, toY: p.y, controlX: c.x, controlY: c.y))
+					case .curve(to: let p, control1: let c1, control2: let c2):
+						commands.append(.curve(toX: p.x, toY: p.y, c1X: c1.x, c1Y: c1.y, c2X: c2.x, c2Y: c2.y))
+					case .closeSubpath:
+						commands.append(.closeSubpath)
+					}
 				}
-			}
-			let pathData = try JSONEncoder().encode(commands)
+				return try JSONEncoder().encode(commands)
+			}()
 			try container.encode(pathData, forKey: .pathData)
 
 			guard let nsColor = NSColor(color).usingColorSpace(.deviceRGB) ?? NSColor.black.usingColorSpace(.deviceRGB) else {

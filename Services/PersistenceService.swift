@@ -56,6 +56,7 @@ nonisolated enum PersistenceService {
     // Initialize JSON-based persistence
     static func initialize() {
         _ = _migration
+        JSONStorageService.cleanupOldBackups()
     }
 
     // MARK: - JSON File-based Storage

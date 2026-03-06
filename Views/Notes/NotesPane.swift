@@ -9,9 +9,11 @@ struct NotesPane: View {
 	@ObservedObject var bookmarkManager: PDFBookmarkManager
 	@ObservedObject var outlineManager: PDFOutlineManager
 	var toastCenter: EnhancedToastCenter
+	@Environment(\.undoManager) private var undoManager
 
 	@State private var filter = ""
 	@State private var showPageNotes = true
+	@State private var showingTagManagement = false
 
 	// Export filters
 	@State private var selectedTag: String? = nil
@@ -44,44 +46,7 @@ struct NotesPane: View {
 
 	var body: some View {
 		VStack(spacing: 0) {
-			HStack(spacing: 6) {
-				TextField("Filter notes…", text: $filter)
-					.accessibilityIdentifier("notesFilterField")
-					.accessibilityLabel("Filter notes")
-					.accessibilityHint("Enter text to filter notes by content")
-				Spacer()
-				Button("Add Note") { addCustomNote() }
-					.buttonStyle(.borderedProminent)
-					.controlSize(.small)
-					.accessibilityIdentifier("addNoteButton")
-					.accessibilityLabel("Add Note")
-					.accessibilityHint("Create a new note")
-				Button {
-					showingFilterPopover.toggle()
-				} label: {
-					Label("Filter", systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
-						.labelStyle(.iconOnly)
-				}
-				.buttonStyle(.bordered)
-				.controlSize(.small)
-				.popover(isPresented: $showingFilterPopover) {
-					filterPopoverContent
-				}
-				.accessibilityIdentifier("notesFilterOptions")
-				.accessibilityLabel("Filter options")
-				.accessibilityHint("Show export and filter options")
-				Button {
-					Task { await exportMarkdown() }
-				} label: {
-					Label("Export MD", systemImage: "square.and.arrow.up")
-				}
-				.buttonStyle(.bordered)
-				.controlSize(.small)
-				.accessibilityIdentifier("exportMarkdown")
-				.accessibilityLabel("Export Markdown")
-				.accessibilityHint("Export notes to Markdown format")
-				.disabled(isExporting)
-			}.padding(8)
+			notesToolbar
 
 			// Export progress indicator
 			if isExporting {
@@ -164,6 +129,82 @@ struct NotesPane: View {
 				}
 			}
 		}
+		.onChange(of: undoManager) { _, mgr in
+			notes.undoManager = mgr
+		}
+		.onAppear {
+			notes.undoManager = undoManager
+		}
+		.sheet(isPresented: $showingTagManagement) {
+			TagManagementView(notes: notes)
+		}
+	}
+
+	// MARK: - Toolbar
+
+	private var notesToolbar: some View {
+		HStack(spacing: 6) {
+			TextField("Filter notes…", text: $filter)
+				.accessibilityIdentifier("notesFilterField")
+				.accessibilityLabel("Filter notes")
+				.accessibilityHint("Enter text to filter notes by content")
+			Spacer()
+			Button("Add Note") { addCustomNote() }
+				.buttonStyle(.borderedProminent)
+				.controlSize(.small)
+				.accessibilityIdentifier("addNoteButton")
+				.accessibilityLabel("Add Note")
+				.accessibilityHint("Create a new note")
+			if !notes.availableTags.isEmpty {
+				Button {
+					showingTagManagement = true
+				} label: {
+					Label("Tags", systemImage: "tag")
+						.labelStyle(.iconOnly)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.accessibilityIdentifier("tagManagement")
+				.accessibilityLabel("Manage tags")
+				.accessibilityHint("Rename, merge, or delete tags")
+			}
+			Button {
+				showingFilterPopover.toggle()
+			} label: {
+				Label("Filter", systemImage: hasActiveFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+					.labelStyle(.iconOnly)
+			}
+			.buttonStyle(.bordered)
+			.controlSize(.small)
+			.popover(isPresented: $showingFilterPopover) {
+				filterPopoverContent
+			}
+			.accessibilityIdentifier("notesFilterOptions")
+			.accessibilityLabel("Filter options")
+			.accessibilityHint("Show export and filter options")
+			Button {
+				Task { await exportMarkdown() }
+			} label: {
+				Label("Export MD", systemImage: "square.and.arrow.up")
+			}
+			.buttonStyle(.bordered)
+			.controlSize(.small)
+			.accessibilityIdentifier("exportMarkdown")
+			.accessibilityLabel("Export Markdown")
+			.accessibilityHint("Export notes to Markdown format")
+			.disabled(isExporting)
+			Button {
+				PrintService.printNotes(items: notes.items, pageNotes: notes.pageNotes)
+			} label: {
+				Label("Print", systemImage: "printer")
+					.labelStyle(.iconOnly)
+			}
+			.buttonStyle(.bordered)
+			.controlSize(.small)
+			.accessibilityIdentifier("printNotes")
+			.accessibilityLabel("Print notes")
+			.accessibilityHint("Print all notes using the system print dialog")
+		}.padding(8)
 	}
 
 	// MARK: - Filter Popover

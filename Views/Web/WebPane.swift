@@ -93,9 +93,18 @@ struct WebPane: View {
 		if record { appendHistory(url) }
 	}
 	private func onNavigated(_ url: URL?) { if let u = url { openURL(u, record: true) } }
+	private static let maxHistorySize = 100
+
 	private func appendHistory(_ url: URL) {
 		if historyIndex >= 0 && historyIndex < history.count - 1 { history = Array(history.prefix(historyIndex + 1)) }
-		if history.last != url { history.append(url); historyIndex = history.count - 1 }
+		if history.last != url {
+			history.append(url)
+			if history.count > Self.maxHistorySize {
+				history.removeFirst()
+				historyIndex = max(-1, historyIndex - 1)
+			}
+			historyIndex = history.count - 1
+		}
 	}
 	private func goBack() {
 		guard canGoBack else { return }

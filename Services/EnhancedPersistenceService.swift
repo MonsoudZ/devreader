@@ -71,9 +71,18 @@ class EnhancedPersistenceService: ObservableObject {
 
         // Migrate: save to new key and delete old
         let newURL = JSONStorageService.dataDirectory.appendingPathComponent("\(newKey).json")
-        try? JSONStorageService.save(result, to: newURL)
-        try? fileManager.removeItem(at: legacyURL)
-        os_log("Migrated data from legacy key %{public}@ to %{public}@", log: logger, type: .info, legacy, newKey)
+        do {
+            try JSONStorageService.save(result, to: newURL)
+            // Only delete legacy after successful save to prevent data loss
+            do {
+                try fileManager.removeItem(at: legacyURL)
+            } catch {
+                os_log("Failed to clean up legacy key %{public}@: %{public}@", log: logger, type: .error, legacy, error.localizedDescription)
+            }
+            os_log("Migrated data from legacy key %{public}@ to %{public}@", log: logger, type: .info, legacy, newKey)
+        } catch {
+            os_log("Migration save failed for key %{public}@: %{public}@ — keeping legacy data", log: logger, type: .error, newKey, error.localizedDescription)
+        }
 
         return result
     }
@@ -115,15 +124,22 @@ class EnhancedPersistenceService: ObservableObject {
         }
     }
     
-    /// Recovers corrupted data by clearing it
+    /// Recovers corrupted data by attempting backup restore first, then clearing as last resort
     func recoverCorruptedData(forKey key: String, url: URL? = nil) {
         let finalKey = generateKey(key, for: url)
         let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(finalKey).json")
-        
-        if !validateData(forKey: key, url: url) {
-            try? fileManager.removeItem(at: fileURL)
-            os_log("Recovered corrupted data for key: %{public}@", log: logger, type: .info, finalKey)
+
+        guard !validateData(forKey: key, url: url) else { return }
+
+        // Try restoring from backup before deleting
+        if restoreBackup(forKey: key, url: url) {
+            os_log("Recovered corrupted data from backup for key: %{public}@", log: logger, type: .info, finalKey)
+            return
         }
+
+        // No backup available — delete corrupted file
+        try? fileManager.removeItem(at: fileURL)
+        os_log("No backup available, deleted corrupted data for key: %{public}@", log: logger, type: .info, finalKey)
     }
     
     // MARK: - Migration Support
@@ -147,7 +163,7 @@ class EnhancedPersistenceService: ObservableObject {
     /// Clears all data for a specific PDF. Returns the number of files that failed to delete.
     @discardableResult
     func clearData(for url: URL) -> Int {
-        let baseKeys = ["DevReader.Notes.v1", "DevReader.PageNotes.v1", "DevReader.Tags.v1", "DevReader.Annotations.v1"]
+        let baseKeys = ["DevReader.Notes.v1", "DevReader.PageNotes.v1", "DevReader.Tags.v1", "DevReader.Annotations.v1", "DevReader.Bookmarks.v1", "DevReader.Session.v1"]
         var failures = 0
 
         for baseKey in baseKeys {

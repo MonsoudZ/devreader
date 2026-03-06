@@ -1,4 +1,5 @@
 import Foundation
+import os.log
 
 /// Schema versioning and migration support for library data
 nonisolated struct LibraryEnvelope: Codable, Sendable {
@@ -27,23 +28,35 @@ nonisolated struct LibraryEnvelope: Codable, Sendable {
 // MARK: - Schema Migration
 
 nonisolated struct LibraryMigration {
+    private static let logger = AppLog.persistence
+
     static func migrateLibraryData(_ data: Data) throws -> LibraryEnvelope {
         // Try to decode as new format first
-        if let envelope = try? JSONDecoder().decode(LibraryEnvelope.self, from: data) {
-            return envelope
+        do {
+            return try JSONDecoder().decode(LibraryEnvelope.self, from: data)
+        } catch {
+            os_log("Envelope decode failed, trying legacy formats: %{public}@", log: logger, type: .debug, error.localizedDescription)
         }
-        
+
         // Try to decode as old format and migrate
-        if let oldItems = try? JSONDecoder().decode([OldLibraryItem].self, from: data) {
+        do {
+            let oldItems = try JSONDecoder().decode([OldLibraryItem].self, from: data)
             let migratedItems = oldItems.map { LibraryItem.migrateFromOldFormat(oldItem: $0) }
+            os_log("Migrated %d items from OldLibraryItem format", log: logger, type: .info, migratedItems.count)
             return LibraryEnvelope(items: migratedItems)
+        } catch {
+            os_log("OldLibraryItem decode failed: %{public}@", log: logger, type: .debug, error.localizedDescription)
         }
-        
+
         // Try to decode as raw array of new items
-        if let items = try? JSONDecoder().decode([LibraryItem].self, from: data) {
+        do {
+            let items = try JSONDecoder().decode([LibraryItem].self, from: data)
+            os_log("Decoded %d items from raw LibraryItem array", log: logger, type: .info, items.count)
             return LibraryEnvelope(items: items)
+        } catch {
+            os_log("LibraryItem array decode failed: %{public}@", log: logger, type: .error, error.localizedDescription)
         }
-        
+
         throw MigrationError.unsupportedFormat
     }
 }

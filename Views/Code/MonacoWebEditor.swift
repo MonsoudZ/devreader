@@ -7,14 +7,24 @@ struct MonacoWebEditor: View {
 	@AppStorage("monacoCode") private var savedCode: String = ""
 	@StateObject private var vm = MonacoEditorViewModel()
 
+	// Monaco version pinning — single source of truth for CDN URL and integrity hash.
+	// To upgrade: update monacoVersion, regenerate the SRI hash for the new loader.js,
+	// and update monacoLoaderSRI. Verify at: https://www.srihash.org/
+	static let monacoVersion = "0.52.0"
+	static let monacoBaseURL = "https://cdn.jsdelivr.net/npm/monaco-editor@\(monacoVersion)/min/vs"
+	static let monacoLoaderSRI = "sha384-tSPY4oVmbJKVAvy9W7NTVMqSrS/gYyJLECoFWtQ10h4qIDQTg1h3DSfF0eV2Bbbz"
+
 	private func html(_ initial: String) -> String {
 		let language = vm.selectedLanguage.monacoLanguage
+		let baseURL = Self.monacoBaseURL
+		let sri = Self.monacoLoaderSRI
 		return """
 		<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">
+		<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src https://cdn.jsdelivr.net/npm/monaco-editor@\(Self.monacoVersion)/ 'unsafe-eval'; style-src https://cdn.jsdelivr.net/npm/monaco-editor@\(Self.monacoVersion)/ 'unsafe-inline'; font-src https://cdn.jsdelivr.net/npm/monaco-editor@\(Self.monacoVersion)/; worker-src blob:; connect-src 'self';\">
 		<style>html,body,#container{height:100%;margin:0}#container{display:flex;flex-direction:column}#editor{flex:1;}</style>
-		<script src=\"https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs/loader.js\" integrity=\"sha384-tSPY4oVmbJKVAvy9W7NTVMqSrS/gYyJLECoFWtQ10h4qIDQTg1h3DSfF0eV2Bbbz\" crossorigin=\"anonymous\"></script>
+		<script src=\"\(baseURL)/loader.js\" integrity=\"\(sri)\" crossorigin=\"anonymous\"></script>
 		<script>
-		require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.0/min/vs' } });
+		require.config({ paths: { 'vs': '\(baseURL)' } });
 		window._code = `\(initial.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "`", with: "\\`").replacingOccurrences(of: "$", with: "\\$").replacingOccurrences(of: "\u{2028}", with: "\\u2028").replacingOccurrences(of: "\u{2029}", with: "\\u2029"))`;
 		window._language = '\(language)';
 		require(['vs/editor/editor.main'], function(){

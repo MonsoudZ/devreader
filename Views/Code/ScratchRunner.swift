@@ -54,6 +54,17 @@ struct ScratchRunner: View {
 				.accessibilityHint("Select the programming language for code execution")
 
 				Spacer()
+				Button {
+					PrintService.printCode(code, language: language.rawValue)
+				} label: {
+					Label("Print", systemImage: "printer")
+						.labelStyle(.iconOnly)
+				}
+				.buttonStyle(.bordered)
+				.controlSize(.small)
+				.accessibilityIdentifier("scratchPrint")
+				.accessibilityLabel("Print code")
+				.accessibilityHint("Print the code using the system print dialog")
 				Button(isRunning ? "Running…" : "Run") { run() }
 					.buttonStyle(.borderedProminent)
 					.controlSize(.small)

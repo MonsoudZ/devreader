@@ -2,13 +2,14 @@ import Foundation
 @preconcurrency import PDFKit
 import Combine
 import AppKit
+import UniformTypeIdentifiers
 
 @MainActor
 final class PDFAnnotationManager: ObservableObject {
 	private weak var pdfController: PDFController?
 	private let persistenceService: AnnotationPersistenceProtocol
 	private var annotations: [PDFAnnotationData] = []
-	nonisolated(unsafe) private var persistWorkItem: DispatchWorkItem?
+	private var persister: DebouncedPersister?
 	private var isRestoring = false
 
 	init(pdfController: PDFController, persistenceService: AnnotationPersistenceProtocol? = nil) {
@@ -16,30 +17,40 @@ final class PDFAnnotationManager: ObservableObject {
 		self.persistenceService = persistenceService ?? AnnotationPersistenceService()
 	}
 
-	deinit {
-		persistWorkItem?.cancel()
-	}
-
-	// MARK: - Highlight Selection
+	// MARK: - Annotation Application
 
 	/// Adds a visual highlight annotation on the PDF page for the current selection.
 	func highlightSelection() {
+		applyAnnotation(type: .highlight, toastMessage: "Text highlighted on PDF")
+	}
+
+	/// Adds an underline annotation on the current selection.
+	func underlineSelection() {
+		applyAnnotation(type: .underline, toastMessage: "Text underlined on PDF")
+	}
+
+	/// Adds a strikethrough annotation on the current selection.
+	func strikethroughSelection() {
+		applyAnnotation(type: .strikethrough, toastMessage: "Text strikethrough on PDF")
+	}
+
+	private func applyAnnotation(type: PDFAnnotationData.AnnotationType, toastMessage: String) {
 		guard let ctrl = pdfController else { return }
-		guard applyHighlightAnnotation() else {
+		guard applyAnnotationOnSelection(type: type) else {
 			ctrl.toastRequestPublisher.send(
 				ToastMessage(message: "Select text in the PDF first", type: .warning)
 			)
 			return
 		}
 		ctrl.toastRequestPublisher.send(
-			ToastMessage(message: "Text highlighted on PDF", type: .success)
+			ToastMessage(message: toastMessage, type: .success)
 		)
 	}
 
-	/// Core highlight logic shared by highlightSelection() and captureHighlightToNotes().
-	/// Returns true if a highlight was applied, false if no valid selection.
+	/// Core annotation logic shared by all annotation types and captureHighlightToNotes().
+	/// Returns true if an annotation was applied, false if no valid selection.
 	@discardableResult
-	private func applyHighlightAnnotation() -> Bool {
+	private func applyAnnotationOnSelection(type: PDFAnnotationData.AnnotationType = .highlight) -> Bool {
 		guard let ctrl = pdfController,
 			  let doc = ctrl.document, let pdfURL = ctrl.currentPDFURL else { return false }
 		let bridge = ctrl.selectionBridge
@@ -58,13 +69,19 @@ final class PDFAnnotationManager: ObservableObject {
 		default: .systemYellow.withAlphaComponent(0.3)
 		}
 
+		let pdfAnnotationType: PDFAnnotationSubtype = switch type {
+		case .highlight: .highlight
+		case .underline: .underline
+		case .strikethrough: .strikeOut
+		}
+
 		var didApply = false
 		for page in selection.pages {
 			let pageIndex = doc.index(for: page)
 			guard pageIndex >= 0, pageIndex < doc.pageCount else { continue }
 			let selectionBounds = selection.bounds(for: page)
 			guard selectionBounds.width > 0 && selectionBounds.height > 0 else { continue }
-			let annotation = PDFAnnotation(bounds: selectionBounds, forType: .highlight, withProperties: nil)
+			let annotation = PDFAnnotation(bounds: selectionBounds, forType: pdfAnnotationType, withProperties: nil)
 			annotation.color = color
 			page.addAnnotation(annotation)
 
@@ -73,6 +90,7 @@ final class PDFAnnotationManager: ObservableObject {
 			let record = PDFAnnotationData(
 				pageIndex: pageIndex,
 				bounds: CodableRect(from: selectionBounds),
+				type: type,
 				colorName: colorName,
 				text: selectedText
 			)
@@ -104,13 +122,12 @@ final class PDFAnnotationManager: ObservableObject {
 			default: .systemYellow.withAlphaComponent(0.3)
 			}
 
-			let pdfAnnotation: PDFAnnotation
-			switch record.type {
-			case .highlight:
-				pdfAnnotation = PDFAnnotation(bounds: record.bounds.cgRect, forType: .highlight, withProperties: nil)
-			case .underline:
-				pdfAnnotation = PDFAnnotation(bounds: record.bounds.cgRect, forType: .underline, withProperties: nil)
+			let pdfSubtype: PDFAnnotationSubtype = switch record.type {
+			case .highlight: .highlight
+			case .underline: .underline
+			case .strikethrough: .strikeOut
 			}
+			let pdfAnnotation = PDFAnnotation(bounds: record.bounds.cgRect, forType: pdfSubtype, withProperties: nil)
 			pdfAnnotation.color = color
 			page.addAnnotation(pdfAnnotation)
 		}
@@ -118,32 +135,24 @@ final class PDFAnnotationManager: ObservableObject {
 
 	func clearAnnotations() {
 		annotations.removeAll()
-		persistWorkItem?.cancel()
-		persistWorkItem = nil
+		persister = nil
 	}
 
 	// MARK: - Debounced Persistence
 
 	func flushPendingPersistence() {
-		if let workItem = persistWorkItem {
-			workItem.cancel()
-			persistWorkItem = nil
-			guard let url = pdfController?.currentPDFURL else { return }
-			persistNow(for: url)
-		}
+		persister?.flush()
 	}
 
 	private func schedulePersist(for url: URL) {
 		guard !isRestoring else { return }
-		persistWorkItem?.cancel()
-		let workItem = DispatchWorkItem { @Sendable [weak self] in
-			Task { @MainActor in
-				guard let self = self, let currentURL = self.pdfController?.currentPDFURL else { return }
+		if persister == nil {
+			persister = DebouncedPersister { [weak self] in
+				guard let self, let currentURL = self.pdfController?.currentPDFURL else { return }
 				self.persistNow(for: currentURL)
 			}
 		}
-		persistWorkItem = workItem
-		DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+		persister?.schedule()
 	}
 
 	private func persistNow(for url: URL) {
@@ -151,6 +160,36 @@ final class PDFAnnotationManager: ObservableObject {
 			try persistenceService.saveAnnotations(annotations, for: url)
 		} catch {
 			logError(AppLog.pdf, "Failed to persist annotations: \(error)")
+		}
+	}
+
+	// MARK: - Export PDF with Annotations
+
+	/// Exports the current PDF document with all annotations baked in.
+	func exportAnnotatedPDF() {
+		guard let ctrl = pdfController, let doc = ctrl.document else {
+			pdfController?.toastRequestPublisher.send(
+				ToastMessage(message: "No PDF open to export", type: .warning)
+			)
+			return
+		}
+
+		let panel = NSSavePanel()
+		panel.allowedContentTypes = [.pdf]
+		let baseName = ctrl.currentPDFURL?.deletingPathExtension().lastPathComponent ?? "Annotated"
+		panel.nameFieldStringValue = "\(baseName)-annotated.pdf"
+
+		panel.begin { response in
+			guard response == .OK, let url = panel.url else { return }
+			if doc.write(to: url) {
+				ctrl.toastRequestPublisher.send(
+					ToastMessage(message: "Annotated PDF exported", type: .success)
+				)
+			} else {
+				ctrl.toastRequestPublisher.send(
+					ToastMessage(message: "Failed to export PDF", type: .error)
+				)
+			}
 		}
 	}
 
@@ -174,7 +213,7 @@ final class PDFAnnotationManager: ObservableObject {
 			chapter: getCurrentChapter() ?? "Unknown Chapter"
 		)
 		// Also add a visual highlight annotation on the PDF page (no toast — the note itself is the feedback)
-		applyHighlightAnnotation()
+		applyAnnotationOnSelection(type: .highlight)
 		ctrl.noteRequestPublisher.send(note)
 	}
 

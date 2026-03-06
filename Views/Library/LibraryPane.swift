@@ -12,6 +12,7 @@ struct LibraryPane: View {
     @State private var sort: SortOption = .recent
     @State private var showingDeleteConfirmation = false
     @State private var loadingItemID: UUID?
+    @State private var showingLibrarySearch = false
     @AppStorage("library.sortOrder") private var persistedSortOrder: String = "recent"
 	
 	var body: some View {
@@ -39,6 +40,12 @@ struct LibraryPane: View {
                     .accessibilityIdentifier("libraryImportButton")
                     .accessibilityLabel("Import PDFs")
                     .accessibilityHint("Import new PDF files into your library")
+                Button(action: { showingLibrarySearch = true }) { Image(systemName: "text.magnifyingglass") }
+                    .buttonStyle(.borderless)
+                    .help("Search across all PDFs…")
+                    .accessibilityIdentifier("librarySearchAll")
+                    .accessibilityLabel("Search all PDFs")
+                    .accessibilityHint("Search text content across all PDFs in your library")
                 if !selection.isEmpty {
                     Button(role: .destructive) { 
                         showingDeleteConfirmation = true
@@ -123,6 +130,15 @@ struct LibraryPane: View {
 		} message: {
 			Text("Are you sure you want to remove \(selection.count) item\(selection.count == 1 ? "" : "s") from your library? This action cannot be undone.")
 		}
+		.sheet(isPresented: $showingLibrarySearch) {
+			LibrarySearchView(library: library) { item, pageIndex in
+				open(item)
+				Task { @MainActor in
+					try? await Task.sleep(nanoseconds: 500_000_000)
+					pdf.goToPage(pageIndex)
+				}
+			}
+		}
 		.onAppear {
 			// Load persisted sort order with resilient fallback
 			sort = SortOption(fromStored: persistedSortOrder)
@@ -162,46 +178,54 @@ struct LibraryPane: View {
         }
         
         private func importURLs(_ urls: [URL]) {
-            Task.detached(priority: .userInitiated) { @Sendable in
-                var validURLs: [URL] = []
-                var errorMessages: [String] = []
+            // Quick pre-filter (no PDFKit, no I/O blocking)
+            var candidates: [URL] = []
+            var errorMessages: [String] = []
 
-                for url in urls {
-                    // Validate that it's a PDF file
-                    guard url.pathExtension.lowercased() == "pdf" else {
-                        errorMessages.append("\(url.lastPathComponent) is not a PDF file")
-                        continue
-                    }
-
-                    // Check if file exists and is readable
-                    guard FileManager.default.fileExists(atPath: url.path) else {
-                        errorMessages.append("\(url.lastPathComponent) not found")
-                        continue
-                    }
-
-                    // Validate PDF off main thread (PDFDocument init can be slow for large files)
-                    if PDFDocument(url: url) != nil {
-                        validURLs.append(url)
-                    } else {
-                        errorMessages.append("\(url.lastPathComponent) appears to be corrupted")
-                    }
+            for url in urls {
+                guard url.pathExtension.lowercased() == "pdf" else {
+                    errorMessages.append("\(url.lastPathComponent) is not a PDF file")
+                    continue
                 }
+                guard FileManager.default.fileExists(atPath: url.path) else {
+                    errorMessages.append("\(url.lastPathComponent) not found")
+                    continue
+                }
+                candidates.append(url)
+            }
 
+            // Validate PDF headers off main thread (read first 5 bytes for %PDF- magic).
+            let filesToCheck = candidates
+            Task.detached(priority: .userInitiated) { @Sendable in
+                var valid: [URL] = []
+                var invalid: [String] = []
+                for url in filesToCheck {
+                    // Lightweight magic-byte check (thread-safe, no PDFKit)
+                    guard let handle = try? FileHandle(forReadingFrom: url) else {
+                        invalid.append("\(url.lastPathComponent) is not readable")
+                        continue
+                    }
+                    let header = handle.readData(ofLength: 5)
+                    try? handle.close()
+                    guard header.starts(with: [0x25, 0x50, 0x44, 0x46, 0x2D]) else { // %PDF-
+                        invalid.append("\(url.lastPathComponent) appears to be corrupted")
+                        continue
+                    }
+                    valid.append(url)
+                }
                 await MainActor.run {
-                    // Add validated PDFs to library on main thread
-                    if !validURLs.isEmpty {
-                        library.add(urls: validURLs)
+                    if !valid.isEmpty {
+                        library.add(urls: valid)
                         toastCenter.showSuccess(
                             "Import Complete",
-                            "Successfully imported \(validURLs.count) PDF\(validURLs.count == 1 ? "" : "s")"
+                            "Successfully imported \(valid.count) PDF\(valid.count == 1 ? "" : "s")"
                         )
                     }
-
-                    if !errorMessages.isEmpty {
-                        let errorMessage = errorMessages.joined(separator: "\n")
+                    let allErrors = errorMessages + invalid
+                    if !allErrors.isEmpty {
                         toastCenter.showError(
                             "Import Failed",
-                            "Failed to import \(errorMessages.count) file\(errorMessages.count == 1 ? "" : "s"): \(errorMessage)"
+                            "Failed to import \(allErrors.count) file\(allErrors.count == 1 ? "" : "s"): \(allErrors.joined(separator: "\n"))"
                         )
                     }
                 }

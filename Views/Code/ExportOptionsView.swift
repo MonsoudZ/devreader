@@ -73,18 +73,7 @@ struct ExportOptionsView: View {
 	}
 
 	private func createVSCodeProject(at url: URL) {
-		let projectName = fileName.components(separatedBy: ".").first ?? "devreader-project"
-		let projectPath = url.appendingPathComponent(projectName)
-		let sourceFile = projectPath.appendingPathComponent(fileName)
-
-		if FileManager.default.fileExists(atPath: sourceFile.path) {
-			guard confirmOverwrite(sourceFile) else { return }
-		}
-
-		do {
-			try FileManager.default.createDirectory(at: projectPath, withIntermediateDirectories: true)
-			try code.write(to: sourceFile, atomically: true, encoding: .utf8)
-
+		createProjectWithSource(at: url) { projectPath in
 			let settingsPath = projectPath.appendingPathComponent(".vscode")
 			try FileManager.default.createDirectory(at: settingsPath, withIntermediateDirectories: true)
 
@@ -96,11 +85,6 @@ struct ExportOptionsView: View {
 			}
 			"""
 			try settings.write(to: settingsPath.appendingPathComponent("settings.json"), atomically: true, encoding: .utf8)
-
-			dismiss()
-		} catch {
-			logError(AppLog.code, "Error creating VSCode project: \(error)")
-			errorMessage = "Could not create VSCode project."
 		}
 	}
 
@@ -140,6 +124,14 @@ struct ExportOptionsView: View {
 	}
 
 	private func createJetBrainsProject(at url: URL) {
+		createProjectWithSource(at: url) { projectPath in
+			let ideaPath = projectPath.appendingPathComponent(".idea")
+			try FileManager.default.createDirectory(at: ideaPath, withIntermediateDirectories: true)
+		}
+	}
+
+	/// Shared project creation: makes project dir, writes source file, runs extra setup, dismisses.
+	private func createProjectWithSource(at url: URL, extraSetup: (URL) throws -> Void = { _ in }) {
 		let projectName = fileName.components(separatedBy: ".").first ?? "devreader-project"
 		let projectPath = url.appendingPathComponent(projectName)
 		let sourceFile = projectPath.appendingPathComponent(fileName)
@@ -151,14 +143,11 @@ struct ExportOptionsView: View {
 		do {
 			try FileManager.default.createDirectory(at: projectPath, withIntermediateDirectories: true)
 			try code.write(to: sourceFile, atomically: true, encoding: .utf8)
-
-			let ideaPath = projectPath.appendingPathComponent(".idea")
-			try FileManager.default.createDirectory(at: ideaPath, withIntermediateDirectories: true)
-
+			try extraSetup(projectPath)
 			dismiss()
 		} catch {
-			logError(AppLog.code, "Error creating JetBrains project: \(error)")
-			errorMessage = "Could not create JetBrains project."
+			logError(AppLog.code, "Error creating project: \(error)")
+			errorMessage = "Could not create project."
 		}
 	}
 

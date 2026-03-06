@@ -36,9 +36,8 @@ class LibraryPersistenceService: ObservableObject {
         progress = 0.0
         currentOperation = "Saving library items..."
 
-        // Use background queue for large operations
-        let saveSucceeded: Bool = await Task.detached(priority: .utility) {
-            let envelope = LibraryEnvelope(items: items)
+        let envelope = LibraryEnvelope(items: items)
+        let saveSucceeded: Bool = await Task.detached(priority: .utility) { @Sendable in
             do {
                 try JSONStorageService.save(envelope, to: JSONStorageService.libraryPath())
                 return true
@@ -54,14 +53,15 @@ class LibraryPersistenceService: ObservableObject {
             lastError = NSError(domain: "LibraryPersistence", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to save library items"])
         }
 
-        // Complete
-        isProcessing = false
         progress = 1.0
         currentOperation = saveSucceeded ? "Save completed" : "Save failed"
 
-        // Only process pending items if save succeeded; otherwise retry current items
-        if let pending = pendingLibraryItems {
-            pendingLibraryItems = nil
+        // Drain pending items before clearing isProcessing to prevent re-entrant races
+        let pending = pendingLibraryItems
+        pendingLibraryItems = nil
+        isProcessing = false
+
+        if let pending {
             return await saveLibraryItems(pending)
         } else if !saveSucceeded {
             // Re-queue failed items so they're retried on the next save call

@@ -5,9 +5,7 @@ struct OnboardingView: View {
 	@State private var currentStep = 0
 	@AppStorage("didSeeOnboarding") private var didSeeOnboarding = false
 	
-	private var steps: [OnboardingStep] {
-		OnboardingStepFactory.createDefaultSteps()
-	}
+	private let steps = OnboardingStepFactory.createDefaultSteps()
 	
 	var body: some View {
 		ZStack {

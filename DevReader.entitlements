@@ -21,18 +21,32 @@
 	<key>com.apple.security.device.usb</key>
 	<false/>
 	<key>com.apple.security.print</key>
-	<false/>
+	<true/>
 	<key>com.apple.security.temporary-exception.files.absolute-path.read-write</key>
 	<array>
 		<string>/tmp/</string>
 		<string>/private/var/folders/</string>
-		<string>/usr/bin/</string>
+	</array>
+	<key>com.apple.security.temporary-exception.files.absolute-path.read-only</key>
+	<array>
+		<string>/usr/bin/python3</string>
+		<string>/usr/bin/ruby</string>
+		<string>/usr/bin/swift</string>
+		<string>/usr/bin/gcc</string>
+		<string>/usr/bin/g++</string>
+		<string>/usr/bin/clang</string>
+		<string>/usr/bin/clang++</string>
+		<string>/usr/bin/javac</string>
+		<string>/usr/bin/java</string>
+		<string>/usr/bin/sqlite3</string>
+		<string>/usr/bin/env</string>
 		<string>/usr/local/bin/</string>
 		<string>/opt/homebrew/bin/</string>
+		<string>/bin/bash</string>
 	</array>
 	<key>com.apple.security.cs.allow-jit</key>
 	<true/>
 	<key>com.apple.security.cs.disable-library-validation</key>
-	<true/>
+	<false/>
 </dict>
 </plist>

@@ -10,15 +10,11 @@ final class SketchStore: ObservableObject {
     @Published var currentSketch: SketchItem?
     
     private let persistenceService: SketchPersistenceProtocol
-    nonisolated(unsafe) private var persistWorkItem: DispatchWorkItem?
+    private var persister: DebouncedPersister?
 
     init(persistenceService: SketchPersistenceProtocol? = nil) {
         self.persistenceService = persistenceService ?? SketchPersistenceService()
         loadSketches()
-    }
-
-    deinit {
-        persistWorkItem?.cancel()
     }
     
     // MARK: - Sketch Management
@@ -105,22 +101,16 @@ final class SketchStore: ObservableObject {
     // MARK: - Persistence
 
     private func schedulePersist() {
-        persistWorkItem?.cancel()
-        let workItem = DispatchWorkItem { @Sendable [weak self] in
-            Task { @MainActor in
+        if persister == nil {
+            persister = DebouncedPersister { [weak self] in
                 self?.saveSketches()
             }
         }
-        persistWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
+        persister?.schedule()
     }
 
     func flushPendingPersistence() {
-        if let workItem = persistWorkItem {
-            workItem.cancel()
-            persistWorkItem = nil
-            saveSketches()
-        }
+        persister?.flush()
     }
 
     private func saveSketches() {
