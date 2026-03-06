@@ -44,6 +44,39 @@ struct MonacoWebEditor: View {
 		  window.editor.onDidChangeModelContent(function(){
 		    try { window.webkit.messageHandlers.codeChanged.postMessage(window.editor.getValue()); } catch(e) { }
 		  });
+
+		  // Register language-aware autocomplete provider
+		  var lang = window._language;
+		  var keywords = {
+		    'python': ['def','class','import','from','return','if','elif','else','for','while','try','except','finally','with','as','yield','lambda','pass','break','continue','raise','True','False','None','and','or','not','in','is','print','range','len','self','__init__','async','await'],
+		    'javascript': ['function','const','let','var','return','if','else','for','while','do','switch','case','break','continue','try','catch','finally','throw','new','this','class','extends','import','export','default','from','async','await','yield','typeof','instanceof','null','undefined','true','false','console','Promise','Array','Object','Map','Set'],
+		    'typescript': ['function','const','let','var','return','if','else','for','while','do','switch','case','break','continue','try','catch','finally','throw','new','this','class','extends','implements','import','export','default','from','async','await','yield','typeof','instanceof','null','undefined','true','false','interface','type','enum','namespace','abstract','readonly','private','protected','public','static','console','Promise','Array','Object','Map','Set'],
+		    'swift': ['func','var','let','class','struct','enum','protocol','import','return','if','else','guard','switch','case','for','while','repeat','do','try','catch','throw','throws','async','await','self','Self','nil','true','false','private','public','internal','fileprivate','open','static','override','init','deinit','weak','strong','unowned','lazy','optional','some','any','where','in','as','is','super','extension','typealias','associatedtype','subscript','mutating','nonmutating','inout','@MainActor','@Published','@State','@Binding','@ObservedObject','@StateObject','@Environment'],
+		    'go': ['func','var','const','type','struct','interface','import','return','if','else','for','range','switch','case','break','continue','go','select','chan','defer','fallthrough','goto','map','package','nil','true','false','error','string','int','float64','bool','byte','make','append','len','cap','fmt','Println','Printf'],
+		    'rust': ['fn','let','mut','const','struct','enum','impl','trait','use','return','if','else','for','while','loop','match','break','continue','pub','self','Self','super','crate','mod','type','where','as','in','ref','move','async','await','true','false','None','Some','Ok','Err','Vec','String','Option','Result','Box','println','format','macro_rules'],
+		    'java': ['class','public','private','protected','static','final','void','int','long','double','float','boolean','char','String','return','if','else','for','while','do','switch','case','break','continue','try','catch','finally','throw','throws','new','this','super','extends','implements','import','package','interface','abstract','synchronized','volatile','null','true','false','System','out','println'],
+		    'c': ['int','char','float','double','void','long','short','unsigned','signed','const','static','extern','struct','union','enum','typedef','return','if','else','for','while','do','switch','case','break','continue','goto','sizeof','NULL','printf','scanf','malloc','free','include','define','ifdef','ifndef','endif'],
+		    'cpp': ['int','char','float','double','void','long','short','unsigned','signed','const','static','extern','struct','union','enum','typedef','return','if','else','for','while','do','switch','case','break','continue','goto','sizeof','class','public','private','protected','virtual','override','new','delete','this','namespace','using','template','typename','auto','nullptr','true','false','std','cout','cin','endl','string','vector','map','set','include'],
+		    'ruby': ['def','class','module','end','return','if','elsif','else','unless','for','while','until','do','begin','rescue','ensure','raise','yield','block_given?','self','nil','true','false','require','include','extend','attr_accessor','attr_reader','attr_writer','puts','print','gets','each','map','select','reject','reduce','inject'],
+		    'shell': ['if','then','elif','else','fi','for','while','do','done','case','esac','function','return','echo','exit','export','local','readonly','shift','set','unset','test','true','false','cd','ls','cp','mv','rm','mkdir','cat','grep','sed','awk','find','xargs','chmod','chown','curl','wget'],
+		    'kotlin': ['fun','val','var','class','object','interface','return','if','else','when','for','while','do','try','catch','finally','throw','import','package','null','true','false','this','super','is','as','in','out','override','abstract','open','sealed','data','companion','lateinit','lazy','by','suspend','coroutine','println'],
+		    'dart': ['void','int','double','String','bool','var','final','const','class','abstract','extends','implements','mixin','return','if','else','for','while','do','switch','case','break','continue','try','catch','finally','throw','new','this','super','import','export','library','part','async','await','yield','null','true','false','print','List','Map','Set','Future','Stream'],
+		    'sql': ['SELECT','FROM','WHERE','INSERT','INTO','VALUES','UPDATE','SET','DELETE','CREATE','TABLE','ALTER','DROP','INDEX','JOIN','INNER','LEFT','RIGHT','OUTER','ON','AND','OR','NOT','IN','BETWEEN','LIKE','ORDER','BY','GROUP','HAVING','LIMIT','OFFSET','AS','DISTINCT','COUNT','SUM','AVG','MIN','MAX','NULL','PRIMARY','KEY','FOREIGN','REFERENCES','CONSTRAINT','DEFAULT','CHECK','UNIQUE','EXISTS','UNION','ALL','CASE','WHEN','THEN','ELSE','END']
+		  };
+		  var langKeywords = keywords[lang] || [];
+		  if (langKeywords.length > 0) {
+		    monaco.languages.registerCompletionItemProvider(lang, {
+		      provideCompletionItems: function(model, position) {
+		        var word = model.getWordUntilPosition(position);
+		        var range = { startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: word.startColumn, endColumn: word.endColumn };
+		        var suggestions = langKeywords.map(function(kw) {
+		          return { label: kw, kind: monaco.languages.CompletionItemKind.Keyword, insertText: kw, range: range };
+		        });
+		        return { suggestions: suggestions };
+		      }
+		    });
+		  }
+
 		  try { window.webkit.messageHandlers.editorReady.postMessage('ready'); } catch(e) { }
 		});
 		</script>
