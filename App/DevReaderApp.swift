@@ -90,6 +90,10 @@ struct DevReaderApp: App {
                     PDFFormView(pdf: appEnvironment.pdfController)
                         .frame(minWidth: 350, minHeight: 400)
                 }
+                .sheet(isPresented: $appEnvironment.isShowingAnnotations) {
+                    AnnotationListView(pdf: appEnvironment.pdfController)
+                        .frame(minWidth: 350, minHeight: 400)
+                }
 
                 // Hard fail alert (only for init-time persistence failure)
                 .alert("Initialization Error", isPresented: $showingErrorAlert) {
@@ -228,6 +232,9 @@ struct DevReaderApp: App {
                     .accessibilityLabel("Show form fields")
 
                 Divider()
+
+                Button("Annotations\u{2026}") { appEnvironment.commandShowAnnotations() }
+                    .accessibilityLabel("Show annotation list")
 
                 Button("Remove Annotations on Page") { appEnvironment.commandRemoveAnnotationsOnPage() }
                     .accessibilityLabel("Remove annotations on current page")

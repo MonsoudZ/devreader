@@ -1,7 +1,7 @@
 import SwiftUI
 
 private struct OutlineEntry: Identifiable {
-    var id: Int { page }
+    let id = UUID()
     let page: Int
     let title: String
 }

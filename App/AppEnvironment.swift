@@ -28,6 +28,7 @@ final class AppEnvironment: ObservableObject {
     @Published var isShowingAbout = false
     @Published var isShowingProperties = false
     @Published var isShowingFormFields = false
+    @Published var isShowingAnnotations = false
 
     // MARK: - Init
     init(
@@ -92,6 +93,7 @@ final class AppEnvironment: ObservableObject {
             do {
                 _ = try PersistenceService.createBackup()
                 UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "lastAutoBackupDate")
+                JSONStorageService.cleanupOldBackups()
             } catch {
                 logError(AppLog.persistence, "Auto-backup failed: \(error)")
             }
@@ -190,6 +192,10 @@ final class AppEnvironment: ObservableObject {
 
     func commandShowFormFields() {
         isShowingFormFields = true
+    }
+
+    func commandShowAnnotations() {
+        isShowingAnnotations = true
     }
 
     func commandPrintPDF() {

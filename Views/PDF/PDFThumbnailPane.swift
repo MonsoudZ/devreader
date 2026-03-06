@@ -56,7 +56,7 @@ struct PDFThumbnailPane: View {
 		} label: {
 			VStack(spacing: 4) {
 				if let page = doc.page(at: index) {
-					PDFThumbnailView(page: page, size: thumbnailSize)
+					CachedThumbnailView(page: page, size: thumbnailSize, pageIndex: index)
 						.frame(width: thumbnailSize.width, height: thumbnailSize.height)
 						.border(pdf.currentPageIndex == index ? Color.accentColor : Color.clear, width: 2)
 						.shadow(color: .black.opacity(0.1), radius: 2)
@@ -72,20 +72,38 @@ struct PDFThumbnailPane: View {
 	}
 }
 
-// MARK: - Thumbnail Renderer
+// MARK: - Cached Thumbnail
 
-struct PDFThumbnailView: NSViewRepresentable {
+/// Renders thumbnail once and caches the NSImage. Only re-renders if page identity changes.
+struct CachedThumbnailView: NSViewRepresentable {
 	let page: PDFPage
 	let size: CGSize
+	let pageIndex: Int
 
 	func makeNSView(context: Context) -> NSImageView {
 		let imageView = NSImageView()
 		imageView.imageScaling = .scaleProportionallyUpOrDown
-		imageView.image = page.thumbnail(of: size, for: .mediaBox)
+		imageView.image = context.coordinator.cachedImage(for: page, size: size)
 		return imageView
 	}
 
 	func updateNSView(_ nsView: NSImageView, context: Context) {
-		nsView.image = page.thumbnail(of: size, for: .mediaBox)
+		nsView.image = context.coordinator.cachedImage(for: page, size: size)
+	}
+
+	func makeCoordinator() -> ThumbnailCoordinator {
+		ThumbnailCoordinator()
+	}
+
+	final class ThumbnailCoordinator {
+		private var cache: [ObjectIdentifier: NSImage] = [:]
+
+		func cachedImage(for page: PDFPage, size: CGSize) -> NSImage {
+			let key = ObjectIdentifier(page)
+			if let cached = cache[key] { return cached }
+			let image = page.thumbnail(of: size, for: .mediaBox)
+			cache[key] = image
+			return image
+		}
 	}
 }

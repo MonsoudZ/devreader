@@ -33,7 +33,7 @@ nonisolated struct NoteItem: Identifiable, Hashable, Codable, Sendable {
 
     // MARK: - Templates
 
-    nonisolated struct Template: Sendable {
+    nonisolated struct Template: Codable, Sendable {
         let name: String
         let icon: String
         let titleTemplate: String
