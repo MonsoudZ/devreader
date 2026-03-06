@@ -25,6 +25,7 @@
 		A001000F2F00000000000001 /* Views/Notes/NoteRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A001000E2F00000000000001 /* Views/Notes/NoteRow.swift */; };
 		F00100012F00000000000001 /* Views/Notes/TagManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100002F00000000000001 /* Views/Notes/TagManagementView.swift */; };
 		F00100032F00000000000002 /* Views/Library/LibrarySearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100022F00000000000002 /* Views/Library/LibrarySearchView.swift */; };
+		A82366A624D349A181E3B403 /* Views/PDF/PDFToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A82366A624D349A181E3B404 /* Views/PDF/PDFToolbar.swift */; };
 		A00100112F00000000000001 /* Views/PDF/PDFViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100102F00000000000001 /* Views/PDF/PDFViewRepresentable.swift */; };
 		A00100152F00000000000001 /* Views/Library/LibraryPane.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100142F00000000000001 /* Views/Library/LibraryPane.swift */; };
 		A00100172F00000000000001 /* App/DevReaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00100162F00000000000001 /* App/DevReaderApp.swift */; };
@@ -115,6 +116,7 @@
 		A001000E2F00000000000001 /* Views/Notes/NoteRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/NoteRow.swift; sourceTree = "<group>"; };
 		F00100002F00000000000001 /* Views/Notes/TagManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/TagManagementView.swift; sourceTree = "<group>"; };
 		F00100022F00000000000002 /* Views/Library/LibrarySearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Library/LibrarySearchView.swift; sourceTree = "<group>"; };
+		A82366A624D349A181E3B404 /* Views/PDF/PDFToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFToolbar.swift; sourceTree = "<group>"; };
 		A00100102F00000000000001 /* Views/PDF/PDFViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFViewRepresentable.swift; sourceTree = "<group>"; };
 		A00100142F00000000000001 /* Views/Library/LibraryPane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Library/LibraryPane.swift; sourceTree = "<group>"; };
 		A00100162F00000000000001 /* App/DevReaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/DevReaderApp.swift; sourceTree = "<group>"; };
@@ -268,6 +270,7 @@
 				A001000E2F00000000000001 /* Views/Notes/NoteRow.swift */,
 				F00100002F00000000000001 /* Views/Notes/TagManagementView.swift */,
 				A00100102F00000000000001 /* Views/PDF/PDFViewRepresentable.swift */,
+				A82366A624D349A181E3B404 /* Views/PDF/PDFToolbar.swift */,
 				A00100312F00000000000001 /* Views/PDF/OutlinePane.swift */,
 				A00100142F00000000000001 /* Views/Library/LibraryPane.swift */,
 				F00100022F00000000000002 /* Views/Library/LibrarySearchView.swift */,
@@ -466,6 +469,7 @@
 				A001000F2F00000000000001 /* Views/Notes/NoteRow.swift in Sources */,
 				F00100012F00000000000001 /* Views/Notes/TagManagementView.swift in Sources */,
 				A00100112F00000000000001 /* Views/PDF/PDFViewRepresentable.swift in Sources */,
+				A82366A624D349A181E3B403 /* Views/PDF/PDFToolbar.swift in Sources */,
 				A00100302F00000000000001 /* Views/PDF/OutlinePane.swift in Sources */,
 				A00100152F00000000000001 /* Views/Library/LibraryPane.swift in Sources */,
 				F00100032F00000000000002 /* Views/Library/LibrarySearchView.swift in Sources */,

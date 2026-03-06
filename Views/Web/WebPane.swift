@@ -2,6 +2,7 @@ import SwiftUI
 import WebKit
 import AppKit
 import Foundation
+import Combine
 import os.log
 
 struct WebPane: View {
@@ -10,6 +11,8 @@ struct WebPane: View {
 	@State private var history: [URL] = []
 	@State private var historyIndex: Int = -1
 	@State private var bookmarks: [URL] = []
+	@State private var isLoading: Bool = false
+	@StateObject private var webActions = WebViewActions()
 
 	private let bookmarksKey = "DevReader.Web.Bookmarks.v1"
 
@@ -37,6 +40,31 @@ struct WebPane: View {
 				.controlSize(.small)
 				.disabled(!canGoForward)
 				.accessibilityIdentifier("webForward")
+
+				if isLoading {
+					Button {
+						webActions.stop?()
+					} label: {
+						Label("Stop", systemImage: "xmark")
+							.labelStyle(.iconOnly)
+					}
+					.buttonStyle(.bordered)
+					.controlSize(.small)
+					.accessibilityIdentifier("webStop")
+					.accessibilityLabel("Stop loading")
+				} else {
+					Button {
+						webActions.reload?()
+					} label: {
+						Label("Reload", systemImage: "arrow.clockwise")
+							.labelStyle(.iconOnly)
+					}
+					.buttonStyle(.bordered)
+					.controlSize(.small)
+					.disabled(currentURL == nil)
+					.accessibilityIdentifier("webReload")
+					.accessibilityLabel("Reload page")
+				}
 
 				TextField("Enter URL…", text: $urlString).onSubmit { loadURL() }
 					.accessibilityIdentifier("webURLField")
@@ -74,7 +102,11 @@ struct WebPane: View {
 				.accessibilityIdentifier("webOpenInBrowser")
 			}.padding(8)
 			Divider()
-			WebView(url: currentURL) { newURL in onNavigated(newURL) }
+			WebView(url: currentURL, actions: webActions) { newURL in
+				onNavigated(newURL)
+			} onLoadingChanged: { loading in
+				isLoading = loading
+			}
 		}
 		.onAppear { loadBookmarks(); if let u = URL(string: urlString) { openURL(u, record: true) } }
 	}
@@ -134,10 +166,23 @@ struct WebPane: View {
 	}
 }
 
+// MARK: - Web View Actions
+
+@MainActor
+final class WebViewActions: ObservableObject {
+	var reload: (() -> Void)?
+	var stop: (() -> Void)?
+}
+
+// MARK: - WKWebView Wrapper
+
 struct WebView: NSViewRepresentable {
     var url: URL?
+    var actions: WebViewActions
     var onNavigated: (URL?) -> Void
-    func makeCoordinator() -> Coord { Coord(onNavigated: onNavigated) }
+    var onLoadingChanged: (Bool) -> Void
+
+    func makeCoordinator() -> Coord { Coord(onNavigated: onNavigated, onLoadingChanged: onLoadingChanged) }
     func makeNSView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
 
@@ -158,6 +203,10 @@ struct WebView: NSViewRepresentable {
         v.setAccessibilityLabel("Web Browser")
         v.setAccessibilityRole(.group)
 
+        // Wire up reload/stop actions
+        actions.reload = { [weak v] in v?.reload() }
+        actions.stop = { [weak v] in v?.stopLoading() }
+
         return v
     }
     func updateNSView(_ view: WKWebView, context: Context) {
@@ -168,25 +217,33 @@ struct WebView: NSViewRepresentable {
     }
     @MainActor final class Coord: NSObject, WKNavigationDelegate {
         let onNavigated: (URL?) -> Void
-        init(onNavigated: @escaping (URL?) -> Void) { self.onNavigated = onNavigated }
+        let onLoadingChanged: (Bool) -> Void
+        init(onNavigated: @escaping (URL?) -> Void, onLoadingChanged: @escaping (Bool) -> Void) {
+            self.onNavigated = onNavigated
+            self.onLoadingChanged = onLoadingChanged
+        }
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            onLoadingChanged(true)
+        }
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             LoadingStateManager.shared.stopWebLoading()
+            onLoadingChanged(false)
             onNavigated(webView.url)
         }
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             LoadingStateManager.shared.stopWebLoading()
+            onLoadingChanged(false)
             logError(AppLog.web, "WebView navigation failed: \(error.localizedDescription)")
             showErrorPage(in: webView, error: error)
         }
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
             LoadingStateManager.shared.stopWebLoading()
+            onLoadingChanged(false)
             logError(AppLog.web, "WebView provisional navigation failed: \(error.localizedDescription)")
             showErrorPage(in: webView, error: error)
         }
         private func showErrorPage(in webView: WKWebView, error: Error) {
             let nsError = error as NSError
-            // Show a user-friendly message based on error domain/code instead of
-            // localizedDescription which may expose internal file paths.
             let message: String
             switch (nsError.domain, nsError.code) {
             case (NSURLErrorDomain, NSURLErrorNotConnectedToInternet),

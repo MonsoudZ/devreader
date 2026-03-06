@@ -10,7 +10,8 @@ struct NoteRow: View {
 	@State private var editingText = ""
 	@State private var editingTitle = ""
 	@State private var isNewNote = false
-	
+	@State private var showMarkdownPreview = false
+
 	var body: some View {
 		VStack(alignment: .leading, spacing: 6) {
 			HStack(alignment: .top) {
@@ -28,7 +29,13 @@ struct NoteRow: View {
 					} else {
 						VStack(alignment: .leading, spacing: 2) {
 							if !item.text.isEmpty {
-								Text(item.text).font(.body)
+								if showMarkdownPreview {
+									Text(markdownAttributedString)
+										.font(.body)
+										.textSelection(.enabled)
+								} else {
+									Text(item.text).font(.body)
+								}
 							} else {
 								Text("Empty note - click Edit to add content").font(.body).foregroundStyle(.secondary).italic()
 							}
@@ -66,6 +73,17 @@ struct NoteRow: View {
 							.accessibilityIdentifier("noteRowGo")
 							.accessibilityLabel("Go to page")
 							.accessibilityHint("Jump to page \(item.pageIndex + 1) in the PDF")
+						if !item.text.isEmpty {
+							Button {
+								showMarkdownPreview.toggle()
+							} label: {
+								Image(systemName: showMarkdownPreview ? "doc.plaintext" : "text.document")
+							}
+							.buttonStyle(.bordered)
+							.controlSize(.small)
+							.help(showMarkdownPreview ? "Show plain text" : "Preview Markdown")
+							.accessibilityLabel(showMarkdownPreview ? "Show plain text" : "Preview markdown")
+						}
 					}
 				}
 			}
@@ -179,5 +197,9 @@ struct NoteRow: View {
 			notes.addTag(newTag.trimmingCharacters(in: .whitespacesAndNewlines), to: item)
 			newTag = ""
 		}
+	}
+
+	private var markdownAttributedString: AttributedString {
+		(try? AttributedString(markdown: item.text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(item.text)
 	}
 }

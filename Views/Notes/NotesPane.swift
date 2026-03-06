@@ -64,6 +64,8 @@ struct NotesPane: View {
 				}
 				.padding(.horizontal, 8)
 				.padding(.bottom, 4)
+				.accessibilityElement(children: .combine)
+				.accessibilityLabel("Export progress \(Int(exportProgress * 100)) percent")
 			}
 
 			if let doc = pdf.document, let url = doc.documentURL {
@@ -92,6 +94,7 @@ struct NotesPane: View {
 				}
 				.frame(maxWidth: .infinity)
 				.accessibilityElement(children: .combine)
+				.accessibilityLabel("No PDF open. Open a PDF to start taking notes.")
 			} else {
 				ScrollView {
 					LazyVStack(alignment: .leading, spacing: 12) {

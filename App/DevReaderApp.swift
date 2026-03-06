@@ -171,6 +171,34 @@ struct DevReaderApp: App {
 
                 Divider()
 
+                Button("Zoom In") { appEnvironment.pdfController.zoomIn() }
+                    .keyboardShortcut("+", modifiers: [.command])
+                    .accessibilityLabel("Zoom in")
+
+                Button("Zoom Out") { appEnvironment.pdfController.zoomOut() }
+                    .keyboardShortcut("-", modifiers: [.command])
+                    .accessibilityLabel("Zoom out")
+
+                Button("Actual Size") { appEnvironment.pdfController.zoomActualSize() }
+                    .keyboardShortcut("0", modifiers: [.command])
+                    .accessibilityLabel("Actual size")
+
+                Button("Zoom to Fit") { appEnvironment.pdfController.zoomToFit() }
+                    .keyboardShortcut("9", modifiers: [.command])
+                    .accessibilityLabel("Zoom to fit")
+
+                Divider()
+
+                Button("Next Page") { appEnvironment.pdfController.goToNextPage() }
+                    .keyboardShortcut(.downArrow, modifiers: [.command])
+                    .accessibilityLabel("Next page")
+
+                Button("Previous Page") { appEnvironment.pdfController.goToPreviousPage() }
+                    .keyboardShortcut(.upArrow, modifiers: [.command])
+                    .accessibilityLabel("Previous page")
+
+                Divider()
+
                 Button("Close PDF") { appEnvironment.commandClosePDF() }
                     .keyboardShortcut(shortcuts.binding(for: .closePDF).keyEquivalent, modifiers: shortcuts.binding(for: .closePDF).modifiers)
                     .accessibilityLabel("Close PDF")

@@ -60,26 +60,38 @@ struct ContentView: View {
                 .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
             } detail: {
                 // Center: PDF viewer
-                ZStack(alignment: .top) {
+                ZStack {
                     PDFViewRepresentable(pdf: appEnvironment.pdfController)
                         .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
                         .background(Color(NSColor.textBackgroundColor))
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                    if showingSearch {
-                        PDFSearchBar(
-                            searchManager: appEnvironment.pdfController.searchManager,
-                            document: appEnvironment.pdfController.document,
-                            isLargePDF: appEnvironment.pdfController.isLargePDF,
-                            onDismiss: {
-                                showingSearch = false
-                                appEnvironment.pdfController.searchManager.clearSearch()
-                            }
-                        )
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                    VStack {
+                        if showingSearch {
+                            PDFSearchBar(
+                                searchManager: appEnvironment.pdfController.searchManager,
+                                document: appEnvironment.pdfController.document,
+                                isLargePDF: appEnvironment.pdfController.isLargePDF,
+                                onDismiss: {
+                                    showingSearch = false
+                                    appEnvironment.pdfController.searchManager.clearSearch()
+                                }
+                            )
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                        }
+
+                        Spacer()
+
+                        if appEnvironment.pdfController.document != nil {
+                            PDFToolbar(pdf: appEnvironment.pdfController)
+                                .padding(.horizontal, 40)
+                                .padding(.bottom, 8)
+                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
                     }
                 }
                 .animation(.easeInOut(duration: 0.2), value: showingSearch)
+                .animation(.easeInOut(duration: 0.2), value: appEnvironment.pdfController.document != nil)
                     .navigationTitle(documentTitle)
                     .navigationSubtitle(pageInfo)
                     // Right: Tools inspector

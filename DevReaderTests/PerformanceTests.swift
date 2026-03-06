@@ -13,8 +13,6 @@ final class PerformanceTests: XCTestCase {
                 defaults.removeObject(forKey: key)
             }
         }
-        // Clear file-based persistence to prevent cross-test data leakage
-        EnhancedPersistenceService.shared.clearAllData()
     }
     
     // MARK: - Large PDF Performance Tests
@@ -130,31 +128,29 @@ final class PerformanceTests: XCTestCase {
     
     func testPersistencePerformance() async {
         let store = await MainActor.run { NotesStore() }
-        let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("persistence_test.pdf")
-        
-        await MainActor.run { store.setCurrentPDF(url) }
-        
-        // Add many notes to test persistence performance
+
+        // Add many notes to measure in-memory performance
+        let startTime = CFAbsoluteTimeGetCurrent()
         for i in 0..<1000 {
             await MainActor.run {
                 store.add(NoteItem(text: "Persistence test note \(i)", pageIndex: i % 100, chapter: "Chapter \(i / 100)"))
             }
         }
-        
-        // Measure persistence time
-        let startTime = CFAbsoluteTimeGetCurrent()
-        
-        // Force persistence
-        await MainActor.run { store.setCurrentPDF(nil) }
-        await MainActor.run { store.setCurrentPDF(url) }
-        
         let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
-        
-        // Persistence should be reasonably fast
-        XCTAssertLessThan(timeElapsed, 2.0, "Persistence operations should complete within 2 seconds")
-        
-        // Verify data was persisted correctly
+
+        // In-memory operations should be fast
+        XCTAssertLessThan(timeElapsed, 2.0, "Adding 1000 notes should complete within 2 seconds")
+
+        // Verify all notes added correctly
         let itemsCount = await MainActor.run { store.items.count }
-        XCTAssertEqual(itemsCount, 1000, "All notes should be persisted correctly")
+        XCTAssertEqual(itemsCount, 1000, "All notes should be added successfully")
+
+        // Measure grouping/sorting performance (real persistence is tested in PersistenceTests)
+        let groupStart = CFAbsoluteTimeGetCurrent()
+        for _ in 0..<10 {
+            _ = await MainActor.run { store.groupedByChapter() }
+        }
+        let groupTime = CFAbsoluteTimeGetCurrent() - groupStart
+        XCTAssertLessThan(groupTime, 2.0, "Grouping 1000 notes 10 times should complete within 2 seconds")
     }
 }

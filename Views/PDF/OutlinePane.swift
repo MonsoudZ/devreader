@@ -49,6 +49,7 @@ struct OutlinePane: View {
                     Text("(\(outlineManager.outlineMap.count) items)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .accessibilityLabel("\(outlineManager.outlineMap.count) outline items")
                 }
                 Spacer()
             }
@@ -62,6 +63,7 @@ struct OutlinePane: View {
                     TextField("Search outline...", text: $searchText)
                         .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("outlineSearchField")
+                        .accessibilityLabel("Search outline")
                 }
                 .padding(.horizontal, 8)
                 .padding(.bottom, 4)

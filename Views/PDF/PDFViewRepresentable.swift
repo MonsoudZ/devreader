@@ -72,6 +72,7 @@ struct PDFViewRepresentable: NSViewRepresentable {
 		v.delegate = context.coordinator
 		pdf.selectionBridge.pdfView = v
 		pdf.selectionBridge.observeSelectionChanges(from: v)
+		context.coordinator.observeScaleChanges(from: v)
 
 		// Aggressive memory optimization
 		v.interpolationQuality = .low
@@ -162,10 +163,23 @@ struct PDFViewRepresentable: NSViewRepresentable {
 	final class Coord: NSObject, PDFViewDelegate {
 		let parent: PDFViewRepresentable
 		var hasSetInitialZoom = false
+		nonisolated(unsafe) private var scaleObserver: Any?
 
 		init(parent: PDFViewRepresentable) {
 			self.parent = parent
 			super.init()
+		}
+
+		func observeScaleChanges(from pdfView: PDFView) {
+			scaleObserver.map { NotificationCenter.default.removeObserver($0) }
+			scaleObserver = NotificationCenter.default.addObserver(
+				forName: .PDFViewScaleChanged, object: pdfView, queue: .main
+			) { [weak self] notification in
+				guard let pdfView = notification.object as? PDFView else { return }
+				Task { @MainActor in
+					self?.parent.pdf.scaleFactor = pdfView.scaleFactor
+				}
+			}
 		}
 
 		func pdfViewPageChanged(_ sender: PDFView) {
@@ -176,5 +190,10 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			}
 		}
 
+		deinit {
+			if let observer = scaleObserver {
+				NotificationCenter.default.removeObserver(observer)
+			}
+		}
 	}
 }

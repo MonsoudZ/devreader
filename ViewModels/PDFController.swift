@@ -284,6 +284,79 @@ final class PDFController: ObservableObject {
 		pdfView.print(with: .shared, autoRotate: true, pageScaling: .pageScaleToFit)
 	}
 
+	// MARK: - Zoom
+
+	@Published var scaleFactor: CGFloat = 1.0
+
+	func zoomIn() {
+		guard let pdfView = selectionBridge.pdfView else { return }
+		let newScale = min(pdfView.scaleFactor * 1.25, pdfView.maxScaleFactor)
+		pdfView.scaleFactor = newScale
+		scaleFactor = newScale
+	}
+
+	func zoomOut() {
+		guard let pdfView = selectionBridge.pdfView else { return }
+		let newScale = max(pdfView.scaleFactor / 1.25, pdfView.minScaleFactor)
+		pdfView.scaleFactor = newScale
+		scaleFactor = newScale
+	}
+
+	func zoomToFit() {
+		guard let pdfView = selectionBridge.pdfView else { return }
+		pdfView.autoScales = true
+		// Read back the computed scale after autoScales applies
+		DispatchQueue.main.async { [weak self] in
+			guard let self, let pv = self.selectionBridge.pdfView else { return }
+			self.scaleFactor = pv.scaleFactor
+			pv.autoScales = false
+		}
+	}
+
+	func zoomActualSize() {
+		guard let pdfView = selectionBridge.pdfView else { return }
+		pdfView.scaleFactor = 1.0
+		pdfView.autoScales = false
+		scaleFactor = 1.0
+	}
+
+	func syncScaleFactor() {
+		if let pdfView = selectionBridge.pdfView {
+			scaleFactor = pdfView.scaleFactor
+		}
+	}
+
+	// MARK: - Page Navigation
+
+	func goToFirstPage() {
+		goToPage(0)
+	}
+
+	func goToLastPage() {
+		guard let doc = document else { return }
+		goToPage(doc.pageCount - 1)
+	}
+
+	func goToNextPage() {
+		guard let doc = document, currentPageIndex < doc.pageCount - 1 else { return }
+		goToPage(currentPageIndex + 1)
+	}
+
+	func goToPreviousPage() {
+		guard currentPageIndex > 0 else { return }
+		goToPage(currentPageIndex - 1)
+	}
+
+	// MARK: - Display Mode
+
+	@Published var displayMode: PDFDisplayMode = .singlePageContinuous
+
+	func setDisplayMode(_ mode: PDFDisplayMode) {
+		guard let pdfView = selectionBridge.pdfView else { return }
+		pdfView.displayMode = mode
+		displayMode = mode
+	}
+
 	// MARK: - Debounced Page Persistence
 
 	func didScrollToPage(_ index: Int) {
