@@ -44,6 +44,7 @@ struct AnnotationListView: View {
 				.buttonStyle(.bordered)
 				.controlSize(.small)
 				.disabled(pageAnnotations.isEmpty)
+				.accessibilityLabel("Remove all annotations on current page")
 				Spacer()
 			}
 			.padding(8)

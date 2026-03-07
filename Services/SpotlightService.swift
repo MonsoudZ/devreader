@@ -119,12 +119,12 @@ final class SpotlightService {
 	}
 
 	private func noteIdentifier(_ note: NoteItem, pdfURL: URL?) -> String {
-		let pdfHash = pdfURL?.lastPathComponent.hashValue ?? 0
+		let pdfHash = pdfURL.map { PersistenceService.stableHash(for: $0) } ?? "unknown"
 		return "\(domainNote).\(pdfHash).\(note.id.uuidString)"
 	}
 
 	private func noteDomainForPDF(_ url: URL) -> String {
-		"\(domainNote).\(url.lastPathComponent.hashValue)"
+		"\(domainNote).\(PersistenceService.stableHash(for: url))"
 	}
 
 	private func makeSearchableItem(for item: LibraryItem) -> CSSearchableItem? {

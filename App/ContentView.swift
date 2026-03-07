@@ -278,7 +278,7 @@ struct ContentView: View {
     private var rightSidebar: some View {
         VStack(spacing: 0) {
             // Segmented control with SF Symbol icons
-            Picker("", selection: $rightTab) {
+            Picker("Right panel", selection: $rightTab) {
                 Label("Notes", systemImage: "note.text").tag(RightTab.notes)
                 Label("Code", systemImage: "chevron.left.forwardslash.chevron.right").tag(RightTab.code)
                 Label("Web", systemImage: "globe").tag(RightTab.web)
@@ -286,6 +286,7 @@ struct ContentView: View {
             .pickerStyle(.segmented)
             .padding(12)
             .accessibilityIdentifier("rightTabPicker")
+            .accessibilityLabel("Right panel tab selector")
 
             // Tab content
             Group {

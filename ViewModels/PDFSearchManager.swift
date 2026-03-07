@@ -98,5 +98,4 @@ final class PDFSearchManager: ObservableObject {
         return pageIndex
     }
 
-    // performSearchOptimized removed — performSearch is now non-blocking for all PDFs
 }

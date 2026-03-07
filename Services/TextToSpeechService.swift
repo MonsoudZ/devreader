@@ -26,6 +26,7 @@ final class TextToSpeechService: ObservableObject {
 	/// Start reading from the given page index through the end of the document.
 	func startReading(document: PDFDocument, fromPage startPage: Int) {
 		stop()
+		guard startPage < document.pageCount else { return }
 		pages = (startPage..<document.pageCount).compactMap { i in
 			document.page(at: i)?.string?.trimmingCharacters(in: .whitespacesAndNewlines)
 		}.filter { !$0.isEmpty }
