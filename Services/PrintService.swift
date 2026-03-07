@@ -5,7 +5,7 @@ enum PrintService {
 
 	/// Prints plain text content with a title header.
 	static func printText(_ text: String, title: String = "DevReader") {
-		let printInfo = NSPrintInfo.shared.copy() as! NSPrintInfo
+		guard let printInfo = NSPrintInfo.shared.copy() as? NSPrintInfo else { return }
 		printInfo.topMargin = 36
 		printInfo.bottomMargin = 36
 		printInfo.leftMargin = 36

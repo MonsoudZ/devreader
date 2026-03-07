@@ -20,7 +20,10 @@ enum CodeFileService {
 	/// Prevents path traversal attacks (e.g. `../../etc/passwd`).
 	static func isPathAllowed(_ url: URL) -> Bool {
 		let resolved = url.standardizedFileURL.path
-		return allowedRoots.contains { resolved.hasPrefix($0.standardizedFileURL.path) }
+		return allowedRoots.contains { root in
+			let rootPath = root.standardizedFileURL.path
+			return resolved == rootPath || resolved.hasPrefix(rootPath + "/")
+		}
 	}
 
 	// MARK: - Recent Files

@@ -98,7 +98,12 @@ nonisolated enum JSONStorageService {
                 } catch let replaceError as NSError where replaceError.domain == NSCocoaErrorDomain
                     && (replaceError.code == NSFileNoSuchFileError || replaceError.code == NSFileReadNoSuchFileError) {
                     // Target doesn't exist yet — move temp file into place
-                    try FileManager.default.moveItem(at: tempURL, to: url)
+                    do {
+                        try FileManager.default.moveItem(at: tempURL, to: url)
+                    } catch {
+                        try? FileManager.default.removeItem(at: tempURL)
+                        throw error
+                    }
                 }
 
                 os_log("Saved data atomically to: %{public}@", log: logger, type: .debug, url.path)

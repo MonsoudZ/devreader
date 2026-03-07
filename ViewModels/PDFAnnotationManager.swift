@@ -220,14 +220,14 @@ final class PDFAnnotationManager: ObservableObject {
 		let baseName = ctrl.currentPDFURL?.deletingPathExtension().lastPathComponent ?? "Annotated"
 		panel.nameFieldStringValue = "\(baseName)-annotated.pdf"
 
-		panel.begin { response in
+		panel.begin { [weak ctrl] response in
 			guard response == .OK, let url = panel.url else { return }
 			if doc.write(to: url) {
-				ctrl.toastRequestPublisher.send(
+				ctrl?.toastRequestPublisher.send(
 					ToastMessage(message: "Annotated PDF exported", type: .success)
 				)
 			} else {
-				ctrl.toastRequestPublisher.send(
+				ctrl?.toastRequestPublisher.send(
 					ToastMessage(message: "Failed to export PDF", type: .error)
 				)
 			}
