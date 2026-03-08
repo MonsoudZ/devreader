@@ -221,10 +221,10 @@ struct ContentView: View {
             }
         }
         // Internal event publishers from PDFController (replace NotificationCenter)
-        .onReceive(appEnvironment.pdfController.pdfLoadErrorPublisher) { url in
+        .onReceive(appEnvironment.pdfController.pdfLoadErrorPublisher) { error in
             appEnvironment.enhancedToastCenter.showError(
                 "PDF Load Failed",
-                "Could not open \"\(url.lastPathComponent)\". The file may be missing, corrupted, or inaccessible.",
+                "\(error.url.lastPathComponent): \(error.reason)",
                 category: .fileOperation,
                 duration: 6
             )
@@ -263,9 +263,6 @@ struct ContentView: View {
                 columnVisibility = newValue ? .all : .detailOnly
             }
         }
-        .onChange(of: columnVisibility) { _, newValue in
-            showingLibrary = (newValue != .detailOnly)
-        }
         .onChange(of: autosaveIntervalSeconds) { _, _ in
             setupAutosaveTimer()
         }
@@ -279,9 +276,9 @@ struct ContentView: View {
         VStack(spacing: 0) {
             // Segmented control with SF Symbol icons
             Picker("Right panel", selection: $rightTab) {
-                Label("Notes", systemImage: "note.text").tag(RightTab.notes)
-                Label("Code", systemImage: "chevron.left.forwardslash.chevron.right").tag(RightTab.code)
-                Label("Web", systemImage: "globe").tag(RightTab.web)
+                Label("Notes", systemImage: "note.text").labelStyle(.iconOnly).help("Notes").tag(RightTab.notes)
+                Label("Code", systemImage: "chevron.left.forwardslash.chevron.right").labelStyle(.iconOnly).help("Code").tag(RightTab.code)
+                Label("Web", systemImage: "globe").labelStyle(.iconOnly).help("Web").tag(RightTab.web)
             }
             .pickerStyle(.segmented)
             .padding(12)
@@ -479,7 +476,10 @@ private struct PDFSearchBar: View {
         .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
         .padding(.horizontal, 40)
         .padding(.top, 8)
-        .onAppear { isFocused = true }
+        .onAppear {
+            isFocused = true
+            if query.isEmpty { searchManager.clearSearch() }
+        }
         .onDisappear { query = "" }
     }
 

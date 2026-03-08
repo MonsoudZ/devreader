@@ -8,6 +8,10 @@ final class LibraryStore: ObservableObject {
 	@Published var processingProgress: Double = 0.0
 	@Published var currentOperation: String = ""
 
+	/// Recently removed items that can be restored via undo.
+	@Published private(set) var recentlyRemoved: [LibraryItem] = []
+	private static let maxRecentlyRemoved = 20
+
 	private let key = "DevReader.Library.v1"
 	let backgroundService: LibraryPersistenceService
 	let loadingStateManager: LoadingStateManager
@@ -92,6 +96,7 @@ final class LibraryStore: ObservableObject {
 		SpotlightService.shared.deindexLibraryItem(item)
 		EnhancedPersistenceService.shared.clearData(for: item.url)
 		items.removeAll { $0.id == item.id }
+		pushRecentlyRemoved([item])
 		schedulePersist()
 		loadingStateManager.stopLoading(.general)
 	}
@@ -104,8 +109,39 @@ final class LibraryStore: ObservableObject {
 			EnhancedPersistenceService.shared.clearData(for: item.url)
 		}
 		items.removeAll { ids.contains($0.id) }
+		pushRecentlyRemoved(removedItems)
 		schedulePersist()
 		loadingStateManager.stopLoading(.general)
+	}
+
+	/// Restore a recently removed item back into the library.
+	func restoreItem(_ item: LibraryItem) {
+		recentlyRemoved.removeAll { $0.id == item.id }
+		items.append(item)
+		items.sort { $0.addedDate > $1.addedDate }
+		SpotlightService.shared.indexLibraryItems([item])
+		schedulePersist()
+	}
+
+	/// Restore all recently removed items.
+	func restoreAllRecentlyRemoved() {
+		let toRestore = recentlyRemoved
+		recentlyRemoved.removeAll()
+		items.append(contentsOf: toRestore)
+		items.sort { $0.addedDate > $1.addedDate }
+		SpotlightService.shared.indexLibraryItems(toRestore)
+		schedulePersist()
+	}
+
+	func clearRecentlyRemoved() {
+		recentlyRemoved.removeAll()
+	}
+
+	private func pushRecentlyRemoved(_ removedItems: [LibraryItem]) {
+		recentlyRemoved.insert(contentsOf: removedItems, at: 0)
+		if recentlyRemoved.count > Self.maxRecentlyRemoved {
+			recentlyRemoved = Array(recentlyRemoved.prefix(Self.maxRecentlyRemoved))
+		}
 	}
 
 	func refreshItem(_ item: LibraryItem) {

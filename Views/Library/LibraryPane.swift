@@ -13,6 +13,7 @@ struct LibraryPane: View {
     @State private var showingDeleteConfirmation = false
     @State private var loadingItemID: UUID?
     @State private var showingLibrarySearch = false
+    @State private var cachedSortedFiltered: [LibraryItem] = []
     @AppStorage("library.sortOrder") private var persistedSortOrder: String = "recent"
 	
 	var body: some View {
@@ -22,66 +23,82 @@ struct LibraryPane: View {
                     .accessibilityIdentifier("librarySearchField")
                     .accessibilityLabel("Search library")
                     .accessibilityHint("Enter text to search your PDF library")
-                Menu {
-                    Picker("Sort", selection: $sort) {
-                        Text("Recently Added").tag(SortOption.recent)
-                        Text("Title (A–Z)").tag(SortOption.titleAZ)
-                        Text("Title (Z–A)").tag(SortOption.titleZA)
-                    }
-                } label: {
-                    Label(sort.label, systemImage: "arrow.up.arrow.down")
-                }
-                .accessibilityIdentifier("librarySortMenu")
-                .accessibilityLabel("Sort library")
-                .accessibilityHint("Choose how to sort your PDF library")
                 Button(action: { importFromFinder() }) { Image(systemName: "plus") }
                     .buttonStyle(.borderless)
                     .help("Import PDFs…")
                     .accessibilityIdentifier("libraryImportButton")
                     .accessibilityLabel("Import PDFs")
                     .accessibilityHint("Import new PDF files into your library")
-                Button(action: { showingLibrarySearch = true }) { Image(systemName: "text.magnifyingglass") }
-                    .buttonStyle(.borderless)
-                    .help("Search across all PDFs…")
-                    .accessibilityIdentifier("librarySearchAll")
-                    .accessibilityLabel("Search all PDFs")
-                    .accessibilityHint("Search text content across all PDFs in your library")
                 if !selection.isEmpty {
-                    Button(role: .destructive) { 
+                    Button(role: .destructive) {
                         showingDeleteConfirmation = true
-                    } label: { 
-                        Label("Remove Selected", systemImage: "trash") 
+                    } label: {
+                        Label("Remove Selected", systemImage: "trash")
                     }
                     .help("Remove selected from Library")
                     .accessibilityIdentifier("libraryRemoveSelected")
                     .accessibilityLabel("Remove selected items")
                     .accessibilityHint("Remove selected PDFs from library")
                 }
+                Menu {
+                    Section("Sort") {
+                        Picker("Sort", selection: $sort) {
+                            Text("Recently Added").tag(SortOption.recent)
+                            Text("Title (A–Z)").tag(SortOption.titleAZ)
+                            Text("Title (Z–A)").tag(SortOption.titleZA)
+                        }
+                    }
+                    Section {
+                        Button {
+                            showingLibrarySearch = true
+                        } label: {
+                            Label("Search All PDFs", systemImage: "text.magnifyingglass")
+                        }
+                    }
+                    if !library.recentlyRemoved.isEmpty {
+                        Section("Recently Removed") {
+                            ForEach(library.recentlyRemoved) { item in
+                                Button {
+                                    library.restoreItem(item)
+                                } label: {
+                                    Label(item.title, systemImage: "arrow.uturn.backward")
+                                }
+                            }
+                            Divider()
+                            Button {
+                                library.restoreAllRecentlyRemoved()
+                            } label: {
+                                Label("Restore All", systemImage: "arrow.uturn.backward.circle")
+                            }
+                            Button(role: .destructive) {
+                                library.clearRecentlyRemoved()
+                            } label: {
+                                Label("Clear List", systemImage: "trash")
+                            }
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+                .menuStyle(.borderlessButton)
+                .accessibilityIdentifier("libraryOverflowMenu")
+                .accessibilityLabel("More options")
+                .accessibilityHint("Sort library or search across all PDFs")
             }
 			.padding(8)
 			Divider()
             if library.items.isEmpty {
-                VStack(spacing: 12) {
-                    Spacer()
-                    Image(systemName: "books.vertical")
-                        .font(.system(size: 40))
-                        .foregroundStyle(.secondary)
-                    Text("No PDFs in Library")
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                    Text("Import PDFs to get started")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                    Button("Import PDFs...") { importFromFinder() }
-                        .buttonStyle(.bordered)
-                        .accessibilityIdentifier("libraryEmptyImport")
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity)
-                .accessibilityElement(children: .combine)
+                EmptyStateView(
+                    icon: "books.vertical",
+                    title: "No PDFs in Library",
+                    subtitle: "Import PDFs to get started",
+                    actionLabel: "Import PDFs...",
+                    action: { importFromFinder() }
+                )
+                .accessibilityIdentifier("libraryEmptyImport")
             } else {
                 List(selection: $selection) {
-                    ForEach(sortedFiltered()) { item in
+                    ForEach(cachedSortedFiltered) { item in
                         Button(action: {
                             loadingItemID = item.id
                             open(item)
@@ -120,6 +137,15 @@ struct LibraryPane: View {
                     }
                 }
                 .onDrop(of: [.fileURL], isTargeted: nil) { providers in loadDropped(providers: providers) }
+                .onKeyPress(.return) {
+                    guard let firstID = selection.first,
+                          let item = cachedSortedFiltered.first(where: { $0.id == firstID }) else {
+                        return .ignored
+                    }
+                    loadingItemID = item.id
+                    open(item)
+                    return .handled
+                }
             }
 		}
 		.alert("Remove Selected Items", isPresented: $showingDeleteConfirmation) {
@@ -142,13 +168,23 @@ struct LibraryPane: View {
 		.onAppear {
 			// Load persisted sort order with resilient fallback
 			sort = SortOption(fromStored: persistedSortOrder)
+			cachedSortedFiltered = sortedFiltered()
 		}
 		.onChange(of: pdf.document) { _, _ in
 			loadingItemID = nil
 		}
+		.onReceive(pdf.pdfLoadErrorPublisher) { _ in
+			loadingItemID = nil
+		}
 		.onChange(of: sort) { _, newSort in
-			// Persist sort order
 			persistedSortOrder = newSort.rawValue
+			cachedSortedFiltered = sortedFiltered()
+		}
+		.onChange(of: filter) { _, _ in
+			cachedSortedFiltered = sortedFiltered()
+		}
+		.onChange(of: library.items) { _, _ in
+			cachedSortedFiltered = sortedFiltered()
 		}
 	}
 	

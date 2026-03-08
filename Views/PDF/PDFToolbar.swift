@@ -7,24 +7,33 @@ struct PDFToolbar: View {
 	@FocusState private var isPageFieldFocused: Bool
 
 	var body: some View {
-		HStack(spacing: 12) {
-			// Page navigation
-			pageNavigation
+		ViewThatFits(in: .horizontal) {
+			// Full toolbar
+			HStack(spacing: 12) {
+				pageNavigation
+				Divider().frame(height: 18)
+				displayModePicker
+				Divider().frame(height: 18)
+				rotationControls
+				Divider().frame(height: 18)
+				zoomControls
+			}
 
-			Divider().frame(height: 18)
+			// Compact: collapse display mode + rotation into a menu
+			HStack(spacing: 12) {
+				pageNavigation
+				Divider().frame(height: 18)
+				zoomControls
+				Divider().frame(height: 18)
+				compactOverflowMenu
+			}
 
-			// Display mode picker
-			displayModePicker
-
-			Divider().frame(height: 18)
-
-			// Rotation
-			rotationControls
-
-			Divider().frame(height: 18)
-
-			// Zoom controls
-			zoomControls
+			// Minimal: page nav + overflow only
+			HStack(spacing: 8) {
+				compactPageNavigation
+				Divider().frame(height: 18)
+				compactOverflowMenu
+			}
 		}
 		.padding(.horizontal, 12)
 		.padding(.vertical, 6)
@@ -199,6 +208,62 @@ struct PDFToolbar: View {
 			.help("Rotate Right")
 			.accessibilityLabel("Rotate page right")
 		}
+	}
+
+	// MARK: - Compact Variants
+
+	private var compactPageNavigation: some View {
+		HStack(spacing: 4) {
+			Button { pdf.goToPreviousPage() } label: { Image(systemName: "chevron.left") }
+				.buttonStyle(.borderless)
+				.disabled(pdf.currentPageIndex <= 0)
+				.accessibilityLabel("Previous page")
+
+			Text("\(pdf.currentPageIndex + 1)/\(pdf.document?.pageCount ?? 0)")
+				.font(.caption)
+				.monospacedDigit()
+				.foregroundColor(.secondary)
+
+			Button { pdf.goToNextPage() } label: { Image(systemName: "chevron.right") }
+				.buttonStyle(.borderless)
+				.disabled(pdf.document == nil || pdf.currentPageIndex >= (pdf.document?.pageCount ?? 1) - 1)
+				.accessibilityLabel("Next page")
+		}
+	}
+
+	private var compactOverflowMenu: some View {
+		Menu {
+			Section("Display Mode") {
+				Button { pdf.setDisplayMode(.singlePage) } label: {
+					Label("Single Page", systemImage: "doc")
+				}
+				Button { pdf.setDisplayMode(.singlePageContinuous) } label: {
+					Label("Continuous", systemImage: "doc.text")
+				}
+				Button { pdf.setDisplayMode(.twoUpContinuous) } label: {
+					Label("Two-Page", systemImage: "book")
+				}
+			}
+			Section("Rotate") {
+				Button { pdf.rotateCurrentPageLeft() } label: {
+					Label("Rotate Left", systemImage: "rotate.left")
+				}
+				.disabled(pdf.document == nil)
+				Button { pdf.rotateCurrentPageRight() } label: {
+					Label("Rotate Right", systemImage: "rotate.right")
+				}
+				.disabled(pdf.document == nil)
+			}
+			Section("Zoom") {
+				Button { pdf.zoomOut() } label: { Label("Zoom Out", systemImage: "minus.magnifyingglass") }
+				Button { pdf.zoomIn() } label: { Label("Zoom In", systemImage: "plus.magnifyingglass") }
+				Button { pdf.zoomToFit() } label: { Label("Fit to Window", systemImage: "arrow.up.left.and.arrow.down.right") }
+			}
+		} label: {
+			Image(systemName: "ellipsis.circle")
+		}
+		.menuStyle(.borderlessButton)
+		.accessibilityLabel("More controls")
 	}
 
 	// MARK: - Helpers

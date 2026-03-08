@@ -31,7 +31,8 @@ final class PerformanceTests: XCTestCase {
         let startTime = CFAbsoluteTimeGetCurrent()
         
         await MainActor.run { store.setCurrentPDF(largePDFURL) }
-        
+        await MainActor.run { store.loadingTask }?.value
+
         // Simulate adding many notes (performance test)
         for i in 0..<1000 {
             await MainActor.run { 

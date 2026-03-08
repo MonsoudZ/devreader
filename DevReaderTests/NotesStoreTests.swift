@@ -7,10 +7,11 @@ final class NotesStoreTests: XCTestCase {
     var mockPersistence: MockNotesPersistenceService!
     let testURL = URL(fileURLWithPath: "/tmp/test_notes.pdf")
 
-    override func setUp() {
+    override func setUp() async throws {
         mockPersistence = MockNotesPersistenceService()
         store = NotesStore(persistenceService: mockPersistence)
         store.setCurrentPDF(testURL)
+        await store.loadingTask?.value
     }
 
     override func tearDown() {
@@ -114,7 +115,7 @@ final class NotesStoreTests: XCTestCase {
 
     // MARK: - PDF Switching
 
-    func testSwitchPDF() {
+    func testSwitchPDF() async {
         let url2 = URL(fileURLWithPath: "/tmp/other.pdf")
 
         store.add(NoteItem(text: "PDF1 note", pageIndex: 1, chapter: "Ch1"))
@@ -122,10 +123,12 @@ final class NotesStoreTests: XCTestCase {
 
         // Switch to another PDF
         store.setCurrentPDF(url2)
+        await store.loadingTask?.value
         XCTAssertTrue(store.items.isEmpty, "New PDF should start with no notes")
 
         // Switch back
         store.setCurrentPDF(testURL)
+        await store.loadingTask?.value
         XCTAssertEqual(store.items.count, 1, "Notes should be reloaded from mock")
     }
 
@@ -140,10 +143,11 @@ final class NotesStoreTests: XCTestCase {
 
     // MARK: - Basic Functionality
 
-    func testSetCurrentPDFSeparatesNotes() {
+    func testSetCurrentPDFSeparatesNotes() async {
         let urlA = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("a_\(UUID().uuidString).pdf")
 
         store.setCurrentPDF(urlA)
+        await store.loadingTask?.value
         store.setNote("hello", for: 1)
         XCTAssertEqual(store.note(for: 1), "hello")
 

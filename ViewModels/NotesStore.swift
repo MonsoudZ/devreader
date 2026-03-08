@@ -15,6 +15,8 @@ final class NotesStore: ObservableObject {
 	private let persistenceService: NotesPersistenceProtocol
 	private var persister: DebouncedPersister?
 	private var isLoading = false
+	/// Exposed for tests to await background loads.
+	private(set) var loadingTask: Task<Void, Never>?
 
 	init(persistenceService: NotesPersistenceProtocol? = nil) {
 		self.persistenceService = persistenceService ?? NotesPersistenceService()
@@ -25,11 +27,28 @@ final class NotesStore: ObservableObject {
 		if currentPDFURL != nil {
 			persister?.flush()
 		}
+		loadingTask?.cancel()
 		currentPDFURL = url
 		if let url = url {
 			isLoading = true
-			loadForPDF(url)
-			isLoading = false
+			let service = persistenceService
+			loadingTask = Task.detached(priority: .userInitiated) {
+				let loadedItems = service.loadNotes(for: url)
+				let loadedPageNotes = service.loadPageNotes(for: url)
+				let loadedTags = service.loadTags(for: url)
+				let valid = service.validateData(for: url)
+				guard !Task.isCancelled else { return }
+				await MainActor.run { [weak self] in
+					guard let self, self.currentPDFURL == url else { return }
+					self.items = loadedItems
+					self.pageNotes = loadedPageNotes
+					self.availableTags = loadedTags
+					if !valid {
+						logError(AppLog.notes, "Data validation failed for PDF: \(url.lastPathComponent)")
+					}
+					self.isLoading = false
+				}
+			}
 		} else {
 			items = []
 			pageNotes = [:]
@@ -81,6 +100,51 @@ final class NotesStore: ObservableObject {
 	func groupedByChapter() -> [(key: String, value: [NoteItem])] {
 		let groups = Dictionary(grouping: items) { $0.chapter.isEmpty ? "(No Chapter)" : $0.chapter }
 		return groups.sorted { $0.key < $1.key }
+	}
+
+	/// Move notes within a chapter group, updating the flat items array to match.
+	func moveNotes(in chapter: String, from source: IndexSet, to destination: Int) {
+		let chapterKey = chapter
+		var chapterItems = items.filter {
+			let key = $0.chapter.isEmpty ? "(No Chapter)" : $0.chapter
+			return key == chapterKey
+		}
+		let oldOrder = chapterItems
+		// Manual move: extract items at source indices, insert at destination
+		let movedItems = source.sorted(by: >).map { chapterItems.remove(at: $0) }.reversed()
+		let adjustedDest = min(destination, chapterItems.count)
+		chapterItems.insert(contentsOf: movedItems, at: adjustedDest)
+
+		// Rebuild the flat items array preserving the new order within this chapter
+		var result: [NoteItem] = []
+		var chapterIndex = 0
+		for item in items {
+			let key = item.chapter.isEmpty ? "(No Chapter)" : item.chapter
+			if key == chapterKey {
+				result.append(chapterItems[chapterIndex])
+				chapterIndex += 1
+			} else {
+				result.append(item)
+			}
+		}
+		items = result
+		registerUndo(actionName: "Reorder Notes") { [weak self] in
+			// Restore old order
+			var restored: [NoteItem] = []
+			var idx = 0
+			for item in result {
+				let key = item.chapter.isEmpty ? "(No Chapter)" : item.chapter
+				if key == chapterKey {
+					restored.append(oldOrder[idx])
+					idx += 1
+				} else {
+					restored.append(item)
+				}
+			}
+			self?.items = restored
+			self?.schedulePersist()
+		}
+		schedulePersist()
 	}
 
 	func note(for pageIndex: Int) -> String { pageNotes[pageIndex] ?? "" }
@@ -208,13 +272,4 @@ final class NotesStore: ObservableObject {
 	/// Published when a write failure occurs so the UI layer can show a toast.
 	let persistenceFailurePublisher = PassthroughSubject<String, Never>()
 
-	private func loadForPDF(_ url: URL) {
-		items = persistenceService.loadNotes(for: url)
-		pageNotes = persistenceService.loadPageNotes(for: url)
-		availableTags = persistenceService.loadTags(for: url)
-
-		if !persistenceService.validateData(for: url) {
-			logError(AppLog.notes, "Data validation failed for PDF: \(url.lastPathComponent)")
-		}
-	}
 }

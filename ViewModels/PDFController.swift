@@ -42,7 +42,8 @@ final class PDFController: ObservableObject {
     var memoryUsage: String = ""
 
 	// MARK: - Event Publishers (replace NotificationCenter posts)
-	let pdfLoadErrorPublisher = PassthroughSubject<URL, Never>()
+	struct PDFLoadError { let url: URL; let reason: String }
+	let pdfLoadErrorPublisher = PassthroughSubject<PDFLoadError, Never>()
 	let noteRequestPublisher = PassthroughSubject<NoteItem, Never>()
 	let toastRequestPublisher = PassthroughSubject<ToastMessage, Never>()
 
@@ -51,7 +52,7 @@ final class PDFController: ObservableObject {
 	let searchManager: PDFSearchManager
 	let bookmarkManager = PDFBookmarkManager()
 	let outlineManager = PDFOutlineManager()
-	private(set) lazy var annotationManager = PDFAnnotationManager(pdfController: self)
+	private(set) var annotationManager: PDFAnnotationManager!
 
     // MARK: - Constants
     private static let largePDFPageThreshold = 500
@@ -79,6 +80,7 @@ final class PDFController: ObservableObject {
 		self.loadingStateManager = loadingStateManager
 		self.performanceMonitor = performanceMonitor
 		self.searchManager = PDFSearchManager(selectionBridge: selectionBridge, loadingStateManager: loadingStateManager, performanceMonitor: performanceMonitor)
+		self.annotationManager = PDFAnnotationManager(pdfController: self)
 
 		setupMemoryPressureHandler()
 	}
@@ -164,7 +166,7 @@ final class PDFController: ObservableObject {
 
 		guard FileManager.default.fileExists(atPath: url.path) else {
 			logError(AppLog.pdf, "PDF file does not exist: \(url.path)")
-			pdfLoadErrorPublisher.send(url)
+			pdfLoadErrorPublisher.send(PDFLoadError(url: url, reason: "The file could not be found. It may have been moved or deleted."))
 			releaseSecurityScopeIfNeeded()
 			return
 		}
@@ -185,14 +187,14 @@ final class PDFController: ObservableObject {
 
 		guard let loadedDoc = doc else {
 			logError(AppLog.pdf, "All PDF loading strategies failed for: \(url.path)")
-			pdfLoadErrorPublisher.send(url)
+			pdfLoadErrorPublisher.send(PDFLoadError(url: url, reason: "The file appears to be corrupted or is not a valid PDF."))
 			releaseSecurityScopeIfNeeded()
 			return
 		}
 
 		guard validateDocument(loadedDoc) else {
 			logError(AppLog.pdf, "PDF document failed integrity check")
-			pdfLoadErrorPublisher.send(url)
+			pdfLoadErrorPublisher.send(PDFLoadError(url: url, reason: "The PDF failed integrity checks — pages may be damaged or empty."))
 			releaseSecurityScopeIfNeeded()
 			return
 		}
@@ -305,12 +307,9 @@ final class PDFController: ObservableObject {
 	func zoomToFit() {
 		guard let pdfView = selectionBridge.pdfView else { return }
 		pdfView.autoScales = true
-		// Read back the computed scale after autoScales applies
-		DispatchQueue.main.async { [weak self] in
-			guard let self, let pv = self.selectionBridge.pdfView else { return }
-			self.scaleFactor = pv.scaleFactor
-			pv.autoScales = false
-		}
+		pdfView.layoutDocumentView()
+		scaleFactor = pdfView.scaleFactor
+		pdfView.autoScales = false
 	}
 
 	func zoomActualSize() {
@@ -486,6 +485,14 @@ final class PDFController: ObservableObject {
 		isHandlingMemoryPressure = true
 		logError(AppLog.pdf, "Critical memory pressure - clearing caches")
 		URLCache.shared.removeAllCachedResponses()
+		// Clear PDFKit thumbnail caches by toggling display settings
+		if let pdfView = selectionBridge.pdfView {
+			pdfView.clearSelection()
+			// Force PDFKit to release cached page images for non-visible pages
+			let current = pdfView.displayMode
+			pdfView.displayMode = .singlePage
+			pdfView.displayMode = current
+		}
 		DispatchQueue.main.asyncAfter(deadline: .now() + Self.memoryPressureCooldown) { [weak self] in
 			self?.isHandlingMemoryPressure = false
 		}

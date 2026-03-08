@@ -60,6 +60,10 @@ final class AppEnvironment: ObservableObject {
         // Restore last-opened PDF after init completes and wiring is in place
         Task { @MainActor in
             pdf.restoreLastOpenedPDF()
+            // Manually sync notes in case the PDF loaded before onPDFChanged could fire
+            if let url = pdf.currentPDFURL {
+                notes.setCurrentPDF(url)
+            }
         }
     }
 
@@ -207,6 +211,11 @@ final class AppEnvironment: ObservableObject {
         pdfController.bookmarkManager.toggleBookmark(
             pdfController.currentPageIndex,
             for: pdfController.currentPDFURL
+        )
+        let isNowBookmarked = pdfController.bookmarkManager.bookmarks.contains(pdfController.currentPageIndex)
+        enhancedToastCenter.showSuccess(
+            isNowBookmarked ? "Bookmark Added" : "Bookmark Removed",
+            "Page \(pdfController.currentPageIndex + 1)"
         )
     }
 

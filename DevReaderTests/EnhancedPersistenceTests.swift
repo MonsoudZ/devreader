@@ -125,6 +125,7 @@ final class EnhancedPersistenceTests: XCTestCase {
 
         // Set current PDF
         notesStore.setCurrentPDF(pdf)
+        await notesStore.loadingTask?.value
 
         // Add a note
         let note = NoteItem(text: "Test note", pageIndex: 1, chapter: "Test Chapter")
@@ -146,10 +147,11 @@ final class EnhancedPersistenceTests: XCTestCase {
         
         // Configure mock to throw error
         mockPersistenceService.shouldThrowError = true
-        
+
         // Set current PDF
         notesStore.setCurrentPDF(pdf)
-        
+        await notesStore.loadingTask?.value
+
         // Add a note (should not crash despite persistence error)
         let note = NoteItem(text: "Test note", pageIndex: 1, chapter: "Test Chapter")
         notesStore.add(note)
@@ -167,17 +169,20 @@ final class EnhancedPersistenceTests: XCTestCase {
         
         // Add note to first PDF
         notesStore.setCurrentPDF(pdf1)
+        await notesStore.loadingTask?.value
         let note1 = NoteItem(text: "Note for book 1", pageIndex: 1, chapter: "Chapter 1")
         notesStore.add(note1)
-        
+
         // Add note to second PDF
         notesStore.setCurrentPDF(pdf2)
+        await notesStore.loadingTask?.value
         let note2 = NoteItem(text: "Note for book 2", pageIndex: 1, chapter: "Chapter 1")
         notesStore.add(note2)
-        
+
         // Switch back to first PDF
         notesStore.setCurrentPDF(pdf1)
-        
+        await notesStore.loadingTask?.value
+
         // Verify only first PDF's notes are loaded
         XCTAssertEqual(notesStore.items.count, 1, "Should have 1 note for first PDF")
         XCTAssertEqual(notesStore.items.first?.text, "Note for book 1", "Should have correct note")
@@ -190,6 +195,7 @@ final class EnhancedPersistenceTests: XCTestCase {
     func testTagsPersistenceSync() async {
         let pdf = makeTempFile(named: "test_tags.pdf", content: "Content")
         notesStore.setCurrentPDF(pdf)
+        await notesStore.loadingTask?.value
 
         // Add a note with tags
         let note = NoteItem(text: "Test note", pageIndex: 1, chapter: "Test Chapter")

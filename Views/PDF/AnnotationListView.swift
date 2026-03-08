@@ -59,16 +59,27 @@ struct AnnotationListView: View {
 				.fill(colorForAnnotation(item.record.colorName))
 				.frame(width: 10, height: 10)
 
-			VStack(alignment: .leading, spacing: 2) {
-				Text(item.record.type.rawValue.capitalized)
-					.font(.caption.bold())
-				if let text = item.record.text, !text.isEmpty {
-					Text(text)
-						.font(.caption2)
-						.foregroundStyle(.secondary)
-						.lineLimit(2)
+			Button {
+				pdf.goToPage(item.record.pageIndex)
+			} label: {
+				VStack(alignment: .leading, spacing: 2) {
+					HStack(spacing: 4) {
+						Text(item.record.type.rawValue.capitalized)
+							.font(.caption.bold())
+						Text("p.\(item.record.pageIndex + 1)")
+							.font(.caption2)
+							.foregroundStyle(.tertiary)
+					}
+					if let text = item.record.text, !text.isEmpty {
+						Text(text)
+							.font(.caption2)
+							.foregroundStyle(.secondary)
+							.lineLimit(2)
+					}
 				}
 			}
+			.buttonStyle(.plain)
+			.accessibilityLabel("Go to annotation on page \(item.record.pageIndex + 1)")
 
 			Spacer()
 

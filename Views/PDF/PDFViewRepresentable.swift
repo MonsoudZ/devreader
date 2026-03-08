@@ -127,26 +127,32 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			context.coordinator.hasSetInitialZoom = true
 		}
 
-		// Apply dark mode filter
-		applyAppearanceFilter(to: nsView)
-	}
-
-	private func applyAppearanceFilter(to view: PDFView) {
+		// Only re-apply filter when style or color scheme changes
 		let style = PDFDarkModeStyle(rawValue: pdfDarkMode) ?? .off
 		let isDark = colorScheme == .dark
+		let key = AppearanceKey(style: style, isDark: isDark)
+		if context.coordinator.lastAppearance != key {
+			context.coordinator.lastAppearance = key
+			applyAppearanceFilter(to: nsView, style: style, isDark: isDark)
+		}
+	}
 
+	struct AppearanceKey: Equatable {
+		let style: PDFDarkModeStyle
+		let isDark: Bool
+	}
+
+	private func applyAppearanceFilter(to view: PDFView, style: PDFDarkModeStyle, isDark: Bool) {
 		switch style {
 		case .off:
 			view.layer?.compositingFilter = nil
 			view.backgroundColor = .windowBackgroundColor
 		case .auto where isDark:
-			// Invert colors + shift hue to make white pages dark and black text light
 			if let filter = CIFilter(name: "CIColorInvert") {
 				view.layer?.compositingFilter = filter
 			}
 			view.backgroundColor = .windowBackgroundColor
 		case .auto:
-			// Light mode — no filter needed
 			view.layer?.compositingFilter = nil
 			view.backgroundColor = .windowBackgroundColor
 		case .sepia:
@@ -163,7 +169,9 @@ struct PDFViewRepresentable: NSViewRepresentable {
 	final class Coord: NSObject, PDFViewDelegate {
 		let parent: PDFViewRepresentable
 		var hasSetInitialZoom = false
+		var lastAppearance: AppearanceKey?
 		nonisolated(unsafe) private var scaleObserver: Any?
+		private var scaleDebounceTask: Task<Void, Never>?
 
 		init(parent: PDFViewRepresentable) {
 			self.parent = parent
@@ -177,7 +185,13 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			) { [weak self] notification in
 				guard let pdfView = notification.object as? PDFView else { return }
 				Task { @MainActor in
-					self?.parent.pdf.scaleFactor = pdfView.scaleFactor
+					// Cancel previous debounce to coalesce rapid pinch-zoom events
+					self?.scaleDebounceTask?.cancel()
+					self?.scaleDebounceTask = Task { @MainActor in
+						try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
+						guard !Task.isCancelled else { return }
+						self?.parent.pdf.scaleFactor = pdfView.scaleFactor
+					}
 				}
 			}
 		}

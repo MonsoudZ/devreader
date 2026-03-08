@@ -1,60 +1,103 @@
 import Foundation
 @testable import DevReader
 
-@MainActor
-final class MockNotesPersistenceService: NotesPersistenceProtocol {
-    var notes: [URL: [NoteItem]] = [:]
-    var pageNotes: [URL: [Int: String]] = [:]
-    var tags: [URL: Set<String>] = [:]
+final class MockNotesPersistenceService: NotesPersistenceProtocol, @unchecked Sendable {
+    private let lock = NSLock()
 
-    var shouldThrowError = false
-    var lastSavedNotes: [NoteItem] = []
-    var lastSavedPageNotes: [Int: String] = [:]
-    var lastSavedTags: Set<String> = []
+    private var _notes: [URL: [NoteItem]] = [:]
+    private var _pageNotes: [URL: [Int: String]] = [:]
+    private var _tags: [URL: Set<String>] = [:]
+    private var _shouldThrowError = false
+    private var _lastSavedNotes: [NoteItem] = []
+    private var _lastSavedPageNotes: [Int: String] = [:]
+    private var _lastSavedTags: Set<String> = []
+
+    // MARK: - Thread-safe accessors for test assertions
+
+    var notes: [URL: [NoteItem]] {
+        get { lock.withLock { _notes } }
+        set { lock.withLock { _notes = newValue } }
+    }
+    var pageNotes: [URL: [Int: String]] {
+        get { lock.withLock { _pageNotes } }
+        set { lock.withLock { _pageNotes = newValue } }
+    }
+    var tags: [URL: Set<String>] {
+        get { lock.withLock { _tags } }
+        set { lock.withLock { _tags = newValue } }
+    }
+    var shouldThrowError: Bool {
+        get { lock.withLock { _shouldThrowError } }
+        set { lock.withLock { _shouldThrowError = newValue } }
+    }
+    var lastSavedNotes: [NoteItem] {
+        get { lock.withLock { _lastSavedNotes } }
+        set { lock.withLock { _lastSavedNotes = newValue } }
+    }
+    var lastSavedPageNotes: [Int: String] {
+        get { lock.withLock { _lastSavedPageNotes } }
+        set { lock.withLock { _lastSavedPageNotes = newValue } }
+    }
+    var lastSavedTags: Set<String> {
+        get { lock.withLock { _lastSavedTags } }
+        set { lock.withLock { _lastSavedTags = newValue } }
+    }
+
+    // MARK: - Protocol
 
     func saveNotes(_ notes: [NoteItem], for url: URL) throws {
-        if shouldThrowError {
-            throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Mock save error"])
+        try lock.withLock {
+            if _shouldThrowError {
+                throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Mock save error"])
+            }
+            _notes[url] = notes
+            _lastSavedNotes = notes
         }
-        self.notes[url] = notes
-        lastSavedNotes = notes
     }
 
     func loadNotes(for url: URL) -> [NoteItem] {
-        return notes[url] ?? []
+        lock.withLock { _notes[url] ?? [] }
     }
 
     func savePageNotes(_ pageNotes: [Int: String], for url: URL) throws {
-        if shouldThrowError {
-            throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Mock save error"])
+        try lock.withLock {
+            if _shouldThrowError {
+                throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Mock save error"])
+            }
+            _pageNotes[url] = pageNotes
+            _lastSavedPageNotes = pageNotes
         }
-        self.pageNotes[url] = pageNotes
-        lastSavedPageNotes = pageNotes
     }
 
     func loadPageNotes(for url: URL) -> [Int: String] {
-        return pageNotes[url] ?? [:]
+        lock.withLock { _pageNotes[url] ?? [:] }
     }
 
     func saveTags(_ tags: Set<String>, for url: URL) throws {
-        if shouldThrowError {
-            throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Mock save error"])
+        try lock.withLock {
+            if _shouldThrowError {
+                throw NSError(domain: "MockError", code: 1, userInfo: [NSLocalizedDescriptionKey: "Mock save error"])
+            }
+            _tags[url] = tags
+            _lastSavedTags = tags
         }
-        self.tags[url] = tags
-        lastSavedTags = tags
     }
 
     func loadTags(for url: URL) -> Set<String> {
-        return tags[url] ?? []
+        lock.withLock { _tags[url] ?? [] }
     }
 
     func clearData(for url: URL) {
-        notes.removeValue(forKey: url)
-        pageNotes.removeValue(forKey: url)
-        tags.removeValue(forKey: url)
+        lock.withLock {
+            _notes.removeValue(forKey: url)
+            _pageNotes.removeValue(forKey: url)
+            _tags.removeValue(forKey: url)
+        }
     }
 
     func validateData(for url: URL) -> Bool {
-        return notes[url] != nil || pageNotes[url] != nil || tags[url] != nil
+        lock.withLock {
+            _notes[url] != nil || _pageNotes[url] != nil || _tags[url] != nil
+        }
     }
 }

@@ -29,6 +29,7 @@ struct NotesPane: View {
 	@State private var showingPresetSheet = false
 	@State private var presetName = ""
 	@State private var showingFilterPopover = false
+	@State private var cachedFilteredGroups: [(key: String, value: [NoteItem])] = []
 
 	private var hasActiveFilters: Bool {
 		selectedTag != nil || filterBookmarks || useDateFilter
@@ -79,21 +80,11 @@ struct NotesPane: View {
 
 			Divider()
 			if pdf.document == nil {
-				VStack(spacing: 12) {
-					Spacer()
-					Image(systemName: "note.text")
-						.font(.system(size: 40))
-						.foregroundStyle(.secondary)
-					Text("No PDF Open")
-						.font(.headline)
-						.foregroundStyle(.secondary)
-					Text("Open a PDF to start taking notes")
-						.font(.caption)
-						.foregroundStyle(.tertiary)
-					Spacer()
-				}
-				.frame(maxWidth: .infinity)
-				.accessibilityElement(children: .combine)
+				EmptyStateView(
+					icon: "note.text",
+					title: "No PDF Open",
+					subtitle: "Open a PDF to start taking notes"
+				)
 				.accessibilityLabel("No PDF open. Open a PDF to start taking notes.")
 			} else {
 				ScrollView {
@@ -118,11 +109,14 @@ struct NotesPane: View {
 							.padding(.horizontal, 8)
 							Divider()
 						}
-						ForEach(filteredGroups, id: \.key) { group in
+						ForEach(cachedFilteredGroups, id: \.key) { group in
 							VStack(alignment: .leading, spacing: 6) {
 								Text(group.key).font(.headline)
 								ForEach(group.value) { item in
 									NoteRow(item: item, jump: { pdf.goToPage(item.pageIndex) }, notes: notes)
+								}
+								.onMove { source, destination in
+									notes.moveNotes(in: group.key, from: source, to: destination)
 								}
 							}
 							.padding(.horizontal, 8)
@@ -137,6 +131,13 @@ struct NotesPane: View {
 		}
 		.onAppear {
 			notes.undoManager = undoManager
+			cachedFilteredGroups = filteredGroups
+		}
+		.onChange(of: notes.items) { _, _ in
+			cachedFilteredGroups = filteredGroups
+		}
+		.onChange(of: filter) { _, _ in
+			cachedFilteredGroups = filteredGroups
 		}
 		.sheet(isPresented: $showingTagManagement) {
 			TagManagementView(notes: notes)

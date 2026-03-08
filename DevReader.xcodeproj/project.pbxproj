@@ -71,6 +71,7 @@
 		D00100112F00000000000009 /* Models/PDFAnnotationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100102F00000000000009 /* Models/PDFAnnotationData.swift */; };
 		D00100132F00000000000010 /* Services/AnnotationPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */; };
 		D82366A624D349A181E3B701 /* Views/PDF/AnnotationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */; };
+		C6870594E0CBABF7E8AEF467 /* Views/EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */; };
 		E00100012F00000000000001 /* Models/ToastMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00100002F00000000000001 /* Models/ToastMessage.swift */; };
 		EB9A968A45CC4B97ABFB0385 /* Utils/DebouncedPersister.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9A968A45CC4B96ABFB0385 /* Utils/DebouncedPersister.swift */; };
 		F00100012F00000000000001 /* Views/Notes/TagManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100002F00000000000001 /* Views/Notes/TagManagementView.swift */; };
@@ -169,6 +170,7 @@
 		D00100102F00000000000009 /* Models/PDFAnnotationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/PDFAnnotationData.swift; sourceTree = "<group>"; };
 		D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnnotationPersistenceService.swift; sourceTree = "<group>"; };
 		D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/AnnotationListView.swift; sourceTree = "<group>"; };
+		0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/EmptyStateView.swift; sourceTree = "<group>"; };
 		E00100002F00000000000001 /* Models/ToastMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/ToastMessage.swift; sourceTree = "<group>"; };
 		EB9A968A45CC4B96ABFB0385 /* Utils/DebouncedPersister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/DebouncedPersister.swift; sourceTree = "<group>"; };
 		F00100002F00000000000001 /* Views/Notes/TagManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/TagManagementView.swift; sourceTree = "<group>"; };
@@ -288,6 +290,7 @@
 				C82366A624D349A181E3B604 /* Views/PDF/PDFSplitView.swift */,
 				C82366A624D349A181E3B606 /* Views/PDF/PDFFormView.swift */,
 				D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */,
+				0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */,
 				A00100312F00000000000001 /* Views/PDF/OutlinePane.swift */,
 				A00100142F00000000000001 /* Views/Library/LibraryPane.swift */,
 				F00100022F00000000000002 /* Views/Library/LibrarySearchView.swift */,
@@ -494,6 +497,7 @@
 				C82366A624D349A181E3B603 /* Views/PDF/PDFSplitView.swift in Sources */,
 				C82366A624D349A181E3B605 /* Views/PDF/PDFFormView.swift in Sources */,
 				D82366A624D349A181E3B701 /* Views/PDF/AnnotationListView.swift in Sources */,
+				C6870594E0CBABF7E8AEF467 /* Views/EmptyStateView.swift in Sources */,
 				A00100302F00000000000001 /* Views/PDF/OutlinePane.swift in Sources */,
 				A00100152F00000000000001 /* Views/Library/LibraryPane.swift in Sources */,
 				F00100032F00000000000002 /* Views/Library/LibrarySearchView.swift in Sources */,

@@ -10,7 +10,7 @@ final class AppEnvironmentTests: XCTestCase {
 
     // MARK: - PDF → Notes Wiring
 
-    func testOnPDFChangedWiresNotesStore() {
+    func testOnPDFChangedWiresNotesStore() async {
         let mockPersistence = MockNotesPersistenceService()
         let notes = NotesStore(persistenceService: mockPersistence)
         let pdf = PDFController()
@@ -29,12 +29,13 @@ final class AppEnvironmentTests: XCTestCase {
 
         // Trigger onPDFChanged by calling it directly
         pdf.onPDFChanged?(testURL)
+        await notes.loadingTask?.value
 
         XCTAssertEqual(notes.items.count, 1, "Notes should be loaded after PDF change")
         XCTAssertEqual(notes.items.first?.text, "Test note")
     }
 
-    func testOnPDFChangedClearsNotesWhenNil() {
+    func testOnPDFChangedClearsNotesWhenNil() async {
         let mockPersistence = MockNotesPersistenceService()
         let notes = NotesStore(persistenceService: mockPersistence)
         let pdf = PDFController()
@@ -49,6 +50,7 @@ final class AppEnvironmentTests: XCTestCase {
 
         // Load a PDF
         pdf.onPDFChanged?(testURL)
+        await notes.loadingTask?.value
         XCTAssertFalse(notes.items.isEmpty, "Notes should be loaded")
 
         // Clear (nil URL)
@@ -56,7 +58,7 @@ final class AppEnvironmentTests: XCTestCase {
         XCTAssertTrue(notes.items.isEmpty, "Notes should be cleared when PDF is nil")
     }
 
-    func testOnPDFChangedSavesPreviousPDFNotes() {
+    func testOnPDFChangedSavesPreviousPDFNotes() async {
         let mockPersistence = MockNotesPersistenceService()
         let notes = NotesStore(persistenceService: mockPersistence)
         let pdf = PDFController()
@@ -71,10 +73,12 @@ final class AppEnvironmentTests: XCTestCase {
 
         // Load first PDF and add a note
         pdf.onPDFChanged?(url1)
+        await notes.loadingTask?.value
         notes.add(NoteItem(text: "First PDF note", pageIndex: 0, chapter: ""))
 
         // Switch to second PDF — should persist first PDF's notes
         pdf.onPDFChanged?(url2)
+        await notes.loadingTask?.value
 
         // Verify first PDF's notes were saved
         XCTAssertEqual(mockPersistence.notes[url1]?.count, 1,
