@@ -70,8 +70,14 @@ struct OutlinePane: View {
             }
             
             Divider()
-            
-            if pdf.isLargePDF {
+
+            if entries.isEmpty {
+                EmptyStateView(
+                    icon: "list.bullet.indent",
+                    title: "No Outline Available",
+                    subtitle: "This PDF does not contain a table of contents."
+                )
+            } else if pdf.isLargePDF {
                 // Grouped view for large PDFs
                 List {
                     ForEach(groupedEntries, id: \.section) { group in

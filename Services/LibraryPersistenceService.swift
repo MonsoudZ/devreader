@@ -56,7 +56,10 @@ class LibraryPersistenceService: ObservableObject {
         progress = 1.0
         currentOperation = saveSucceeded ? "Save completed" : "Save failed"
 
-        // Drain pending items before clearing isProcessing to prevent re-entrant races
+        // Drain pending items before clearing isProcessing.
+        // Safety: this block has no suspension points, so @MainActor guarantees atomic
+        // execution — no other caller can interleave between extracting pending,
+        // clearing the flag, and starting the recursive save.
         let pending = pendingLibraryItems
         pendingLibraryItems = nil
         isProcessing = false

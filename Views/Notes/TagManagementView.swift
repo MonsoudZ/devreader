@@ -87,7 +87,7 @@ struct TagManagementView: View {
 				}
 				.frame(maxWidth: 120)
 				Button("Merge") {
-					if let target = mergeTarget {
+					if let target = mergeTarget, target != tag {
 						notes.mergeTags(tag, into: target)
 						mergingTag = nil
 						mergeTarget = nil
@@ -95,7 +95,7 @@ struct TagManagementView: View {
 				}
 				.buttonStyle(.bordered)
 				.controlSize(.small)
-				.disabled(mergeTarget == nil)
+				.disabled(mergeTarget == nil || mergeTarget == tag)
 				Button("Cancel") { mergingTag = nil; mergeTarget = nil }
 					.buttonStyle(.bordered)
 					.controlSize(.small)

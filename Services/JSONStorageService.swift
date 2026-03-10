@@ -357,15 +357,28 @@ nonisolated enum JSONStorageService {
         var pageNotesMap: [String: [Int: String]] = [:]
         var tagsMap: [String: [String]] = [:]
 
+        // Scan legacy files first so new-format files take priority
         for file in files {
             let name = file.deletingPathExtension().lastPathComponent
-            if name.hasPrefix("notes_") {
-                // Skip page_notes_ files
-                continue
+            if name.hasPrefix("notes_") && !name.hasPrefix("notes_page_") {
+                let hash = String(name.dropFirst("notes_".count))
+                if let notes = loadOptional([NoteItem].self, from: file) {
+                    notesMap[hash] = notes
+                }
+            } else if name.hasPrefix("page_notes_") {
+                let hash = String(name.dropFirst("page_notes_".count))
+                if let pageNotes = loadOptional([Int: String].self, from: file) {
+                    pageNotesMap[hash] = pageNotes
+                }
+            } else if name.hasPrefix("tags_") {
+                let hash = String(name.dropFirst("tags_".count))
+                if let tags = loadOptional([String].self, from: file) {
+                    tagsMap[hash] = tags
+                }
             }
         }
 
-        // Scan for notes files using the key pattern from NotesPersistenceService
+        // New-format files overwrite legacy entries for the same hash
         for file in files {
             let name = file.deletingPathExtension().lastPathComponent
             if name.hasPrefix("DevReader.Notes.v1.") {
@@ -380,23 +393,6 @@ nonisolated enum JSONStorageService {
                 }
             } else if name.hasPrefix("DevReader.Tags.v1.") {
                 let hash = String(name.dropFirst("DevReader.Tags.v1.".count))
-                if let tags = loadOptional([String].self, from: file) {
-                    tagsMap[hash] = tags
-                }
-            }
-            // Also check legacy notes_ format from migration
-            else if name.hasPrefix("notes_") {
-                let hash = String(name.dropFirst("notes_".count))
-                if let notes = loadOptional([NoteItem].self, from: file) {
-                    notesMap[hash] = notes
-                }
-            } else if name.hasPrefix("page_notes_") {
-                let hash = String(name.dropFirst("page_notes_".count))
-                if let pageNotes = loadOptional([Int: String].self, from: file) {
-                    pageNotesMap[hash] = pageNotes
-                }
-            } else if name.hasPrefix("tags_") {
-                let hash = String(name.dropFirst("tags_".count))
                 if let tags = loadOptional([String].self, from: file) {
                     tagsMap[hash] = tags
                 }

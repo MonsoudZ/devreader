@@ -77,6 +77,18 @@ func waitUntil(timeout: TimeInterval = 2.0, interval: UInt64 = 50_000_000, condi
     }
 }
 
+// MARK: - PDFDocument Factory
+
+/// Creates a blank PDFDocument with the given number of pages.
+/// Shared helper to avoid duplicating makeDoc() across test files.
+func makeDoc(pageCount: Int) -> PDFDocument {
+    let doc = PDFDocument()
+    for i in 0..<pageCount {
+        doc.insert(PDFPage(), at: i)
+    }
+    return doc
+}
+
 // MARK: - Memory Measurement
 
 /// Returns the current resident memory size of this process in bytes.

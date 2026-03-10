@@ -60,7 +60,8 @@ final class LibraryStoreTests: XCTestCase {
 
 		store.add(urls: [url])
 		// Wait briefly — nothing should be added
-		await waitUntil(timeout: 0.5) { false }
+		// Yield to let any pending async work settle
+		try? await Task.sleep(nanoseconds: 300_000_000)
 
 		XCTAssertEqual(store.items.count, 0, "Non-PDF files should be filtered out")
 	}
@@ -108,7 +109,8 @@ final class LibraryStoreTests: XCTestCase {
 		// Add the same URL again
 		store.add(urls: [url])
 		// Wait briefly — count should stay at 1
-		await waitUntil(timeout: 0.5) { false }
+		// Yield to let any pending async work settle
+		try? await Task.sleep(nanoseconds: 300_000_000)
 		XCTAssertEqual(store.items.count, 1, "Duplicate URL should not be added")
 	}
 

@@ -8,11 +8,22 @@ final class CodeExecutionTests: XCTestCase {
         return !path.isEmpty && !path.contains("not found")
     }
     
+    /// Runs code and asserts the output contains expected text.
+    /// Throws XCTSkip only if the sandbox blocks execution (Operation not permitted / spawn),
+    /// otherwise uses XCTFail for real code errors.
     private func ensureWorks(language: String, code: String, expects expected: String) throws -> String {
         let output = Shell.runCode(language, code: code)
-        if !output.contains(expected) {
-            throw XCTSkip("\(language) not executable or failed in this environment: \(output)")
+        if output.contains(expected) { return output }
+
+        // Sandbox, permission, or missing-runtime errors → skip (not a code bug)
+        let envPatterns = ["Operation not permitted", "posix_spawn", "Sandbox", "not permitted",
+                           "Unable to locate", "not found", "not installed", "No such file",
+                           "Usage:", "compilation failed"]
+        if envPatterns.contains(where: { output.localizedCaseInsensitiveContains($0) }) {
+            throw XCTSkip("\(language) unavailable in test environment: \(output.prefix(200))")
         }
+
+        XCTFail("\(language) execution should contain '\(expected)', got: \(output)")
         return output
     }
     

@@ -4,153 +4,105 @@ import PDFKit
 
 @testable import DevReader
 
-/// SwiftUI UI tests for component behavior
+/// Tests for UI component state and behavior using real objects.
 @MainActor
 final class UIComponentTests: XCTestCase {
-    
-    // MARK: - Panel Collapse/Expand Tests
-    
-    func testPanelCollapseExpand() throws {
-        // Test that panels can be collapsed and expanded
-        // This would test the UI state changes for showingLibrary, showingRightPanel, etc.
-        
-        // Mock the state changes
-        var showingLibrary = true
-        var showingRightPanel = true
-        var collapseAll = false
-        
-        // Test collapse
-        collapseAll = true
-        XCTAssertTrue(collapseAll, "Panel should be collapsed")
-        
-        // Test expand
-        collapseAll = false
-        XCTAssertFalse(collapseAll, "Panel should be expanded")
-    }
-    
-    func testRightPanelModeSwitching() throws {
-        // Test switching between Notes, Code, and Web modes
-        
-        var rightTab: RightTab = .notes
-        
-        // Test Notes mode
-        rightTab = .notes
-        XCTAssertEqual(rightTab, .notes, "Should be in Notes mode")
-        
-        // Test Code mode
-        rightTab = .code
-        XCTAssertEqual(rightTab, .code, "Should be in Code mode")
-        
-        // Test Web mode
-        rightTab = .web
-        XCTAssertEqual(rightTab, .web, "Should be in Web mode")
-    }
-    
-    func testSearchResultsList() throws {
-        // Test search results display and interaction
-        
-        // Mock search results
-        let mockResults: [PDFSelection] = []
-        
-        // Test empty results
-        XCTAssertTrue(mockResults.isEmpty, "Should handle empty search results")
-        
-        // Test with results (would need actual PDFSelection objects)
-        // This would test the LazyVStack performance and accessibility
-    }
-    
-    // MARK: - Accessibility Tests
-    
-    func testSearchResultAccessibility() throws {
-        // Test that search results have proper accessibility labels
-        
-        let idx = 0
-        let pageIdx = 1
-        let text = "Sample search result text"
-        
-        let expectedLabel = "Search result \(idx+1), page \(pageIdx)"
-        let expectedValue = text
-        
-        XCTAssertEqual(expectedLabel, "Search result 1, page 1", "Accessibility label should be correct")
-        XCTAssertEqual(expectedValue, "Sample search result text", "Accessibility value should be correct")
-    }
-    
-    func testSegmentedControlAccessibility() throws {
-        // Test segmented control accessibility
-        
-        let rightTab: RightTab = .notes
-        let expectedLabel = "Right panel mode"
-        let expectedValue = "Currently showing Notes"
-        
-        XCTAssertEqual(expectedLabel, "Right panel mode", "Segmented control should have proper label")
-        XCTAssertEqual(expectedValue, "Currently showing Notes", "Segmented control should have proper value")
-    }
-    
-    // MARK: - Performance Tests
-    
-    func testLargeSearchResultsPerformance() throws {
-        // Test performance with large search result sets
-        
-        let largeResultCount = 1000
-        let startTime = CFAbsoluteTimeGetCurrent()
-        
-        // Simulate processing large result set
-        let indices = Array(0..<largeResultCount)
-        let _ = indices.map { "Result \($0)" }
-        
-        let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
-        
-        // Should complete within reasonable time
-        XCTAssertLessThan(timeElapsed, 1.0, "Large search results should process quickly")
-    }
-    
-    // MARK: - Resizable Panel Tests
-    
-    func testResizableSearchPanel() throws {
-        // Test resizable search panel functionality
-        
-        var panelHeight: CGFloat = 220
-        let minHeight: CGFloat = 100
-        let maxHeight: CGFloat = 400
-        
-        // Test minimum height constraint
-        panelHeight = 50
-        panelHeight = max(minHeight, panelHeight)
-        XCTAssertEqual(panelHeight, minHeight, "Should respect minimum height")
-        
-        // Test maximum height constraint
-        panelHeight = 500
-        panelHeight = min(maxHeight, panelHeight)
-        XCTAssertEqual(panelHeight, maxHeight, "Should respect maximum height")
-        
-        // Test normal height
-        panelHeight = 300
-        XCTAssertGreaterThanOrEqual(panelHeight, minHeight, "Should be above minimum")
-        XCTAssertLessThanOrEqual(panelHeight, maxHeight, "Should be below maximum")
-    }
-    
-    // MARK: - Error Handling Tests
-    
-    func testErrorDisplayAccessibility() throws {
-        // Test error display accessibility
-        
-        let errorTitle = "Test Error"
-        let errorMessage = "Something went wrong"
-        
-        // Test that error dialogs have proper accessibility labels
-        XCTAssertFalse(errorTitle.isEmpty, "Error title should not be empty")
-        XCTAssertFalse(errorMessage.isEmpty, "Error message should not be empty")
-    }
-}
 
-// MARK: - Test Helpers
+	// MARK: - Panel State Tests
 
-extension UIComponentTests {
-    
-    private func measurePerformance<T>(_ block: () throws -> T) rethrows -> (T, TimeInterval) {
-        let startTime = CFAbsoluteTimeGetCurrent()
-        let result = try block()
-        let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
-        return (result, timeElapsed)
-    }
+	func testRightTabEnum() {
+		// Verify all expected tab cases exist and are distinct
+		let tabs: [RightTab] = [.notes, .code, .web]
+		XCTAssertEqual(Set(tabs).count, 3, "All right panel tabs should be distinct")
+	}
+
+	// MARK: - PDFController State
+
+	func testPDFControllerInitialState() {
+		let ctrl = PDFController()
+		addTeardownBlock { [ctrl] in _ = ctrl }
+
+		XCTAssertNil(ctrl.document, "No document should be loaded initially")
+		XCTAssertEqual(ctrl.currentPageIndex, 0)
+		XCTAssertFalse(ctrl.isLoadingPDF)
+	}
+
+	func testPDFControllerNavigationBounds() {
+		let ctrl = PDFController()
+		addTeardownBlock { [ctrl] in _ = ctrl }
+		let doc = makeDoc(pageCount: 5)
+		let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("nav_\(UUID()).pdf")
+		ctrl.loadForTesting(document: doc, url: url)
+
+		ctrl.goToPage(-1)
+		XCTAssertGreaterThanOrEqual(ctrl.currentPageIndex, 0, "Should clamp to 0")
+
+		ctrl.goToPage(999)
+		XCTAssertLessThan(ctrl.currentPageIndex, doc.pageCount, "Should clamp to last page")
+	}
+
+	func testPDFControllerDocumentProperties() {
+		let ctrl = PDFController()
+		addTeardownBlock { [ctrl] in _ = ctrl }
+		let doc = makeDoc(pageCount: 3)
+		let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("props_\(UUID()).pdf")
+		ctrl.loadForTesting(document: doc, url: url)
+
+		let props = ctrl.documentProperties()
+		let pagesEntry = props.first { $0.0 == "Pages" }
+		XCTAssertNotNil(pagesEntry)
+		XCTAssertEqual(pagesEntry?.1, "3")
+	}
+
+	// MARK: - Panel Height Clamping
+
+	func testResizableSearchPanelConstraints() {
+		let minHeight: CGFloat = 100
+		let maxHeight: CGFloat = 400
+
+		var height: CGFloat = 50
+		height = max(minHeight, min(maxHeight, height))
+		XCTAssertEqual(height, minHeight, "Should clamp to minimum")
+
+		height = 500
+		height = max(minHeight, min(maxHeight, height))
+		XCTAssertEqual(height, maxHeight, "Should clamp to maximum")
+	}
+
+	// MARK: - Search Manager via PDFController
+
+	func testSearchManagerInitialState() {
+		let ctrl = PDFController()
+		addTeardownBlock { [ctrl] in _ = ctrl }
+
+		XCTAssertTrue(ctrl.searchManager.searchResults.isEmpty, "Search results should start empty")
+		XCTAssertEqual(ctrl.searchManager.searchIndex, 0)
+		XCTAssertEqual(ctrl.searchManager.searchQuery, "")
+	}
+
+	func testSearchManagerClearSearch() {
+		let ctrl = PDFController()
+		addTeardownBlock { [ctrl] in _ = ctrl }
+		ctrl.searchManager.searchQuery = "test"
+		ctrl.searchManager.clearSearch()
+
+		XCTAssertEqual(ctrl.searchManager.searchQuery, "", "clearSearch should reset query")
+		XCTAssertTrue(ctrl.searchManager.searchResults.isEmpty, "clearSearch should empty results")
+	}
+
+	// MARK: - Bookmark Manager
+
+	func testBookmarkManagerToggle() {
+		let ctrl = PDFController()
+		addTeardownBlock { [ctrl] in _ = ctrl }
+		let doc = makeDoc(pageCount: 3)
+		let url = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("bm_\(UUID()).pdf")
+		ctrl.loadForTesting(document: doc, url: url)
+
+		XCTAssertFalse(ctrl.bookmarkManager.bookmarks.contains(0))
+		ctrl.bookmarkManager.toggleBookmark(0, for: url)
+		XCTAssertTrue(ctrl.bookmarkManager.bookmarks.contains(0), "Bookmark should be added")
+		ctrl.bookmarkManager.toggleBookmark(0, for: url)
+		XCTAssertFalse(ctrl.bookmarkManager.bookmarks.contains(0), "Bookmark should be removed")
+	}
 }

@@ -80,7 +80,8 @@ final class MonacoEditorViewModel: ObservableObject {
 		panel.allowedContentTypes = [UTType(filenameExtension: selectedLanguage.fileExtension) ?? .plainText]
 		panel.nameFieldStringValue = currentFileName
 
-		panel.begin { response in
+		panel.begin { [weak self] response in
+			guard let self else { return }
 			if response == .OK, let url = panel.url {
 				do {
 					try code.write(to: url, atomically: true, encoding: .utf8)

@@ -22,14 +22,6 @@ final class PDFControllerTests: XCTestCase {
 
     // MARK: - Helpers
 
-    private func makeDoc(pageCount: Int) -> PDFDocument {
-        let doc = PDFDocument()
-        for i in 0..<pageCount {
-            doc.insert(PDFPage(), at: i)
-        }
-        return doc
-    }
-
     private func makeTempURL(_ prefix: String = "test") -> URL {
         URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("\(prefix)_\(UUID().uuidString).pdf")

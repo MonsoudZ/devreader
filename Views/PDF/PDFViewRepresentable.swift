@@ -10,17 +10,19 @@ final class PDFSelectionBridge {
 	/// Caches the last non-empty selection text so menu commands can access it
 	/// even after the menu activation clears the PDFView selection.
 	private(set) var cachedSelectionText: String?
-	private var selectionObserver: Any?
+	private var selectionTask: Task<Void, Never>?
+
+	deinit {
+		selectionTask?.cancel()
+	}
 
     func setHighlightedSelections(_ selections: [PDFSelection]) { pdfView?.highlightedSelections = selections }
 
 	func observeSelectionChanges(from pdfView: PDFView) {
-		selectionObserver.map { NotificationCenter.default.removeObserver($0) }
-		selectionObserver = NotificationCenter.default.addObserver(
-			forName: .PDFViewSelectionChanged, object: pdfView, queue: .main
-		) { [weak self] _ in
-			Task { @MainActor in
-				guard let self else { return }
+		selectionTask?.cancel()
+		selectionTask = Task { [weak self] in
+			for await _ in NotificationCenter.default.notifications(named: .PDFViewSelectionChanged, object: pdfView) {
+				guard let self else { break }
 				if let text = self.pdfView?.currentSelection?.string?.trimmingCharacters(in: .whitespacesAndNewlines),
 				   !text.isEmpty {
 					self.cachedSelectionText = text

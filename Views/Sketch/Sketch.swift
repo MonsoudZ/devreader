@@ -338,19 +338,15 @@ struct SketchView: View {
 	// MARK: - Undo/Redo
 
 	private func undo() {
-		guard !strokes.isEmpty || !undoStack.isEmpty else { return }
-		redoStack.append(strokes)
-		if !strokes.isEmpty {
-			strokes.removeLast()
-		} else if !undoStack.isEmpty {
-			strokes = undoStack.removeLast()
-		}
+		guard !strokes.isEmpty else { return }
+		undoStack.append(strokes)
+		strokes.removeLast()
 	}
 
 	private func redo() {
-		guard !redoStack.isEmpty else { return }
-		undoStack.append(strokes)
-		strokes = redoStack.removeLast()
+		guard !undoStack.isEmpty else { return }
+		redoStack.append(strokes)
+		strokes = undoStack.removeLast()
 	}
 
 	private func clearAll() {

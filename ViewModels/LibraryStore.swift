@@ -66,13 +66,22 @@ final class LibraryStore: ObservableObject {
 			)
 		}
 
-		// O(1) lookup for the common case (matching standardized URL)
+		// O(1) lookups for duplicate detection
 		let existingURLs = Set(items.map { $0.url.standardizedFileURL })
+		let existingFingerprints = Set(items.compactMap { item -> String? in
+			guard item.fileSize > 0 else { return nil }
+			return "\(item.title)|\(item.fileSize)"
+		})
+		let existingBookmarks = Set(items.compactMap { $0.securityScopedBookmark })
+
 		let uniqueNewItems = newItems.filter { newItem in
-			// Fast path: most duplicates are caught by URL match
+			// URL match (most common)
 			guard !existingURLs.contains(newItem.url.standardizedFileURL) else { return false }
-			// Slow path: fallback checks (symlinks, bookmarks, filename+size)
-			return !items.contains { $0.isDuplicate(of: newItem) }
+			// Bookmark match
+			if let bk = newItem.securityScopedBookmark, existingBookmarks.contains(bk) { return false }
+			// Filename + size match
+			if newItem.fileSize > 0, existingFingerprints.contains("\(newItem.title)|\(newItem.fileSize)") { return false }
+			return true
 		}
 
 		let merged = items + uniqueNewItems

@@ -96,7 +96,7 @@ nonisolated struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
     /// Check if this item is a duplicate of another item.
     /// Uses standardized file paths for reliable comparison across symlinks and path variations.
     func isDuplicate(of other: LibraryItem) -> Bool {
-        // Check by standardized file path (resolves symlinks, .., and trailing slashes)
+        // Check by standardized file path (normalizes .., //, trailing slashes — no syscall)
         if url.standardizedFileURL == other.url.standardizedFileURL {
             return true
         }
@@ -108,17 +108,17 @@ nonisolated struct LibraryItem: Identifiable, Codable, Hashable, Sendable {
             return true
         }
 
-        // Check by resolved real path (no syscall — purely normalizes the URL)
-        if url.resolvingSymlinksInPath() == other.url.resolvingSymlinksInPath() {
-            return true
-        }
-
         // Fallback: same filename + same stored file size
         if fileSize > 0 && fileSize == other.fileSize && title == other.title {
             return true
         }
 
         return false
+    }
+
+    /// Identity key for O(1) duplicate lookups (standardized URL string + size fingerprint).
+    var deduplicationKey: String {
+        url.standardizedFileURL.absoluteString
     }
     
     // MARK: - Hashable Conformance

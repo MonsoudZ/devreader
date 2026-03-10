@@ -86,7 +86,7 @@ final class PDFSearchManager: ObservableObject {
     /// Focuses the current search selection and returns the page index if navigation is needed.
     @discardableResult
     func focusCurrentSearchSelection(in document: PDFDocument?) -> Int? {
-        guard !searchResults.isEmpty else { return nil }
+        guard !searchResults.isEmpty, searchIndex >= 0, searchIndex < searchResults.count else { return nil }
         let sel = searchResults[searchIndex]
         selectionBridge.setHighlightedSelections(searchResults)
         var pageIndex: Int?

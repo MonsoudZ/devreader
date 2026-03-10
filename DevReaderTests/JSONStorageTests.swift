@@ -113,10 +113,28 @@ final class JSONStorageTests: XCTestCase {
     // MARK: - Migration Tests
     
     func testMigrationFromUserDefaults() {
-        // This test verifies that migration doesn't crash
-        // The actual migration logic is tested in the app itself
+        // Remove any existing library file so we can verify migration creates it
+        JSONStorageService.delete(url: JSONStorageService.libraryPath())
+        XCTAssertFalse(FileManager.default.fileExists(atPath: JSONStorageService.libraryPath().path),
+                       "Library file should not exist before migration")
+
+        // Seed UserDefaults with the key the migration actually reads
+        let testKey = "DevReader.Library.v1"
+        let testItems: [DevReader.LibraryItem] = []
+        let encoded = try! JSONEncoder().encode(testItems)
+        UserDefaults.standard.set(encoded, forKey: testKey)
+
         JSONStorageService.migrateFromUserDefaults()
-        XCTAssertTrue(true, "Migration should complete without crashing")
+
+        // After migration the JSON file should exist on disk
+        XCTAssertTrue(FileManager.default.fileExists(atPath: JSONStorageService.libraryPath().path),
+                       "Migration should create the library JSON file on disk")
+        // The key should be removed from UserDefaults after successful migration
+        XCTAssertNil(UserDefaults.standard.data(forKey: testKey),
+                     "Migration should remove the key from UserDefaults")
+
+        // Clean up
+        JSONStorageService.delete(url: JSONStorageService.libraryPath())
     }
     
     // MARK: - Backup and Restore Tests

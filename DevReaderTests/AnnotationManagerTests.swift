@@ -21,14 +21,6 @@ final class AnnotationManagerTests: XCTestCase {
 
 	// MARK: - Helpers
 
-	private func makeDoc(pageCount: Int) -> PDFDocument {
-		let doc = PDFDocument()
-		for i in 0..<pageCount {
-			doc.insert(PDFPage(), at: i)
-		}
-		return doc
-	}
-
 	private func makeTempURL(_ prefix: String = "ann") -> URL {
 		URL(fileURLWithPath: NSTemporaryDirectory())
 			.appendingPathComponent("\(prefix)_\(UUID().uuidString).pdf")
@@ -47,35 +39,44 @@ final class AnnotationManagerTests: XCTestCase {
 
 	// MARK: - Remove Annotations
 
-	func testRemoveAnnotationByIndex() {
+	func testRemoveAnnotationByIndexInvalid() {
 		let doc = makeDoc(pageCount: 3)
 		let url = makeTempURL()
 		ctrl.loadForTesting(document: doc, url: url)
-
-		// Manually add annotation data to test removal
-		let record = PDFAnnotationData(
-			pageIndex: 0,
-			bounds: CodableRect(from: CGRect(x: 10, y: 20, width: 200, height: 14)),
-			type: .highlight,
-			colorName: "yellow",
-			text: "test"
-		)
-
-		// Add visual annotation to PDF page
-		if let page = doc.page(at: 0) {
-			let ann = PDFAnnotation(bounds: record.bounds.cgRect, forType: .highlight, withProperties: nil)
-			page.addAnnotation(ann)
-		}
-
-		// We can't directly set internal annotations, but we can test through the manager's interface
-		// First verify no annotations exist via the manager
-		let before = ctrl.annotationManager.annotationsOnCurrentPage()
-		XCTAssertTrue(before.isEmpty, "Should start empty since we haven't used the manager's add methods")
 
 		// Remove on an empty manager should not crash
 		ctrl.annotationManager.removeAnnotation(at: 0)
 		ctrl.annotationManager.removeAnnotation(at: -1)
 		ctrl.annotationManager.removeAnnotation(at: 999)
+	}
+
+	func testRemoveAnnotationByIndexValid() {
+		let doc = makeDoc(pageCount: 3)
+		let url = makeTempURL("ann_valid")
+		ctrl.loadForTesting(document: doc, url: url)
+		ctrl.goToPage(0)
+
+		guard let page = doc.page(at: 0) else {
+			XCTFail("Page 0 should exist"); return
+		}
+
+		// Add highlight annotation directly to the page
+		let bounds = CGRect(x: 10, y: 20, width: 200, height: 14)
+		let ann = PDFAnnotation(bounds: bounds, forType: .highlight, withProperties: nil)
+		ann.color = .yellow
+		page.addAnnotation(ann)
+		XCTAssertTrue(page.annotations.contains(where: { $0 === ann }),
+					  "Page should contain the added annotation")
+
+		// Remove all markup annotations on the current page via the manager
+		ctrl.annotationManager.removeAnnotationsOnCurrentPage()
+
+		// The annotation should no longer be on the page
+		let remainingHighlights = page.annotations.filter {
+			$0.type == PDFAnnotationSubtype.highlight.rawValue
+		}
+		XCTAssertTrue(remainingHighlights.isEmpty,
+					  "Highlight annotations should be removed from page, found: \(remainingHighlights.count)")
 	}
 
 	func testRemoveAnnotationsOnCurrentPage() {

@@ -209,16 +209,28 @@ class EnhancedPersistenceService: ObservableObject {
     /// Deletes data for a single key
     func deleteKey(_ key: String) {
         let fileURL = JSONStorageService.dataDirectory.appendingPathComponent("\(key).json")
-        try? fileManager.removeItem(at: fileURL)
-        // Also clean up any temp/backup files
-        try? fileManager.removeItem(at: fileURL.appendingPathExtension(JSONStorageService.tempExtension))
-        try? fileManager.removeItem(at: fileURL.appendingPathExtension(JSONStorageService.backupExtension))
+        let filesToDelete = [
+            fileURL,
+            fileURL.appendingPathExtension(JSONStorageService.tempExtension),
+            fileURL.appendingPathExtension(JSONStorageService.backupExtension)
+        ]
+        for file in filesToDelete where fileManager.fileExists(atPath: file.path) {
+            do {
+                try fileManager.removeItem(at: file)
+            } catch {
+                os_log("Failed to delete %{public}@: %{public}@", log: logger, type: .error, file.lastPathComponent, error.localizedDescription)
+            }
+        }
         os_log("Deleted data for key: %{public}@", log: logger, type: .debug, key)
     }
 
     /// Clears all persistence data
     func clearAllData() {
-        try? fileManager.removeItem(at: JSONStorageService.dataDirectory)
+        do {
+            try fileManager.removeItem(at: JSONStorageService.dataDirectory)
+        } catch {
+            os_log("Failed to clear data directory: %{public}@", log: logger, type: .error, error.localizedDescription)
+        }
         JSONStorageService.ensureDirectories()
         os_log("Cleared all persistence data", log: logger, type: .info)
     }
@@ -235,7 +247,10 @@ class EnhancedPersistenceService: ObservableObject {
         guard fileManager.fileExists(atPath: backupURL.path) else { return false }
 
         do {
-            try? fileManager.removeItem(at: fileURL)
+            // Remove existing corrupted file first; if it doesn't exist that's fine
+            if fileManager.fileExists(atPath: fileURL.path) {
+                try fileManager.removeItem(at: fileURL)
+            }
             try fileManager.copyItem(at: backupURL, to: fileURL)
             os_log("Restored backup for key: %{public}@", log: logger, type: .info, finalKey)
             return true

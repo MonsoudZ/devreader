@@ -45,6 +45,12 @@ struct PDFToolbar: View {
 				pageInput = "\(newValue + 1)"
 			}
 		}
+		.onChange(of: isPageFieldFocused) { _, focused in
+			if !focused {
+				// Sync display when user leaves the field (page may have changed while editing)
+				pageInput = "\(pdf.currentPageIndex + 1)"
+			}
+		}
 		.onAppear {
 			pageInput = "\(pdf.currentPageIndex + 1)"
 		}

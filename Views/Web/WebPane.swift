@@ -263,13 +263,22 @@ struct WebView: NSViewRepresentable {
             }
             let html = """
             <html><head><style>
-            body { font-family: -apple-system; text-align: center; padding: 60px 20px; color: #888; background: \
-            #1e1e1e; }
-            h2 { color: #ccc; } p { margin-top: 8px; }
+            body { font-family: -apple-system; text-align: center; padding: 60px 20px; }
+            @media (prefers-color-scheme: dark) {
+              body { background: #1e1e1e; color: #888; }
+              h2 { color: #ccc; }
+              .hint { color: #666; }
+            }
+            @media (prefers-color-scheme: light) {
+              body { background: #f5f5f5; color: #555; }
+              h2 { color: #333; }
+              .hint { color: #999; }
+            }
+            p { margin-top: 8px; }
             </style></head><body>
             <h2>Page Failed to Load</h2>
             <p>\(message)</p>
-            <p style="margin-top:20px;font-size:13px;color:#666">Check your connection and try again.</p>
+            <p class="hint" style="margin-top:20px;font-size:13px;">Check your connection and try again.</p>
             </body></html>
             """
             webView.loadHTMLString(html, baseURL: nil)

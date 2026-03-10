@@ -58,14 +58,16 @@ final class AppEnvironment: ObservableObject {
         }
 
         // Restore last-opened PDF after init completes and wiring is in place
-        Task { @MainActor in
-            pdf.restoreLastOpenedPDF()
+        restoreTask = Task { [weak pdf, weak notes] in
+            pdf?.restoreLastOpenedPDF()
             // Manually sync notes in case the PDF loaded before onPDFChanged could fire
-            if let url = pdf.currentPDFURL {
-                notes.setCurrentPDF(url)
+            if let url = pdf?.currentPDFURL {
+                notes?.setCurrentPDF(url)
             }
         }
     }
+
+    private var restoreTask: Task<Void, Never>?
 
     // MARK: - Auto-Backup
     private var autoBackupCancellable: AnyCancellable?
@@ -104,23 +106,16 @@ final class AppEnvironment: ObservableObject {
         }
     }
 
-    // MARK: - Command Callbacks
-    // Closures registered by ContentView to handle menu commands
-    var onOpenPDF: (@MainActor () -> Void)?
-    var onImportPDFs: (@MainActor () -> Void)?
-    var onToggleLibrary: (@MainActor () -> Void)?
-    var onToggleNotes: (@MainActor () -> Void)?
-    var onToggleSearch: (@MainActor () -> Void)?
-
     // MARK: - Command Actions (called from menu commands)
+    // Uses NotificationCenter so commands work even before ContentView's onAppear.
 
     func openHelp() { isShowingHelp = true }
 
-    func commandOpenPDF() { onOpenPDF?() }
-    func commandImportPDFs() { onImportPDFs?() }
-    func commandToggleLibrary() { onToggleLibrary?() }
-    func commandToggleNotes() { onToggleNotes?() }
-    func commandToggleSearch() { onToggleSearch?() }
+    func commandOpenPDF() { NotificationCenter.default.post(name: .commandOpenPDF, object: nil) }
+    func commandImportPDFs() { NotificationCenter.default.post(name: .commandImportPDFs, object: nil) }
+    func commandToggleLibrary() { NotificationCenter.default.post(name: .commandToggleLibrary, object: nil) }
+    func commandToggleNotes() { NotificationCenter.default.post(name: .commandToggleNotes, object: nil) }
+    func commandToggleSearch() { NotificationCenter.default.post(name: .commandToggleSearch, object: nil) }
 
     func commandClosePDF() {
         pdfController.document = nil

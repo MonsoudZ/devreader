@@ -325,10 +325,4 @@ final class ProductionTests: XCTestCase {
         createTestPDF(pageCount: pageCount, name: "large_test")
     }
 
-    private func signedMemoryDelta(after: UInt64, before: UInt64) -> Int64 {
-        if after >= before {
-            return Int64(after - before)
-        }
-        return -Int64(before - after)
-    }
 }

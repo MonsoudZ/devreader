@@ -5,7 +5,7 @@ import Foundation
 /// to force an immediate write (e.g., on app background / window close).
 @MainActor
 final class DebouncedPersister {
-	nonisolated(unsafe) private var workItem: DispatchWorkItem?
+	private var debounceTask: Task<Void, Never>?
 	private let delay: TimeInterval
 	private let action: @MainActor () -> Void
 
@@ -15,26 +15,27 @@ final class DebouncedPersister {
 	}
 
 	deinit {
-		workItem?.cancel()
+		// Task is Sendable — safe to access from nonisolated deinit
+		debounceTask?.cancel()
 	}
 
 	func schedule() {
-		workItem?.cancel()
-		let item = DispatchWorkItem { @Sendable [weak self] in
-			Task { @MainActor in
-				self?.action()
-			}
+		debounceTask?.cancel()
+		let delay = self.delay
+		let action = self.action
+		debounceTask = Task {
+			try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+			guard !Task.isCancelled else { return }
+			action()
 		}
-		workItem = item
-		DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
 	}
 
 	func flush() {
-		guard let item = workItem else { return }
-		item.cancel()
-		workItem = nil
+		guard debounceTask != nil else { return }
+		debounceTask?.cancel()
+		debounceTask = nil
 		action()
 	}
 
-	var hasPending: Bool { workItem != nil }
+	var hasPending: Bool { debounceTask != nil }
 }

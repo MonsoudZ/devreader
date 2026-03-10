@@ -5,16 +5,6 @@ import PDFKit
 @MainActor
 final class NewFeaturesTests: XCTestCase {
 
-	// MARK: - Helpers
-
-	private func makeDoc(pageCount: Int) -> PDFDocument {
-		let doc = PDFDocument()
-		for i in 0..<pageCount {
-			doc.insert(PDFPage(), at: i)
-		}
-		return doc
-	}
-
 	// MARK: - Page Rotation
 
 	func testRotateCurrentPageRight() {
@@ -175,12 +165,15 @@ final class NewFeaturesTests: XCTestCase {
 
 	func testTemplateCodable() throws {
 		let template = NoteItem.Template(
-			name: "Test", icon: "star", titleTemplate: "Title",
-			textTemplate: "Body", tags: ["test"]
+			name: "Test", icon: "star", titleTemplate: "My Title",
+			textTemplate: "My Body Text", tags: ["test", "review"]
 		)
 		let data = try JSONEncoder().encode(template)
 		let decoded = try JSONDecoder().decode(NoteItem.Template.self, from: data)
 		XCTAssertEqual(decoded.name, template.name)
+		XCTAssertEqual(decoded.icon, template.icon)
+		XCTAssertEqual(decoded.titleTemplate, template.titleTemplate, "titleTemplate should round-trip")
+		XCTAssertEqual(decoded.textTemplate, template.textTemplate, "textTemplate should round-trip")
 		XCTAssertEqual(decoded.tags, template.tags)
 	}
 }

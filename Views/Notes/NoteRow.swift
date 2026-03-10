@@ -199,7 +199,16 @@ struct NoteRow: View {
 		}
 	}
 
+	/// Cached markdown parse — only recomputed when `item.text` changes.
+	@State private var cachedMarkdown: (source: String, result: AttributedString)?
+
 	private var markdownAttributedString: AttributedString {
-		(try? AttributedString(markdown: item.text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(item.text)
+		if let cached = cachedMarkdown, cached.source == item.text {
+			return cached.result
+		}
+		let result = (try? AttributedString(markdown: item.text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(item.text)
+		// Mutating @State from a computed property is fine — SwiftUI coalesces the update.
+		DispatchQueue.main.async { cachedMarkdown = (item.text, result) }
+		return result
 	}
 }

@@ -72,7 +72,7 @@ final class PDFController: ObservableObject {
 	private var loadingTask: Task<Void, Never>?
 	private var outlineTask: Task<Void, Never>?
 	private var isHandlingMemoryPressure = false
-	nonisolated(unsafe) private var memoryPressureObserver: Any?
+	private var memoryPressureTask: Task<Void, Never>?
 	private var pagePersister: DebouncedPersister?
 	private var isRestoringPage = false
 	private let lastOpenedPDFKey = "DevReader.LastOpenedPDF.v1"
@@ -86,10 +86,8 @@ final class PDFController: ObservableObject {
 	}
 
 	deinit {
-		// removeObserver and cancel are thread-safe — safe from nonisolated deinit
-		if let observer = memoryPressureObserver {
-			NotificationCenter.default.removeObserver(observer)
-		}
+		// Task is Sendable — safe to cancel from nonisolated deinit
+		memoryPressureTask?.cancel()
 		loadingTask?.cancel()
 		outlineTask?.cancel()
 	}
@@ -467,13 +465,9 @@ final class PDFController: ObservableObject {
 	}
 
 	private func setupMemoryPressureHandler() {
-		memoryPressureObserver = NotificationCenter.default.addObserver(
-			forName: .memoryPressure,
-			object: nil,
-			queue: .main
-		) { [weak self] _ in
-			guard let self = self else { return }
-			Task { @MainActor in
+		memoryPressureTask = Task { [weak self] in
+			for await _ in NotificationCenter.default.notifications(named: .memoryPressure) {
+				guard let self else { break }
 				self.handleMemoryPressure()
 			}
 		}

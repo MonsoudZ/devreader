@@ -112,9 +112,10 @@ struct PDFFormView: View {
 		if let pdfView = pdf.selectionBridge.pdfView,
 		   let doc = pdf.document,
 		   let page = doc.page(at: field.pageIndex) {
+			let bounds = field.annotation.bounds
 			let dest = PDFDestination(page: page, at: CGPoint(
-				x: field.annotation.bounds.minX,
-				y: field.annotation.bounds.maxY
+				x: bounds.midX,
+				y: bounds.midY
 			))
 			pdfView.go(to: dest)
 		}

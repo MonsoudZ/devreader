@@ -204,20 +204,26 @@ struct ContentView: View {
             columnVisibility = showingLibrary ? .all : .detailOnly
             setupAutosaveTimer()
 
-            // Register command callbacks
-            appEnvironment.onOpenPDF = { openPDF() }
-            appEnvironment.onImportPDFs = { importPDFs() }
-            appEnvironment.onToggleLibrary = { withAnimation { showingLibrary.toggle() } }
-            appEnvironment.onToggleNotes = {
-                withAnimation { showingRightPanel = true }
-                rightTab = .notes
-            }
-            appEnvironment.onToggleSearch = {
-                let wasShowing = showingSearch
-                withAnimation { showingSearch.toggle() }
-                if wasShowing {
-                    appEnvironment.pdfController.searchManager.clearSearch()
-                }
+        }
+        // Menu command notifications (fire even before onAppear)
+        .onReceive(NotificationCenter.default.publisher(for: .commandOpenPDF)) { _ in
+            openPDF()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .commandImportPDFs)) { _ in
+            importPDFs()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .commandToggleLibrary)) { _ in
+            withAnimation { showingLibrary.toggle() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .commandToggleNotes)) { _ in
+            withAnimation { showingRightPanel = true }
+            rightTab = .notes
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .commandToggleSearch)) { _ in
+            let wasShowing = showingSearch
+            withAnimation { showingSearch.toggle() }
+            if wasShowing {
+                appEnvironment.pdfController.searchManager.clearSearch()
             }
         }
         // Internal event publishers from PDFController (replace NotificationCenter)
