@@ -99,6 +99,34 @@ struct DevReaderApp: App {
                         .environmentObject(appEnvironment)
                         .frame(minWidth: 900, minHeight: 600)
                 }
+                .sheet(isPresented: $appEnvironment.isShowingSignaturePad) {
+                    SignatureChooserView(
+                        signatureStore: appEnvironment.signatureStore,
+                        onApply: { image in
+                            appEnvironment.isShowingSignaturePad = false
+                            // Place signature at center of current page
+                            if let doc = appEnvironment.pdfController.document,
+                               let page = doc.page(at: appEnvironment.pdfController.currentPageIndex) {
+                                let pageBounds = page.bounds(for: .mediaBox)
+                                let sigWidth = min(image.size.width, pageBounds.width * 0.4)
+                                let scale = sigWidth / max(image.size.width, 1)
+                                let sigHeight = image.size.height * scale
+                                let sigSize = CGSize(width: sigWidth, height: sigHeight)
+                                let origin = CGPoint(
+                                    x: pageBounds.midX - sigWidth / 2,
+                                    y: pageBounds.midY - sigHeight / 2
+                                )
+                                appEnvironment.pdfController.annotationManager.applySignature(
+                                    image: image, at: origin, on: page, size: sigSize
+                                )
+                            }
+                        },
+                        onCancel: {
+                            appEnvironment.isShowingSignaturePad = false
+                        }
+                    )
+                    .frame(minWidth: 460, minHeight: 340)
+                }
 
                 // Hard fail alert (only for init-time persistence failure)
                 .alert("Initialization Error", isPresented: $showingErrorAlert) {
@@ -182,6 +210,11 @@ struct DevReaderApp: App {
                 Button("Add Sticky Note") { appEnvironment.commandAddStickyNote() }
                     .keyboardShortcut(shortcuts.binding(for: .addStickyNote).keyEquivalent, modifiers: shortcuts.binding(for: .addStickyNote).modifiers)
                     .accessibilityLabel("Add Sticky Note")
+
+                Button("Add Signature\u{2026}") { appEnvironment.commandAddSignature() }
+                    .keyboardShortcut("s", modifiers: [.command, .shift])
+                    .accessibilityLabel("Add Signature")
+                    .accessibilityHint("Draw or type a signature and place it on the current PDF page")
 
                 Divider()
 
@@ -335,6 +368,7 @@ struct DevReaderApp: App {
                 appEnvironment.libraryStore.flushPendingPersistence()
                 appEnvironment.notesStore.flushPendingPersistence()
                 appEnvironment.sketchStore.flushPendingPersistence()
+                appEnvironment.signatureStore.flushPendingPersistence()
                 PerformanceMonitor.shared.stopMonitoring()
             @unknown default:
                 break

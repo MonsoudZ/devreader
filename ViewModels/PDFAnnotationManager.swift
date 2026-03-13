@@ -105,9 +105,18 @@ final class PDFAnnotationManager: ObservableObject {
 			guard record.pageIndex >= 0, record.pageIndex < doc.pageCount,
 				  let page = doc.page(at: record.pageIndex) else { continue }
 
-			let pdfAnnotation = PDFAnnotation(bounds: record.bounds.cgRect, forType: Self.pdfSubtype(for: record.type), withProperties: nil)
-			pdfAnnotation.color = Self.annotationColor(for: record.colorName)
-			page.addAnnotation(pdfAnnotation)
+			if record.type == .signature {
+				// Restore signature annotations from stored image data
+				if let imageData = record.signatureImageData,
+				   let nsImage = NSImage(data: imageData) {
+					let annotation = SignatureAnnotation.make(bounds: record.bounds.cgRect, image: nsImage)
+					page.addAnnotation(annotation)
+				}
+			} else {
+				let pdfAnnotation = PDFAnnotation(bounds: record.bounds.cgRect, forType: Self.pdfSubtype(for: record.type), withProperties: nil)
+				pdfAnnotation.color = Self.annotationColor(for: record.colorName)
+				page.addAnnotation(pdfAnnotation)
+			}
 		}
 	}
 
@@ -154,6 +163,7 @@ final class PDFAnnotationManager: ObservableObject {
 		// Remove visual annotations
 		if let page = doc.page(at: pageIndex) {
 			let toRemove = page.annotations.filter { ann in
+				ann is SignatureAnnotation ||
 				[PDFAnnotationSubtype.highlight.rawValue,
 				 PDFAnnotationSubtype.underline.rawValue,
 				 PDFAnnotationSubtype.strikeOut.rawValue].contains(ann.type)
@@ -295,6 +305,41 @@ final class PDFAnnotationManager: ObservableObject {
 		)
 	}
 
+	// MARK: - Signature Placement
+
+	/// Places a signature image on the given PDF page at the specified point and size.
+	func applySignature(image: NSImage, at point: CGPoint, on page: PDFPage, size: CGSize) {
+		guard let ctrl = pdfController, let doc = ctrl.document, let pdfURL = ctrl.currentPDFURL else { return }
+		let pageIndex = doc.index(for: page)
+		guard pageIndex >= 0, pageIndex < doc.pageCount else { return }
+
+		let bounds = CGRect(origin: point, size: size)
+		let annotation = SignatureAnnotation.make(bounds: bounds, image: image)
+		page.addAnnotation(annotation)
+
+		// Persist: convert image to PNG data
+		var pngData: Data?
+		if let tiffData = image.tiffRepresentation,
+		   let bitmap = NSBitmapImageRep(data: tiffData) {
+			pngData = bitmap.representation(using: .png, properties: [:])
+		}
+
+		let record = PDFAnnotationData(
+			pageIndex: pageIndex,
+			bounds: CodableRect(from: bounds),
+			type: .signature,
+			colorName: "black",
+			text: "Signature",
+			signatureImageData: pngData
+		)
+		annotations.append(record)
+		schedulePersist(for: pdfURL)
+
+		ctrl.toastRequestPublisher.send(
+			ToastMessage(message: "Signature placed on page \(pageIndex + 1)", type: .success)
+		)
+	}
+
 	// MARK: - Shared Helpers
 
 	private static func annotationColor(for name: String) -> NSColor {
@@ -311,6 +356,10 @@ final class PDFAnnotationManager: ObservableObject {
 		case .highlight: .highlight
 		case .underline: .underline
 		case .strikethrough: .strikeOut
+		case .signature: .stamp
 		}
 	}
 }
+
+// MARK: - SignatureAnnotation
+

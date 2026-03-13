@@ -13,6 +13,7 @@ final class AppEnvironment: ObservableObject {
     private(set) var libraryStore: LibraryStore
     private(set) var notesStore: NotesStore
     private(set) var sketchStore: SketchStore
+    private(set) var signatureStore: SignatureStore
     private(set) var ttsService: TextToSpeechService
 
     /// Backward-compatible accessor: returns the active tab's PDFController.
@@ -33,6 +34,7 @@ final class AppEnvironment: ObservableObject {
     @Published var isShowingFormFields = false
     @Published var isShowingAnnotations = false
     @Published var isShowingComparison = false
+    @Published var isShowingSignaturePad = false
 
     // MARK: - Init
     init(
@@ -53,6 +55,7 @@ final class AppEnvironment: ObservableObject {
         self.libraryStore = library
         self.notesStore = notes
         self.sketchStore = SketchStore()
+        self.signatureStore = SignatureStore()
         self.ttsService = TextToSpeechService()
         self.enhancedToastCenter = EnhancedToastCenter()
 
@@ -248,6 +251,11 @@ final class AppEnvironment: ObservableObject {
 
     func commandGoForward() {
         pdfController.goForward()
+    }
+
+    func commandAddSignature() {
+        guard pdfController.document != nil else { return }
+        isShowingSignaturePad = true
     }
 
     func commandNewSketchPage() {

@@ -65,6 +65,7 @@ final class PDFController: ObservableObject {
 	let bookmarkManager = PDFBookmarkManager()
 	let outlineManager = PDFOutlineManager()
 	private(set) var annotationManager: PDFAnnotationManager!
+	private(set) lazy var formDataService: FormDataPersistenceProtocol = FormDataPersistenceService()
 
     // MARK: - Constants
     private static let largePDFPageThreshold = 500
@@ -142,6 +143,7 @@ final class PDFController: ObservableObject {
 
 	private func cleanupCurrentPDF() async {
 		annotationManager.flushPendingPersistence()
+		saveFormData()
 		if let scope = activeSecurityScope {
 			scope.stopAccessingSecurityScopedResource()
 			activeSecurityScope = nil
@@ -244,6 +246,7 @@ final class PDFController: ObservableObject {
 		updateReadingProgress()
 		bookmarkManager.loadBookmarks(for: currentPDFURL)
 		annotationManager.restoreAnnotations(for: url)
+		restoreFormData(for: url)
 		bookmarkManager.loadRecents()
 		bookmarkManager.addRecent(url)
 		onPDFChanged?(url)
@@ -495,6 +498,7 @@ final class PDFController: ObservableObject {
 
 	func flushPendingPersistence() {
 		pagePersister?.flush()
+		saveFormData()
 	}
 
     func savePageForPDF(_ url: URL) {
@@ -692,4 +696,74 @@ final class PDFController: ObservableObject {
 	func captureHighlightToNotes() { annotationManager.captureHighlightToNotes() }
 	func addStickyNote() { annotationManager.addStickyNote() }
 	func exportAnnotatedPDF() { annotationManager.exportAnnotatedPDF() }
+
+	// MARK: - Form Data Persistence
+
+	/// Restores persisted form field values into matching widget annotations.
+	func restoreFormData(for url: URL) {
+		let entries = formDataService.loadFormData(for: url)
+		guard let doc = document, !entries.isEmpty else { return }
+
+		for entry in entries {
+			guard entry.pageIndex >= 0, entry.pageIndex < doc.pageCount,
+				  let page = doc.page(at: entry.pageIndex) else { continue }
+
+			for annotation in page.annotations where annotation.type == "Widget" {
+				let name = annotation.fieldName ?? ""
+				guard name == entry.fieldName else { continue }
+
+				switch entry.fieldType {
+				case "text", "choice":
+					annotation.widgetStringValue = entry.value
+				case "button":
+					annotation.buttonWidgetState = entry.value == "on" ? .onState : .offState
+				default:
+					break
+				}
+			}
+		}
+	}
+
+	/// Collects current widget annotation values and persists them.
+	func saveFormData() {
+		guard let doc = document, let url = currentPDFURL else { return }
+		var entries: [FormFieldEntry] = []
+
+		for i in 0..<doc.pageCount {
+			guard let page = doc.page(at: i) else { continue }
+			for annotation in page.annotations where annotation.type == "Widget" {
+				let name = annotation.fieldName ?? ""
+				let ft = annotation.widgetFieldType
+				let fieldType: String
+				let value: String
+
+				switch ft {
+				case .text:
+					fieldType = "text"
+					value = annotation.widgetStringValue ?? ""
+				case .button:
+					fieldType = "button"
+					value = annotation.buttonWidgetState == .onState ? "on" : "off"
+				case .choice:
+					fieldType = "choice"
+					value = annotation.widgetStringValue ?? ""
+				default:
+					continue
+				}
+
+				entries.append(FormFieldEntry(
+					fieldName: name,
+					pageIndex: i,
+					value: value,
+					fieldType: fieldType
+				))
+			}
+		}
+
+		do {
+			try formDataService.saveFormData(entries, for: url)
+		} catch {
+			logError(AppLog.pdf, "Failed to persist form data: \(error)")
+		}
+	}
 }
