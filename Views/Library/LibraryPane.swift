@@ -17,6 +17,7 @@ struct LibraryPane: View {
     @State private var cachedSortedFiltered: [LibraryItem] = []
     @State private var quickLookURL: URL?
     @State private var isDropTargeted = false
+    @State private var isImporting = false
     @AppStorage("library.sortOrder") private var persistedSortOrder: String = "recent"
 	
 	var body: some View {
@@ -124,6 +125,18 @@ struct LibraryPane: View {
                             .allowsHitTesting(false)
                     }
                 }
+                .overlay {
+                    if isImporting {
+                        VStack(spacing: DS.Spacing.sm) {
+                            ProgressView()
+                            Text("Importing…")
+                                .font(DS.Typography.caption)
+                                .foregroundStyle(DS.Colors.secondary)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(.ultraThinMaterial)
+                    }
+                }
                 .onKeyPress(.return) {
                     guard let firstID = selection.first,
                           let item = cachedSortedFiltered.first(where: { $0.id == firstID }) else {
@@ -210,42 +223,36 @@ struct LibraryPane: View {
         }
         
         private func importURLs(_ urls: [URL]) {
-            // Quick pre-filter (no PDFKit, no I/O blocking)
-            var candidates: [URL] = []
-            var errorMessages: [String] = []
-
-            for url in urls {
-                guard url.pathExtension.lowercased() == "pdf" else {
-                    errorMessages.append("\(url.lastPathComponent) is not a PDF file")
-                    continue
-                }
-                guard FileManager.default.fileExists(atPath: url.path) else {
-                    errorMessages.append("\(url.lastPathComponent) not found")
-                    continue
-                }
-                candidates.append(url)
-            }
-
-            // Validate PDF headers off main thread (read first 5 bytes for %PDF- magic).
-            let filesToCheck = candidates
+            isImporting = true
+            let urlsToImport = urls
             Task.detached(priority: .userInitiated) { @Sendable in
                 var valid: [URL] = []
-                var invalid: [String] = []
-                for url in filesToCheck {
-                    // Lightweight magic-byte check (thread-safe, no PDFKit)
+                var errors: [String] = []
+
+                for url in urlsToImport {
+                    guard url.pathExtension.lowercased() == "pdf" else {
+                        errors.append("\(url.lastPathComponent) is not a PDF file")
+                        continue
+                    }
+                    guard FileManager.default.fileExists(atPath: url.path) else {
+                        errors.append("\(url.lastPathComponent) not found")
+                        continue
+                    }
                     guard let handle = try? FileHandle(forReadingFrom: url) else {
-                        invalid.append("\(url.lastPathComponent) is not readable")
+                        errors.append("\(url.lastPathComponent) is not readable")
                         continue
                     }
                     let header = handle.readData(ofLength: 5)
                     try? handle.close()
                     guard header.starts(with: [0x25, 0x50, 0x44, 0x46, 0x2D]) else { // %PDF-
-                        invalid.append("\(url.lastPathComponent) appears to be corrupted")
+                        errors.append("\(url.lastPathComponent) appears to be corrupted")
                         continue
                     }
                     valid.append(url)
                 }
+
                 await MainActor.run {
+                    isImporting = false
                     if !valid.isEmpty {
                         library.add(urls: valid)
                         toastCenter.showSuccess(
@@ -253,11 +260,10 @@ struct LibraryPane: View {
                             "Successfully imported \(valid.count) PDF\(valid.count == 1 ? "" : "s")"
                         )
                     }
-                    let allErrors = errorMessages + invalid
-                    if !allErrors.isEmpty {
+                    if !errors.isEmpty {
                         toastCenter.showError(
                             "Import Failed",
-                            "Failed to import \(allErrors.count) file\(allErrors.count == 1 ? "" : "s"): \(allErrors.joined(separator: "\n"))"
+                            "Failed to import \(errors.count) file\(errors.count == 1 ? "" : "s"): \(errors.joined(separator: "\n"))"
                         )
                     }
                 }

@@ -139,7 +139,7 @@ struct LoadingOverlay: View {
 
 // MARK: - Loading Button
 struct LoadingButton<Label: View>: View {
-    let action: () -> Void
+    let action: @MainActor () async -> Void
     let label: Label
     @ObservedObject var loadingManager: LoadingStateManager
     let loadingType: LoadingStateManager.LoadingType
@@ -149,7 +149,7 @@ struct LoadingButton<Label: View>: View {
         loadingType: LoadingStateManager.LoadingType,
         loadingMessage: String,
         loadingManager: LoadingStateManager = .shared,
-        action: @escaping () -> Void,
+        action: @MainActor @escaping () async -> Void,
         @ViewBuilder label: () -> Label
     ) {
         self.loadingType = loadingType
@@ -158,11 +158,14 @@ struct LoadingButton<Label: View>: View {
         self.action = action
         self.label = label()
     }
-    
+
     var body: some View {
         Button(action: {
             loadingManager.startLoading(loadingType, message: loadingMessage)
-            action()
+            Task { @MainActor in
+                defer { loadingManager.stopLoading(loadingType) }
+                await action()
+            }
         }) {
             HStack {
                 if loadingManager.isLoading && loadingManager.loadingType == loadingType {

@@ -51,7 +51,7 @@ nonisolated enum LanguageDetector {
         let lower = firstLine.lowercased()
         if lower.contains("python") { return .python }
         if lower.contains("ruby") { return .ruby }
-        if lower.contains("node") { return .node }
+        if lower.contains("node") { return .javascript }
         if lower.contains("swift") { return .swift }
         if lower.contains("bash") || lower.contains("/sh") { return .bash }
         if lower.contains("perl") { return nil } // unsupported, fall through to scoring

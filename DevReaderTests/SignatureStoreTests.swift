@@ -50,6 +50,7 @@ final class SignatureStoreTests: XCTestCase {
         let sig = SignatureItem(name: "My Sig", type: .drawn, imageData: Data([0x01, 0x02]))
 
         store.add(sig)
+        store.flushPendingPersistence()
 
         XCTAssertEqual(store.signatures.count, 1)
         XCTAssertEqual(store.signatures.first?.name, "My Sig")
@@ -64,9 +65,10 @@ final class SignatureStoreTests: XCTestCase {
 
         store.add(sig1)
         store.add(sig2)
+        store.flushPendingPersistence()
 
         XCTAssertEqual(store.signatures.count, 2)
-        XCTAssertEqual(mockPersistence.saveCallCount, 2)
+        XCTAssertEqual(mockPersistence.saveCallCount, 1)
     }
 
     // MARK: - Delete
@@ -74,11 +76,13 @@ final class SignatureStoreTests: XCTestCase {
     func testDeleteSignature() {
         let sig = SignatureItem(name: "ToDelete", type: .drawn, imageData: Data([0xFF]))
         store.add(sig)
+        store.flushPendingPersistence()
 
         store.delete(sig)
+        store.flushPendingPersistence()
 
         XCTAssertTrue(store.signatures.isEmpty)
-        XCTAssertEqual(mockPersistence.saveCallCount, 2) // one add + one delete
+        XCTAssertEqual(mockPersistence.saveCallCount, 2)
     }
 
     func testDeleteNonexistentSignatureIsNoOp() {
@@ -128,8 +132,8 @@ final class SignatureStoreTests: XCTestCase {
     func testPersistenceRoundTrip() {
         let sig = SignatureItem(name: "Persist Me", type: .drawn, imageData: Data([0xBB, 0xCC]))
         store.add(sig)
+        store.flushPendingPersistence()
 
-        // Verify mock storage has the data
         XCTAssertEqual(mockPersistence.signatures.count, 1)
         XCTAssertEqual(mockPersistence.signatures.first?.name, "Persist Me")
 

@@ -19,12 +19,12 @@ final class SignatureStore: ObservableObject {
 
 	func add(_ signature: SignatureItem) {
 		signatures.append(signature)
-		saveSignatures()
+		schedulePersist()
 	}
 
 	func delete(_ signature: SignatureItem) {
 		signatures.removeAll { $0.id == signature.id }
-		saveSignatures()
+		schedulePersist()
 	}
 
 	func load() {

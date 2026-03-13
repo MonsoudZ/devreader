@@ -70,11 +70,16 @@ struct WebViewHTML: NSViewRepresentable {
         let onEditorReady: (@MainActor @Sendable () -> Void)?
         var currentLanguage: String = ""
         var currentTheme: String = ""
+        private var setCodeTask: Task<Void, Never>?
         init(onCodeChange: @escaping @MainActor @Sendable (String) -> Void, savedCode: String, theme: String = "vs-dark", onEditorReady: (@MainActor @Sendable () -> Void)? = nil) {
             self.onCodeChange = onCodeChange
             self.savedCode = savedCode
             self.currentTheme = theme
             self.onEditorReady = onEditorReady
+        }
+
+        deinit {
+            setCodeTask?.cancel()
         }
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             switch message.name {
@@ -106,33 +111,36 @@ struct WebViewHTML: NSViewRepresentable {
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            // Set initial code via window._code as a fallback for before the editor loads,
-            // then poll until window.editor is available instead of using a hardcoded delay.
             let escaped = escapeForJS(savedCode)
             let setFallback = "window._code = '\(escaped)';"
             webView.evaluateJavaScript(setFallback, completionHandler: nil)
-            setCodeWhenReady(webView: webView, escaped: escaped, attempts: 0)
+            setCodeWhenReady(webView: webView, escaped: escaped)
         }
 
-        /// Polls for window.editor availability, retrying up to 20 times (100ms apart = 2s max).
-        private func setCodeWhenReady(webView: WKWebView, escaped: String, attempts: Int) {
+        private func setCodeWhenReady(webView: WKWebView, escaped: String) {
+            setCodeTask?.cancel()
             let maxAttempts = 20
-            guard attempts < maxAttempts else {
-                logError(AppLog.code, "Monaco editor did not become ready after \(maxAttempts) attempts")
-                return
-            }
-            let js = "if (window.editor) { window.editor.setValue('\(escaped)'); true; } else { false; }"
-            webView.evaluateJavaScript(js) { result, error in
-                if let error {
-                    logError(AppLog.code, "JavaScript evaluation failed: \(error.localizedDescription)")
-                    return
-                }
-                if let success = result as? Bool, !success {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        self.setCodeWhenReady(webView: webView, escaped: escaped, attempts: attempts + 1)
+            setCodeTask = Task { @MainActor [weak self] in
+                for _ in 0..<maxAttempts {
+                    guard !Task.isCancelled else { return }
+                    let js = "if (window.editor) { window.editor.setValue('\(escaped)'); true; } else { false; }"
+                    do {
+                        let result = try await webView.evaluateJavaScript(js)
+                        if let success = result as? Bool, success { return }
+                    } catch {
+                        logError(AppLog.code, "JavaScript evaluation failed: \(error.localizedDescription)")
+                        return
                     }
+                    try? await Task.sleep(nanoseconds: 100_000_000)
+                }
+                if !Task.isCancelled {
+                    self?.logEditorTimeout(maxAttempts)
                 }
             }
+        }
+
+        private func logEditorTimeout(_ attempts: Int) {
+            logError(AppLog.code, "Monaco editor did not become ready after \(attempts) attempts")
         }
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             logError(AppLog.code, "Monaco WebView navigation failed: \(error.localizedDescription)")

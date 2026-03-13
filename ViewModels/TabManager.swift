@@ -43,8 +43,8 @@ final class TabManager: ObservableObject {
     /// The controller for the currently active tab.
     var activeController: PDFController {
         guard let tab = tabs.first(where: { $0.id == activeTabID }) else {
-            // Should never happen; fallback to first tab.
-            return tabs[0].pdfController
+            assertionFailure("activeTabID does not match any tab — tabs should never be empty")
+            return tabs.first!.pdfController
         }
         return tab.pdfController
     }
@@ -253,16 +253,17 @@ final class TabManager: ObservableObject {
 
     /// Observe when a tab's PDFController loads a document and update the tab title.
     private func observeTabTitle(_ tab: PDFTab) {
+        let tabID = tab.id
         let cancellable = tab.pdfController.$currentPDFURL
             .compactMap { $0 }
             .receive(on: DispatchQueue.main)
             .sink { [weak self] url in
                 guard let self else { return }
-                if let idx = self.tabs.firstIndex(where: { $0.id == tab.id }) {
+                if let idx = self.tabs.firstIndex(where: { $0.id == tabID }) {
                     self.tabs[idx].title = url.deletingPathExtension().lastPathComponent
                     self.tabs[idx].url = url
                 }
             }
-        tabCancellables[tab.id] = cancellable
+        tabCancellables[tabID] = cancellable
     }
 }

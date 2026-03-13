@@ -111,6 +111,9 @@ struct LibrarySearchView: View {
 			}
 		}
 		.frame(width: 500, height: 450)
+		.onDisappear {
+			searchTask?.cancel()
+		}
 	}
 
 	private func performSearch() {

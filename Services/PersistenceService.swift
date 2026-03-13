@@ -7,6 +7,7 @@ nonisolated enum PersistenceService {
     private static let logger = AppLog.persistence
     // Thread-safe one-time migration using Swift's static let guarantee (dispatch_once)
     private static let _migration: Void = {
+        JSONStorageService.resumeIncompleteImport()
         JSONStorageService.migrateFromUserDefaults()
         if !FileManager.default.fileExists(atPath: JSONStorageService.dataDirectory.path) {
             let msg = "Failed to create data directory at \(JSONStorageService.dataDirectory.path)"

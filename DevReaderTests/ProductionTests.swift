@@ -68,7 +68,10 @@ final class ProductionTests: XCTestCase {
     func testSearchCaseInsensitive() async throws {
         let pdfController = PDFController()
         let testURL = createSearchableTestPDF()
-        let document = PDFDocument(url: testURL)!
+        guard let document = PDFDocument(url: testURL) else {
+            XCTFail("Failed to create PDFDocument from \(testURL.lastPathComponent)")
+            return
+        }
         defer { try? FileManager.default.removeItem(at: testURL) }
 
         // Use loadForTesting to bypass async debounce
@@ -91,7 +94,11 @@ final class ProductionTests: XCTestCase {
     func testSearchHighlights() async {
         let pdfController = PDFController()
         let testURL = createSearchableTestPDF()
-        let document = PDFDocument(url: testURL)!
+        guard let document = PDFDocument(url: testURL) else {
+            XCTFail("Failed to create PDFDocument from \(testURL.lastPathComponent)")
+            try? FileManager.default.removeItem(at: testURL)
+            return
+        }
 
         pdfController.loadForTesting(document: document, url: testURL)
 

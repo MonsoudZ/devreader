@@ -18,18 +18,12 @@ final class PerformanceTests: XCTestCase {
     // MARK: - Large PDF Performance Tests
     
     func testLargePDFLoadingPerformance() async {
-        // This test simulates loading a large PDF (1000+ pages)
-        // In a real scenario, you would use an actual large PDF file
-        
         let store = await MainActor.run { NotesStore() }
-        let pdf = await MainActor.run { PDFController() }
-        
-        // Simulate large PDF with many pages
-        let largePDFURL = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent("large_test.pdf")
-        
-        // Measure loading time
+
+        let largePDFURL = createTestPDF(pageCount: 100, name: "perf_large")
+
         let startTime = CFAbsoluteTimeGetCurrent()
-        
+
         await MainActor.run { store.setCurrentPDF(largePDFURL) }
         await MainActor.run { store.loadingTask }?.value
 
@@ -48,8 +42,10 @@ final class PerformanceTests: XCTestCase {
         // Verify data integrity
         let itemsCount = await MainActor.run { store.items.count }
         XCTAssertEqual(itemsCount, 1000, "All notes should be added successfully")
+
+        try? FileManager.default.removeItem(at: largePDFURL)
     }
-    
+
     func testSearchPerformance() async {
         let store = await MainActor.run { NotesStore() }
         let pdf = await MainActor.run { PDFController() }

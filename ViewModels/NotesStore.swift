@@ -213,15 +213,17 @@ final class NotesStore: ObservableObject {
 
 	/// Delete a tag from all notes.
 	func deleteTag(_ tag: String) {
-		let affectedNotes = items.enumerated().filter { $0.element.tags.contains(tag) }.map { $0.offset }
+		let affectedNoteIDs = items.filter { $0.tags.contains(tag) }.map { $0.id }
 		for i in items.indices {
 			items[i].tags.removeAll { $0 == tag }
 		}
 		availableTags.remove(tag)
 		registerUndo(actionName: "Delete Tag") { [weak self] in
 			guard let self else { return }
-			for index in affectedNotes where index < self.items.count {
-				self.items[index].tags.append(tag)
+			for id in affectedNoteIDs {
+				if let idx = self.items.firstIndex(where: { $0.id == id }) {
+					self.items[idx].tags.append(tag)
+				}
 			}
 			self.availableTags.insert(tag)
 			self.schedulePersist()

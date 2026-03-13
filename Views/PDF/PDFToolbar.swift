@@ -249,6 +249,7 @@ struct PDFToolbar: View {
 	private func goToInputPage() {
 		guard let pageNum = Int(pageInput), let doc = pdf.document else {
 			pageInput = "\(pdf.currentPageIndex + 1)"
+			isPageFieldFocused = false
 			return
 		}
 		let clamped = max(1, min(pageNum, doc.pageCount))

@@ -251,6 +251,7 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			if let observer = scaleObserver {
 				NotificationCenter.default.removeObserver(observer)
 			}
+			scaleDebounceTask?.cancel()
 		}
 	}
 }

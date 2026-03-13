@@ -30,7 +30,7 @@ struct NoteRow: View {
 						VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
 							if !item.text.isEmpty {
 								if showMarkdownPreview {
-									Text(markdownAttributedString)
+									Text(cachedMarkdown)
 										.font(DS.Typography.body)
 										.textSelection(.enabled)
 								} else {
@@ -144,11 +144,14 @@ struct NoteRow: View {
 		.background(isEditing ? DS.Colors.accent.opacity(0.05) : Color.clear)
 		.cornerRadius(DS.Radius.lg)
 		.onAppear {
-			// Auto-start editing if this is a new empty note
+			cachedMarkdown = Self.parseMarkdown(item.text)
 			if item.text.isEmpty && item.tags.isEmpty {
 				isNewNote = true
 				startEdit()
 			}
+		}
+		.onChange(of: item.text) { _, newText in
+			cachedMarkdown = Self.parseMarkdown(newText)
 		}
 		.sheet(isPresented: $showingTagEditor) {
 			VStack {
@@ -195,16 +198,9 @@ struct NoteRow: View {
 		}
 	}
 
-	/// Cached markdown parse — only recomputed when `item.text` changes.
-	@State private var cachedMarkdown: (source: String, result: AttributedString)?
+	@State private var cachedMarkdown: AttributedString = AttributedString()
 
-	private var markdownAttributedString: AttributedString {
-		if let cached = cachedMarkdown, cached.source == item.text {
-			return cached.result
-		}
-		let result = (try? AttributedString(markdown: item.text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(item.text)
-		// Mutating @State from a computed property is fine — SwiftUI coalesces the update.
-		DispatchQueue.main.async { cachedMarkdown = (item.text, result) }
-		return result
+	private static func parseMarkdown(_ text: String) -> AttributedString {
+		(try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace))) ?? AttributedString(text)
 	}
 }

@@ -118,11 +118,10 @@ private struct ShortcutRow: View {
 				Text(warning)
 					.font(.caption2)
 					.foregroundStyle(.orange)
-					.onAppear {
-						Task { @MainActor in
-							try? await Task.sleep(nanoseconds: 3_000_000_000)
-							conflictWarning = nil
-						}
+					.task(id: warning) {
+						try? await Task.sleep(nanoseconds: 3_000_000_000)
+						guard !Task.isCancelled else { return }
+						conflictWarning = nil
 					}
 			}
 		}

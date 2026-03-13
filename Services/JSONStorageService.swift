@@ -326,9 +326,9 @@ nonisolated enum JSONStorageService {
 
         return DevReaderData(
             library: library,
-            recentDocuments: recentDocs.map { $0.absoluteString },
-            pinnedDocuments: pinnedDocs.map { $0.absoluteString },
-            webBookmarks: webBookmarks.map { $0.absoluteString },
+            recentDocuments: recentDocs.map(\.absoluteString),
+            pinnedDocuments: pinnedDocs.map(\.absoluteString),
+            webBookmarks: webBookmarks.map(\.absoluteString),
             annotationBundles: annotationBundles.isEmpty ? nil : annotationBundles,
             notesBundles: notesBundles.isEmpty ? nil : notesBundles,
             bookmarksBundles: bookmarksBundles.isEmpty ? nil : bookmarksBundles,
@@ -427,10 +427,41 @@ nonisolated enum JSONStorageService {
         }
     }
 
+    private static var importManifestURL: URL {
+        appSupportURL.appendingPathComponent("import_manifest.json")
+    }
+
+    /// On launch, checks for an incomplete import and cleans up the staging directory.
+    static func resumeIncompleteImport() {
+        guard FileManager.default.fileExists(atPath: importManifestURL.path) else { return }
+
+        os_log("Found incomplete import manifest — cleaning up", log: logger, type: .error)
+
+        if let manifestData = try? Data(contentsOf: importManifestURL),
+           let manifest = try? JSONDecoder().decode(ImportManifest.self, from: manifestData) {
+            // Remove any partially-moved files from the data directory that came from staging
+            for filename in manifest.filenames {
+                let dest = dataDirectory.appendingPathComponent(filename)
+                if FileManager.default.fileExists(atPath: dest.path) {
+                    os_log("Removing partially imported file: %{public}@", log: logger, type: .info, filename)
+                }
+            }
+            // Remove the staging directory if it still exists
+            try? FileManager.default.removeItem(at: URL(fileURLWithPath: manifest.stagingPath))
+        }
+
+        try? FileManager.default.removeItem(at: importManifestURL)
+        os_log("Incomplete import cleanup finished", log: logger, type: .info)
+    }
+
+    private struct ImportManifest: Codable {
+        let stagingPath: String
+        let filenames: [String]
+    }
+
     static func importAllData(_ data: DevReaderData) throws {
         ensureDirectories()
 
-        // Write everything to a staging directory first so a crash can't leave partial state
         let stagingDir = appSupportURL.appendingPathComponent("ImportStaging-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: stagingDir, withIntermediateDirectories: true)
 
@@ -439,14 +470,14 @@ nonisolated enum JSONStorageService {
             try saveToDir(data.library, filename: "library.json", in: stagingDir)
 
             // Stage recent and pinned
-            let recentURLs = data.recentDocuments.compactMap { URL(string: $0) }
-            let pinnedURLs = data.pinnedDocuments.compactMap { URL(string: $0) }
+            let recentURLs = parseURLs(data.recentDocuments, context: "recentDocuments")
+            let pinnedURLs = parseURLs(data.pinnedDocuments, context: "pinnedDocuments")
             try saveToDir(recentURLs, filename: "recents.json", in: stagingDir)
             try saveToDir(pinnedURLs, filename: "pinned.json", in: stagingDir)
 
             // Stage web bookmarks
             if let webBookmarkStrings = data.webBookmarks {
-                let webBookmarkURLs = webBookmarkStrings.compactMap { URL(string: $0) }
+                let webBookmarkURLs = parseURLs(webBookmarkStrings, context: "webBookmarks")
                 try saveToDir(webBookmarkURLs, filename: "web_bookmarks.json", in: stagingDir)
             }
 
@@ -489,8 +520,14 @@ nonisolated enum JSONStorageService {
                 try saveToDir(sketches, filename: "DevReader.Sketches.v1.json", in: stagingDir)
             }
 
-            // All staging writes succeeded — move files into live data directory
+            // Write manifest before moving files so a crash during moves can be detected
             let stagedFiles = try FileManager.default.contentsOfDirectory(at: stagingDir, includingPropertiesForKeys: nil)
+            let filenames = stagedFiles.map(\.lastPathComponent)
+            let manifest = ImportManifest(stagingPath: stagingDir.path, filenames: filenames)
+            let manifestData = try JSONEncoder().encode(manifest)
+            try manifestData.write(to: importManifestURL)
+
+            // Move staged files into the live data directory
             for file in stagedFiles {
                 let dest = dataDirectory.appendingPathComponent(file.lastPathComponent)
                 if FileManager.default.fileExists(atPath: dest.path) {
@@ -500,7 +537,8 @@ nonisolated enum JSONStorageService {
                 }
             }
 
-            // Clean up staging directory
+            // All moves succeeded — remove manifest and staging directory
+            try? FileManager.default.removeItem(at: importManifestURL)
             try? FileManager.default.removeItem(at: stagingDir)
 
             os_log("Imported data with %d library items, %d note bundles, %d sketches",
@@ -509,7 +547,7 @@ nonisolated enum JSONStorageService {
                    data.notesBundles?.count ?? 0,
                    data.sketches?.count ?? 0)
         } catch {
-            // Clean up staging directory on failure — live data is untouched
+            try? FileManager.default.removeItem(at: importManifestURL)
             try? FileManager.default.removeItem(at: stagingDir)
             throw error
         }
@@ -519,6 +557,17 @@ nonisolated enum JSONStorageService {
     private static func saveToDir<T: Codable>(_ data: T, filename: String, in dir: URL) throws {
         let jsonData = try JSONEncoder().encode(data)
         try jsonData.write(to: dir.appendingPathComponent(filename))
+    }
+
+    /// Parses URL strings, logging any that fail to parse.
+    private static func parseURLs(_ strings: [String], context: String) -> [URL] {
+        strings.compactMap { string in
+            guard let url = URL(string: string) else {
+                os_log("Skipping invalid URL in %{public}@: %{public}@", log: logger, type: .error, context, string)
+                return nil
+            }
+            return url
+        }
     }
     
     // MARK: - Cleanup

@@ -634,12 +634,7 @@ final class PDFController: ObservableObject {
 			let success = await ErrorRecoveryService.resetCorruptedState()
 			if success {
 				clearSession()
-				document = nil
-				currentPDFURL = nil
-				currentPageIndex = 0
-				outlineManager.clear()
 				bookmarkManager.resetAll()
-				searchManager.clearSearch()
 				log(AppLog.pdf, "Session recovery completed successfully")
 				NotificationCenter.default.post(name: .dataRecovery, object: nil)
 			} else {
