@@ -90,66 +90,52 @@ struct PDFToolbar: View {
 	// MARK: - Display Mode
 
 	private var displayModePicker: some View {
-		HStack(spacing: DS.Spacing.xs) {
+		ControlGroup {
 			Button {
 				pdf.setDisplayMode(.singlePage)
 			} label: {
-				Image(systemName: "doc")
+				Label("Single Page", systemImage: "doc")
 			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.foregroundStyle(pdf.displayMode == .singlePage ? DS.Colors.accent : DS.Colors.secondary)
 			.help("Single Page")
-			.accessibilityLabel("Single page mode")
 
 			Button {
 				pdf.setDisplayMode(.singlePageContinuous)
 			} label: {
-				Image(systemName: "doc.text")
+				Label("Continuous", systemImage: "doc.text")
 			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.foregroundStyle(pdf.displayMode == .singlePageContinuous ? DS.Colors.accent : DS.Colors.secondary)
 			.help("Continuous Scroll")
-			.accessibilityLabel("Continuous scroll mode")
 
 			Button {
 				pdf.setDisplayMode(.twoUpContinuous)
 			} label: {
-				Image(systemName: "book")
+				Label("Two-Page", systemImage: "book")
 			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.foregroundStyle(pdf.displayMode == .twoUpContinuous ? DS.Colors.accent : DS.Colors.secondary)
 			.help("Two-Page Spread")
-			.accessibilityLabel("Two page spread mode")
 		}
+		.controlGroupStyle(.automatic)
 	}
 
 	// MARK: - Zoom
 
 	private var zoomControls: some View {
 		HStack(spacing: DS.Spacing.xs) {
-			Button {
-				pdf.zoomOut()
-			} label: {
-				Image(systemName: "minus.magnifyingglass")
+			ControlGroup {
+				Button { pdf.zoomOut() } label: {
+					Label("Zoom Out", systemImage: "minus.magnifyingglass")
+				}
+				.help("Zoom Out")
+
+				Button { pdf.zoomIn() } label: {
+					Label("Zoom In", systemImage: "plus.magnifyingglass")
+				}
+				.help("Zoom In")
 			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.help("Zoom Out")
-			.accessibilityLabel("Zoom out")
 
 			Text("\(Int(pdf.scaleFactor * 100))%")
 				.font(DS.Typography.caption)
 				.monospacedDigit()
 				.frame(width: 40)
 				.foregroundStyle(DS.Colors.secondary)
-
-			Button {
-				pdf.zoomIn()
-			} label: {
-				Image(systemName: "plus.magnifyingglass")
-			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.help("Zoom In")
-			.accessibilityLabel("Zoom in")
 
 			Button {
 				pdf.zoomToFit()
@@ -165,27 +151,22 @@ struct PDFToolbar: View {
 	// MARK: - Rotation
 
 	private var rotationControls: some View {
-		HStack(spacing: DS.Spacing.xs) {
+		ControlGroup {
 			Button {
 				pdf.rotateCurrentPageLeft()
 			} label: {
-				Image(systemName: "rotate.left")
+				Label("Rotate Left", systemImage: "rotate.left")
 			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.disabled(pdf.document == nil)
 			.help("Rotate Left")
-			.accessibilityLabel("Rotate page left")
 
 			Button {
 				pdf.rotateCurrentPageRight()
 			} label: {
-				Image(systemName: "rotate.right")
+				Label("Rotate Right", systemImage: "rotate.right")
 			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.disabled(pdf.document == nil)
 			.help("Rotate Right")
-			.accessibilityLabel("Rotate page right")
 		}
+		.disabled(pdf.document == nil)
 	}
 
 	// MARK: - Compact Variants

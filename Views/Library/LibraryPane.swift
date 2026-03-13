@@ -23,16 +23,11 @@ struct LibraryPane: View {
 	var body: some View {
 		VStack(spacing: 0) {
             HStack {
-                TextField("Search library…", text: $filter)
-                    .accessibilityIdentifier("librarySearchField")
-                    .accessibilityLabel("Search library")
-                    .accessibilityHint("Enter text to search your PDF library")
                 Button(action: { importFromFinder() }) { Image(systemName: "plus") }
                     .buttonStyle(.borderless)
                     .help("Import PDFs…")
                     .accessibilityIdentifier("libraryImportButton")
                     .accessibilityLabel("Import PDFs")
-                    .accessibilityHint("Import new PDF files into your library")
                 if !selection.isEmpty {
                     Button(role: .destructive) {
                         showingDeleteConfirmation = true
@@ -41,9 +36,8 @@ struct LibraryPane: View {
                     }
                     .help("Remove selected from Library")
                     .accessibilityIdentifier("libraryRemoveSelected")
-                    .accessibilityLabel("Remove selected items")
-                    .accessibilityHint("Remove selected PDFs from library")
                 }
+                Spacer()
                 Menu {
                     Section("Sort") {
                         Picker("Sort", selection: $sort) {
@@ -86,19 +80,18 @@ struct LibraryPane: View {
                 }
                 .menuStyle(.borderlessButton)
                 .accessibilityIdentifier("libraryOverflowMenu")
-                .accessibilityLabel("More options")
-                .accessibilityHint("Sort library or search across all PDFs")
             }
 			.padding(DS.Spacing.sm)
 			Divider()
             if library.items.isEmpty {
-                EmptyStateView(
-                    icon: "books.vertical",
-                    title: "No PDFs in Library",
-                    subtitle: "Import PDFs to get started",
-                    actionLabel: "Import PDFs...",
-                    action: { importFromFinder() }
-                )
+                ContentUnavailableView {
+                    Label("No Documents", systemImage: "books.vertical")
+                } description: {
+                    Text("Import PDFs to build your library.")
+                } actions: {
+                    Button("Import PDF…") { importFromFinder() }
+                        .buttonStyle(.borderedProminent)
+                }
                 .accessibilityIdentifier("libraryEmptyImport")
             } else {
                 List(selection: $selection) {
@@ -148,13 +141,13 @@ struct LibraryPane: View {
                 }
             }
 		}
-		.alert("Remove Selected Items", isPresented: $showingDeleteConfirmation) {
-			Button("Cancel", role: .cancel) { }
-			Button("Remove", role: .destructive) { 
+		.searchable(text: $filter, placement: .sidebar, prompt: "Search library…")
+		.confirmationDialog("Remove Selected Items", isPresented: $showingDeleteConfirmation, titleVisibility: .visible) {
+			Button("Remove \(selection.count) Item\(selection.count == 1 ? "" : "s")", role: .destructive) {
 				bulkRemove()
 			}
 		} message: {
-			Text("Are you sure you want to remove \(selection.count) item\(selection.count == 1 ? "" : "s") from your library? This action cannot be undone.")
+			Text("Are you sure? This action cannot be undone.")
 		}
 		.quickLookPreview($quickLookURL)
 		.onKeyPress(.space) {

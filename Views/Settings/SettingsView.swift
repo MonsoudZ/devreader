@@ -4,7 +4,6 @@ import Foundation
 import UniformTypeIdentifiers
 
 struct SettingsView: View {
-	@Environment(\.dismiss) private var dismiss
 	@AppStorage("highlightColor") private var highlightColor = "yellow"
 	@AppStorage("defaultZoom") private var defaultZoom = 1.0
 	@AppStorage("autoSave") private var autoSave = true
@@ -19,27 +18,10 @@ struct SettingsView: View {
 	@State private var alertMessage = ""
 	@State private var alertTitle = ""
 	@State private var showingAlert = false
+	@State private var showRestoreImporter = false
 
 	var body: some View {
-		VStack(spacing: 0) {
-			// Title bar
-			HStack {
-				Text("Settings")
-					.font(DS.Typography.heading)
-				Spacer()
-				Button("Done") { dismiss() }
-					.buttonStyle(.borderedProminent)
-					.controlSize(.small)
-					.accessibilityIdentifier("settingsDone")
-					.accessibilityLabel("Done")
-					.accessibilityHint("Close the settings window")
-			}
-			.padding(.horizontal, DS.Spacing.xl)
-			.padding(.vertical, DS.Spacing.md)
-
-			Divider()
-
-			Form {
+		Form {
 				Section("Appearance") {
 					Picker("Theme", selection: $appAppearance) {
 						Text("System").tag("system")
@@ -195,7 +177,7 @@ struct SettingsView: View {
 						.accessibilityHint("Create a backup of all app data")
 
 						Button("Restore Backup…") {
-							restoreBackup()
+							showRestoreImporter = true
 						}
 						.buttonStyle(DSSecondaryButtonStyle())
 						.controlSize(.small)
@@ -222,12 +204,18 @@ struct SettingsView: View {
 					ShortcutEditorView(store: KeyboardShortcutStore.shared)
 				}
 			}
-			.formStyle(.grouped)
-		}
+		.formStyle(.grouped)
 		.alert(alertTitle, isPresented: $showingAlert) {
 			Button("OK") { }
 		} message: {
 			Text(alertMessage)
+		}
+		.fileImporter(
+			isPresented: $showRestoreImporter,
+			allowedContentTypes: [UTType(filenameExtension: "json") ?? .json],
+			allowsMultipleSelection: false
+		) { result in
+			handleRestoreBackup(result: result)
 		}
 	}
 
@@ -254,36 +242,33 @@ struct SettingsView: View {
 		}
 	}
 
-	private func restoreBackup() {
-		let panel = NSOpenPanel()
-		panel.allowedContentTypes = [UTType(filenameExtension: "json") ?? .json]
-		panel.canChooseFiles = true
-		panel.allowsMultipleSelection = false
-		panel.canChooseDirectories = false
-		panel.message = "Select a DevReader backup file to restore"
-		panel.begin { response in
-			guard response == .OK, let url = panel.url else { return }
-			DispatchQueue.main.async {
-				appEnvironment.loadingStateManager.startLoading(.general, message: "Restoring backup…")
-				Task {
-					do {
-						try PersistenceService.restoreFromBackup(url)
-						await MainActor.run {
-							alertTitle = "Backup Restored"
-							alertMessage = "Data has been restored. Please restart the app for changes to take full effect."
-							showingAlert = true
-							appEnvironment.loadingStateManager.stopLoading(.general)
-						}
-					} catch {
-						await MainActor.run {
-							alertTitle = "Restore Failed"
-							alertMessage = "Could not restore from backup: \(error.localizedDescription)"
-							showingAlert = true
-							appEnvironment.loadingStateManager.stopLoading(.general)
-						}
+	private func handleRestoreBackup(result: Result<[URL], Error>) {
+		switch result {
+		case .success(let urls):
+			guard let url = urls.first else { return }
+			appEnvironment.loadingStateManager.startLoading(.general, message: "Restoring backup…")
+			Task {
+				do {
+					try PersistenceService.restoreFromBackup(url)
+					await MainActor.run {
+						alertTitle = "Backup Restored"
+						alertMessage = "Data has been restored. Please restart the app for changes to take full effect."
+						showingAlert = true
+						appEnvironment.loadingStateManager.stopLoading(.general)
+					}
+				} catch {
+					await MainActor.run {
+						alertTitle = "Restore Failed"
+						alertMessage = "Could not restore from backup: \(error.localizedDescription)"
+						showingAlert = true
+						appEnvironment.loadingStateManager.stopLoading(.general)
 					}
 				}
 			}
+		case .failure(let error):
+			alertTitle = "Restore Failed"
+			alertMessage = "Could not select backup file: \(error.localizedDescription)"
+			showingAlert = true
 		}
 	}
 

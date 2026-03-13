@@ -69,11 +69,6 @@ struct DevReaderApp: App {
                         .environmentObject(appEnvironment)
                         .frame(minWidth: 800, minHeight: 560)
                 }
-                .sheet(isPresented: $appEnvironment.isShowingSettings) {
-                    SettingsView()
-                        .environmentObject(appEnvironment)
-                        .frame(minWidth: 720, minHeight: 520)
-                }
                 .sheet(isPresented: $appEnvironment.isShowingHelp) {
                     HelpView()
                         .environmentObject(appEnvironment)
@@ -373,6 +368,12 @@ struct DevReaderApp: App {
             @unknown default:
                 break
             }
+        }
+
+        // MARK: - Native Settings Window (Cmd+,)
+        Settings {
+            SettingsView()
+                .environmentObject(appEnvironment)
         }
     }
 

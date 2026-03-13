@@ -342,9 +342,9 @@ struct ContentView: View {
         VStack(spacing: 0) {
             // Segmented control with SF Symbol icons
             Picker("Right panel", selection: $rightTab) {
-                Label("Notes", systemImage: "note.text").labelStyle(.iconOnly).help("Notes").tag(RightTab.notes)
-                Label("Code", systemImage: "chevron.left.forwardslash.chevron.right").labelStyle(.iconOnly).help("Code").tag(RightTab.code)
-                Label("Web", systemImage: "globe").labelStyle(.iconOnly).help("Web").tag(RightTab.web)
+                Label("Notes", systemImage: "note.text").tag(RightTab.notes)
+                Label("Code", systemImage: "chevron.left.forwardslash.chevron.right").tag(RightTab.code)
+                Label("Web", systemImage: "globe").tag(RightTab.web)
             }
             .pickerStyle(.segmented)
             .padding(DS.Spacing.md)
@@ -408,35 +408,21 @@ struct ContentView: View {
 
     // MARK: - Empty Tab View
     private var emptyTabView: some View {
-        VStack(spacing: DS.Spacing.lg) {
-            Spacer()
-
-            Image(systemName: "doc.richtext")
-                .font(.system(size: 56, weight: .thin))
-                .foregroundStyle(DS.Colors.tertiary)
-
-            Text("No PDF Open")
-                .font(DS.Typography.title)
-                .foregroundStyle(DS.Colors.secondary)
-
-            Text("Drag & drop a PDF here, or open one from the library")
-                .font(DS.Typography.callout)
-                .foregroundStyle(DS.Colors.tertiary)
-                .multilineTextAlignment(.center)
-
+        ContentUnavailableView {
+            Label("No PDF Open", systemImage: "doc.text")
+        } description: {
+            Text("Open a PDF from the library, or drag and drop a file here.")
+        } actions: {
             HStack(spacing: DS.Spacing.md) {
                 Button("Open PDF…") { openPDF() }
-                    .buttonStyle(DSPrimaryButtonStyle())
+                    .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("emptyTabOpenButton")
 
                 Button("Import PDFs…") { importPDFs() }
-                    .buttonStyle(DSSecondaryButtonStyle())
+                    .buttonStyle(.bordered)
                     .accessibilityIdentifier("emptyTabImportButton")
             }
-
-            Spacer()
         }
-        .background(DS.Colors.contentSurface)
     }
 
     // MARK: - Autosave

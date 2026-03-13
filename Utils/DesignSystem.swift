@@ -71,6 +71,7 @@ enum DS {
 		static let caption2: Font = .caption2
 		static let mono: Font = .system(.body, design: .monospaced)
 		static let monoCaption: Font = .system(.caption, design: .monospaced)
+		static let monoSmall: Font = .system(.caption2, design: .monospaced)
 	}
 
 	// MARK: Colors
@@ -249,37 +250,25 @@ extension View {
 
 // MARK: - Button Styles
 
-/// Primary action button — filled accent color
-struct DSPrimaryButtonStyle: ButtonStyle {
+/// Primary action button — uses system borderedProminent style
+struct DSPrimaryButtonStyle: PrimitiveButtonStyle {
 	func makeBody(configuration: Configuration) -> some View {
-		configuration.label
-			.font(DS.Typography.subheading)
-			.padding(.horizontal, DS.Spacing.lg)
-			.padding(.vertical, DS.Spacing.sm)
-			.background(DS.Colors.accent)
-			.foregroundStyle(.white)
-			.clipShape(RoundedRectangle(cornerRadius: DS.Radius.md))
-			.scaleEffect(configuration.isPressed ? 0.97 : 1.0)
-			.animation(DS.Animation.quick, value: configuration.isPressed)
+		Button(role: nil, action: configuration.trigger) {
+			configuration.label
+		}
+		.buttonStyle(.borderedProminent)
+		.controlSize(.regular)
 	}
 }
 
-/// Secondary action button — bordered with accent color
-struct DSSecondaryButtonStyle: ButtonStyle {
+/// Secondary action button — uses system bordered style
+struct DSSecondaryButtonStyle: PrimitiveButtonStyle {
 	func makeBody(configuration: Configuration) -> some View {
-		configuration.label
-			.font(DS.Typography.subheading)
-			.padding(.horizontal, DS.Spacing.md)
-			.padding(.vertical, DS.Spacing.xs)
-			.background(DS.Colors.accent.opacity(configuration.isPressed ? 0.12 : 0.06))
-			.foregroundStyle(DS.Colors.accent)
-			.clipShape(RoundedRectangle(cornerRadius: DS.Radius.md))
-			.overlay(
-				RoundedRectangle(cornerRadius: DS.Radius.md)
-					.strokeBorder(DS.Colors.accent.opacity(0.3), lineWidth: 1)
-			)
-			.scaleEffect(configuration.isPressed ? 0.97 : 1.0)
-			.animation(DS.Animation.quick, value: configuration.isPressed)
+		Button(role: nil, action: configuration.trigger) {
+			configuration.label
+		}
+		.buttonStyle(.bordered)
+		.controlSize(.regular)
 	}
 }
 
