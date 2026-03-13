@@ -8,25 +8,25 @@ struct PDFThumbnailPane: View {
 	var body: some View {
 		VStack(spacing: 0) {
 			HStack {
-				Text("Pages").font(.headline)
+				Text("Pages").font(DS.Typography.heading)
 				Spacer()
 				Text("\(pdf.document?.pageCount ?? 0) pages")
-					.font(.caption)
-					.foregroundStyle(.secondary)
+					.font(DS.Typography.caption)
+					.foregroundStyle(DS.Colors.secondary)
 			}
-			.padding(8)
+			.padding(DS.Spacing.sm)
 			Divider()
 
 			if let doc = pdf.document {
 				ScrollViewReader { proxy in
 					ScrollView {
-						LazyVStack(spacing: 8) {
+						LazyVStack(spacing: DS.Spacing.sm) {
 							ForEach(0..<doc.pageCount, id: \.self) { index in
 								thumbnailRow(doc: doc, index: index)
 									.id(index)
 							}
 						}
-						.padding(8)
+						.padding(DS.Spacing.sm)
 					}
 					.onChange(of: pdf.currentPageIndex) { _, newIndex in
 						withAnimation {
@@ -41,8 +41,8 @@ struct PDFThumbnailPane: View {
 				VStack {
 					Spacer()
 					Text("No PDF Open")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 					Spacer()
 				}
 			}
@@ -54,16 +54,20 @@ struct PDFThumbnailPane: View {
 		Button {
 			pdf.goToPage(index)
 		} label: {
-			VStack(spacing: 4) {
+			VStack(spacing: DS.Spacing.xs) {
 				if let page = doc.page(at: index) {
 					CachedThumbnailView(page: page, size: thumbnailSize, pageIndex: index)
 						.frame(width: thumbnailSize.width, height: thumbnailSize.height)
-						.border(pdf.currentPageIndex == index ? Color.accentColor : Color.clear, width: 2)
+						.clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm))
+						.overlay(
+							RoundedRectangle(cornerRadius: DS.Radius.sm)
+								.strokeBorder(pdf.currentPageIndex == index ? DS.Colors.accent : Color.clear, lineWidth: 2)
+						)
 						.shadow(color: .black.opacity(0.1), radius: 2)
 				}
 				Text("\(index + 1)")
-					.font(.caption2)
-					.foregroundStyle(pdf.currentPageIndex == index ? .primary : .secondary)
+					.font(DS.Typography.caption2)
+					.foregroundStyle(pdf.currentPageIndex == index ? DS.Colors.primary : DS.Colors.secondary)
 			}
 		}
 		.buttonStyle(.plain)

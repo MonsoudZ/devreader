@@ -226,14 +226,15 @@ private struct FormFieldRow: View {
 				Button {
 					navigateAction()
 				} label: {
-					Text("Page \(field.pageIndex + 1)")
-						.font(DS.Typography.caption2)
-						.foregroundStyle(DS.Colors.secondary)
-					Image(systemName: "chevron.right")
-						.font(DS.Typography.caption2)
-						.foregroundStyle(DS.Colors.tertiary)
+					HStack(spacing: DS.Spacing.xxs) {
+						Text("Page \(field.pageIndex + 1)")
+							.font(DS.Typography.caption2)
+						Image(systemName: "chevron.right")
+							.font(.system(size: 9, weight: .semibold))
+					}
+					.foregroundStyle(DS.Colors.accent)
 				}
-				.buttonStyle(.plain)
+				.buttonStyle(DSToolbarButtonStyle())
 				.help("Navigate to this field in the PDF")
 			}
 
@@ -290,15 +291,10 @@ private struct FormFieldRow: View {
 			}
 
 		case .signature:
-			Button {
-				// Placeholder for signature agent integration
-			} label: {
-				Label("Sign", systemImage: "signature")
-					.font(DS.Typography.caption)
-			}
-			.buttonStyle(DSSecondaryButtonStyle())
-			.disabled(true)
-			.help("Signature support coming soon")
+			Text("Use Add Signature (⇧⌘S) to sign")
+				.font(DS.Typography.caption2)
+				.foregroundStyle(DS.Colors.tertiary)
+				.italic()
 
 		default:
 			Text("Unsupported field type")

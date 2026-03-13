@@ -60,25 +60,23 @@ struct ScratchRunner: View {
 					Label("Print", systemImage: "printer")
 						.labelStyle(.iconOnly)
 				}
-				.buttonStyle(.bordered)
-				.controlSize(.small)
+				.buttonStyle(DSToolbarButtonStyle())
 				.accessibilityIdentifier("scratchPrint")
 				.accessibilityLabel("Print code")
 				.accessibilityHint("Print the code using the system print dialog")
 				Button(isRunning ? "Running…" : "Run") { run() }
-					.buttonStyle(.borderedProminent)
-					.controlSize(.small)
+					.buttonStyle(DSPrimaryButtonStyle())
 					.disabled(isRunning)
 					.accessibilityIdentifier("scratchRunButton")
 					.accessibilityLabel("Run code")
 					.accessibilityHint("Execute the code in the editor")
-			}.padding(8)
+			}.padding(DS.Spacing.sm)
 			Divider()
 			TextEditor(text: $code)
-				.font(.system(.body, design: .monospaced))
-				.padding(8)
+				.font(DS.Typography.mono)
+				.padding(DS.Spacing.sm)
 			Divider()
-			ScrollView { Text(output).font(.system(.footnote, design: .monospaced)).padding(8) }
+			ScrollView { Text(output).font(DS.Typography.monoCaption).padding(DS.Spacing.sm) }
 		}
 		.onAppear {
 			if code.isEmpty {

@@ -44,29 +44,29 @@ struct OutlinePane: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Outline").font(.headline)
+                Text("Outline").font(DS.Typography.heading)
                 if pdf.isLargePDF {
                     Text("(\(outlineManager.outlineMap.count) items)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(DS.Typography.caption)
+                        .foregroundStyle(DS.Colors.secondary)
                         .accessibilityLabel("\(outlineManager.outlineMap.count) outline items")
                 }
                 Spacer()
             }
-            .padding(8)
-            
+            .padding(DS.Spacing.sm)
+
             // Search for large PDFs
             if pdf.isLargePDF {
                 HStack {
                     Image(systemName: "magnifyingglass")
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DS.Colors.secondary)
                     TextField("Search outline...", text: $searchText)
                         .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("outlineSearchField")
                         .accessibilityLabel("Search outline")
                 }
-                .padding(.horizontal, 8)
-                .padding(.bottom, 4)
+                .padding(.horizontal, DS.Spacing.sm)
+                .padding(.bottom, DS.Spacing.xs)
             }
             
             Divider()
@@ -99,11 +99,11 @@ struct OutlinePane: View {
                         } label: {
                             HStack {
                                 Text(group.section)
-                                    .font(.headline)
+                                    .font(DS.Typography.heading)
                                 Spacer()
                                 Text("\(group.entries.count)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .font(DS.Typography.caption)
+                                    .foregroundStyle(DS.Colors.secondary)
                             }
                         }
                     }
@@ -127,17 +127,17 @@ private struct OutlineRow: View {
     var body: some View {
         Button(action: { pdf.goToPage(entry.page) }) {
             HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                     Text(entry.title)
                         .lineLimit(2)
                     Text("Page \(entry.page + 1)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(DS.Typography.caption)
+                        .foregroundStyle(DS.Colors.secondary)
                 }
                 Spacer()
                 if entry.page == pdf.currentPageIndex {
                     Image(systemName: "arrow.right.circle.fill")
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(DS.Colors.accent)
                 }
             }
         }

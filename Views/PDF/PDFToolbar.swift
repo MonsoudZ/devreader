@@ -56,39 +56,7 @@ struct PDFToolbar: View {
 
 	private var pageNavigation: some View {
 		HStack(spacing: DS.Spacing.xs) {
-			Button {
-				pdf.goBack()
-			} label: {
-				Image(systemName: "chevron.left.circle")
-			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.disabled(!pdf.canGoBack)
-			.help("Back")
-			.accessibilityLabel("Navigate back")
-
-			Button {
-				pdf.goForward()
-			} label: {
-				Image(systemName: "chevron.right.circle")
-			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.disabled(!pdf.canGoForward)
-			.help("Forward")
-			.accessibilityLabel("Navigate forward")
-
-			Button {
-				pdf.goToFirstPage()
-			} label: {
-				Image(systemName: "backward.end.fill")
-			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.disabled(pdf.currentPageIndex <= 0)
-			.help("First Page")
-			.accessibilityLabel("First page")
-
-			Button {
-				pdf.goToPreviousPage()
-			} label: {
+			Button { pdf.goToPreviousPage() } label: {
 				Image(systemName: "chevron.left")
 			}
 			.buttonStyle(DSToolbarButtonStyle())
@@ -109,25 +77,13 @@ struct PDFToolbar: View {
 				.foregroundStyle(DS.Colors.secondary)
 				.monospacedDigit()
 
-			Button {
-				pdf.goToNextPage()
-			} label: {
+			Button { pdf.goToNextPage() } label: {
 				Image(systemName: "chevron.right")
 			}
 			.buttonStyle(DSToolbarButtonStyle())
 			.disabled(pdf.document == nil || pdf.currentPageIndex >= (pdf.document?.pageCount ?? 1) - 1)
 			.help("Next Page")
 			.accessibilityLabel("Next page")
-
-			Button {
-				pdf.goToLastPage()
-			} label: {
-				Image(systemName: "forward.end.fill")
-			}
-			.buttonStyle(DSToolbarButtonStyle())
-			.disabled(pdf.document == nil || pdf.currentPageIndex >= (pdf.document?.pageCount ?? 1) - 1)
-			.help("Last Page")
-			.accessibilityLabel("Last page")
 		}
 	}
 
