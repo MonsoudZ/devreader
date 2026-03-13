@@ -9,7 +9,7 @@ struct PDFToolbar: View {
 	var body: some View {
 		ViewThatFits(in: .horizontal) {
 			// Full toolbar
-			HStack(spacing: 12) {
+			HStack(spacing: DS.Spacing.md) {
 				pageNavigation
 				Divider().frame(height: 18)
 				displayModePicker
@@ -20,7 +20,7 @@ struct PDFToolbar: View {
 			}
 
 			// Compact: collapse display mode + rotation into a menu
-			HStack(spacing: 12) {
+			HStack(spacing: DS.Spacing.md) {
 				pageNavigation
 				Divider().frame(height: 18)
 				zoomControls
@@ -29,17 +29,13 @@ struct PDFToolbar: View {
 			}
 
 			// Minimal: page nav + overflow only
-			HStack(spacing: 8) {
+			HStack(spacing: DS.Spacing.sm) {
 				compactPageNavigation
 				Divider().frame(height: 18)
 				compactOverflowMenu
 			}
 		}
-		.padding(.horizontal, 12)
-		.padding(.vertical, 6)
-		.background(.regularMaterial)
-		.clipShape(RoundedRectangle(cornerRadius: 8))
-		.shadow(color: .black.opacity(0.15), radius: 4, y: -2)
+		.floatingToolbarStyle()
 		.onChange(of: pdf.currentPageIndex) { _, newValue in
 			if !isPageFieldFocused {
 				pageInput = "\(newValue + 1)"
@@ -59,13 +55,13 @@ struct PDFToolbar: View {
 	// MARK: - Page Navigation
 
 	private var pageNavigation: some View {
-		HStack(spacing: 4) {
+		HStack(spacing: DS.Spacing.xs) {
 			Button {
 				pdf.goBack()
 			} label: {
 				Image(systemName: "chevron.left.circle")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.disabled(!pdf.canGoBack)
 			.help("Back")
 			.accessibilityLabel("Navigate back")
@@ -75,7 +71,7 @@ struct PDFToolbar: View {
 			} label: {
 				Image(systemName: "chevron.right.circle")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.disabled(!pdf.canGoForward)
 			.help("Forward")
 			.accessibilityLabel("Navigate forward")
@@ -85,7 +81,7 @@ struct PDFToolbar: View {
 			} label: {
 				Image(systemName: "backward.end.fill")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.disabled(pdf.currentPageIndex <= 0)
 			.help("First Page")
 			.accessibilityLabel("First page")
@@ -95,7 +91,7 @@ struct PDFToolbar: View {
 			} label: {
 				Image(systemName: "chevron.left")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.disabled(pdf.currentPageIndex <= 0)
 			.help("Previous Page")
 			.accessibilityLabel("Previous page")
@@ -109,8 +105,8 @@ struct PDFToolbar: View {
 				.accessibilityLabel("Page number")
 
 			Text("/ \(pdf.document?.pageCount ?? 0)")
-				.font(.caption)
-				.foregroundColor(.secondary)
+				.font(DS.Typography.caption)
+				.foregroundStyle(DS.Colors.secondary)
 				.monospacedDigit()
 
 			Button {
@@ -118,7 +114,7 @@ struct PDFToolbar: View {
 			} label: {
 				Image(systemName: "chevron.right")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.disabled(pdf.document == nil || pdf.currentPageIndex >= (pdf.document?.pageCount ?? 1) - 1)
 			.help("Next Page")
 			.accessibilityLabel("Next page")
@@ -128,7 +124,7 @@ struct PDFToolbar: View {
 			} label: {
 				Image(systemName: "forward.end.fill")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.disabled(pdf.document == nil || pdf.currentPageIndex >= (pdf.document?.pageCount ?? 1) - 1)
 			.help("Last Page")
 			.accessibilityLabel("Last page")
@@ -138,14 +134,14 @@ struct PDFToolbar: View {
 	// MARK: - Display Mode
 
 	private var displayModePicker: some View {
-		HStack(spacing: 4) {
+		HStack(spacing: DS.Spacing.xs) {
 			Button {
 				pdf.setDisplayMode(.singlePage)
 			} label: {
 				Image(systemName: "doc")
 			}
-			.buttonStyle(.borderless)
-			.foregroundColor(pdf.displayMode == .singlePage ? .accentColor : .secondary)
+			.buttonStyle(DSToolbarButtonStyle())
+			.foregroundStyle(pdf.displayMode == .singlePage ? DS.Colors.accent : DS.Colors.secondary)
 			.help("Single Page")
 			.accessibilityLabel("Single page mode")
 
@@ -154,8 +150,8 @@ struct PDFToolbar: View {
 			} label: {
 				Image(systemName: "doc.text")
 			}
-			.buttonStyle(.borderless)
-			.foregroundColor(pdf.displayMode == .singlePageContinuous ? .accentColor : .secondary)
+			.buttonStyle(DSToolbarButtonStyle())
+			.foregroundStyle(pdf.displayMode == .singlePageContinuous ? DS.Colors.accent : DS.Colors.secondary)
 			.help("Continuous Scroll")
 			.accessibilityLabel("Continuous scroll mode")
 
@@ -164,8 +160,8 @@ struct PDFToolbar: View {
 			} label: {
 				Image(systemName: "book")
 			}
-			.buttonStyle(.borderless)
-			.foregroundColor(pdf.displayMode == .twoUpContinuous ? .accentColor : .secondary)
+			.buttonStyle(DSToolbarButtonStyle())
+			.foregroundStyle(pdf.displayMode == .twoUpContinuous ? DS.Colors.accent : DS.Colors.secondary)
 			.help("Two-Page Spread")
 			.accessibilityLabel("Two page spread mode")
 		}
@@ -174,28 +170,28 @@ struct PDFToolbar: View {
 	// MARK: - Zoom
 
 	private var zoomControls: some View {
-		HStack(spacing: 4) {
+		HStack(spacing: DS.Spacing.xs) {
 			Button {
 				pdf.zoomOut()
 			} label: {
 				Image(systemName: "minus.magnifyingglass")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.help("Zoom Out")
 			.accessibilityLabel("Zoom out")
 
 			Text("\(Int(pdf.scaleFactor * 100))%")
-				.font(.caption)
+				.font(DS.Typography.caption)
 				.monospacedDigit()
 				.frame(width: 40)
-				.foregroundColor(.secondary)
+				.foregroundStyle(DS.Colors.secondary)
 
 			Button {
 				pdf.zoomIn()
 			} label: {
 				Image(systemName: "plus.magnifyingglass")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.help("Zoom In")
 			.accessibilityLabel("Zoom in")
 
@@ -204,7 +200,7 @@ struct PDFToolbar: View {
 			} label: {
 				Image(systemName: "arrow.up.left.and.arrow.down.right")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.help("Fit to Window")
 			.accessibilityLabel("Fit to window")
 		}
@@ -213,13 +209,13 @@ struct PDFToolbar: View {
 	// MARK: - Rotation
 
 	private var rotationControls: some View {
-		HStack(spacing: 4) {
+		HStack(spacing: DS.Spacing.xs) {
 			Button {
 				pdf.rotateCurrentPageLeft()
 			} label: {
 				Image(systemName: "rotate.left")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.disabled(pdf.document == nil)
 			.help("Rotate Left")
 			.accessibilityLabel("Rotate page left")
@@ -229,7 +225,7 @@ struct PDFToolbar: View {
 			} label: {
 				Image(systemName: "rotate.right")
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.disabled(pdf.document == nil)
 			.help("Rotate Right")
 			.accessibilityLabel("Rotate page right")
@@ -239,19 +235,19 @@ struct PDFToolbar: View {
 	// MARK: - Compact Variants
 
 	private var compactPageNavigation: some View {
-		HStack(spacing: 4) {
+		HStack(spacing: DS.Spacing.xs) {
 			Button { pdf.goToPreviousPage() } label: { Image(systemName: "chevron.left") }
-				.buttonStyle(.borderless)
+				.buttonStyle(DSToolbarButtonStyle())
 				.disabled(pdf.currentPageIndex <= 0)
 				.accessibilityLabel("Previous page")
 
 			Text("\(pdf.currentPageIndex + 1)/\(pdf.document?.pageCount ?? 0)")
-				.font(.caption)
+				.font(DS.Typography.caption)
 				.monospacedDigit()
-				.foregroundColor(.secondary)
+				.foregroundStyle(DS.Colors.secondary)
 
 			Button { pdf.goToNextPage() } label: { Image(systemName: "chevron.right") }
-				.buttonStyle(.borderless)
+				.buttonStyle(DSToolbarButtonStyle())
 				.disabled(pdf.document == nil || pdf.currentPageIndex >= (pdf.document?.pageCount ?? 1) - 1)
 				.accessibilityLabel("Next page")
 		}

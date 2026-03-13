@@ -18,21 +18,21 @@ struct TagManagementView: View {
 		VStack(spacing: 0) {
 			HStack {
 				Text("Manage Tags")
-					.font(.headline)
+					.font(DS.Typography.heading)
 				Spacer()
 				Button("Done") { dismiss() }
-					.buttonStyle(.borderedProminent)
+					.buttonStyle(DSPrimaryButtonStyle())
 					.controlSize(.small)
 			}
-			.padding()
+			.padding(DS.Spacing.lg)
 
 			Divider()
 
 			if sortedTags.isEmpty {
-				VStack(spacing: 8) {
+				VStack(spacing: DS.Spacing.sm) {
 					Spacer()
 					Text("No tags yet")
-						.foregroundStyle(.secondary)
+						.foregroundStyle(DS.Colors.secondary)
 					Spacer()
 				}
 			} else {
@@ -76,9 +76,9 @@ struct TagManagementView: View {
 					.controlSize(.small)
 			} else if mergingTag == tag {
 				Text(tag)
-					.font(.body)
+					.font(DS.Typography.body)
 				Image(systemName: "arrow.right")
-					.foregroundStyle(.secondary)
+					.foregroundStyle(DS.Colors.secondary)
 				Picker("Into", selection: $mergeTarget) {
 					Text("Select…").tag(nil as String?)
 					ForEach(sortedTags.filter { $0 != tag }, id: \.self) { t in
@@ -100,12 +100,12 @@ struct TagManagementView: View {
 					.buttonStyle(.bordered)
 					.controlSize(.small)
 			} else {
-				HStack(spacing: 4) {
+				HStack(spacing: DS.Spacing.xs) {
 					Text(tag)
-						.font(.body)
+						.font(DS.Typography.body)
 					Text("(\(notes.notesWithTag(tag).count))")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 				}
 				Spacer()
 				Button {
@@ -130,13 +130,13 @@ struct TagManagementView: View {
 					deletingTag = tag
 				} label: {
 					Image(systemName: "trash")
-						.foregroundStyle(.red)
+						.foregroundStyle(DS.Colors.error)
 				}
 				.buttonStyle(.borderless)
 				.accessibilityLabel("Delete tag \(tag)")
 			}
 		}
-		.padding(.vertical, 2)
+		.padding(.vertical, DS.Spacing.xxs)
 	}
 
 	private func commitRename(_ oldTag: String) {

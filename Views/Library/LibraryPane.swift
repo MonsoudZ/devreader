@@ -88,7 +88,7 @@ struct LibraryPane: View {
                 .accessibilityLabel("More options")
                 .accessibilityHint("Sort library or search across all PDFs")
             }
-			.padding(8)
+			.padding(DS.Spacing.sm)
 			Divider()
             if library.items.isEmpty {
                 EmptyStateView(
@@ -118,9 +118,9 @@ struct LibraryPane: View {
                 .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in loadDropped(providers: providers) }
                 .overlay {
                     if isDropTargeted {
-                        RoundedRectangle(cornerRadius: 8)
-                            .strokeBorder(Color.accentColor, lineWidth: 3)
-                            .background(Color.accentColor.opacity(0.05))
+                        RoundedRectangle(cornerRadius: DS.Radius.lg)
+                            .strokeBorder(DS.Colors.accent, lineWidth: 3)
+                            .background(DS.Colors.accent.opacity(0.05))
                             .allowsHitTesting(false)
                     }
                 }
@@ -328,16 +328,16 @@ private struct LibraryItemRow: View {
     var body: some View {
         Button(action: onOpen) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                     Text(item.title)
-                    Text(item.url.lastPathComponent).font(.caption).foregroundStyle(.secondary)
+                    Text(item.url.lastPathComponent).font(DS.Typography.caption).foregroundStyle(DS.Colors.secondary)
                     ReadingProgressBar(item: item, pdf: pdf)
                 }
                 Spacer()
                 if isLoading {
                     ProgressView().controlSize(.small)
                 } else if isCurrent {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.blue)
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(DS.Colors.accent)
                 }
             }
         }
@@ -387,7 +387,7 @@ private struct ReadingProgressBar: View {
     var body: some View {
         if let progress, progress > 0 {
             ProgressView(value: progress)
-                .tint(progress >= 1.0 ? .green : .accentColor)
+                .tint(progress >= 1.0 ? DS.Colors.success : DS.Colors.accent)
                 .scaleEffect(y: 0.5, anchor: .center)
                 .accessibilityLabel("Reading progress: \(Int(progress * 100))%")
         }

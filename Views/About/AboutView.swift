@@ -5,58 +5,58 @@ struct AboutView: View {
     @Binding var isPresented: Bool
     
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: DS.Spacing.xl) {
             // App icon and title
-            VStack(spacing: 12) {
+            VStack(spacing: DS.Spacing.md) {
                 Image(systemName: "doc.text.fill")
                     .font(.system(size: 64))
-                    .foregroundStyle(.blue)
-                
+                    .foregroundStyle(DS.Colors.info)
+
                 Text("DevReader")
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                
+
                 Text("Version \(appVersion)")
                     .font(.title3)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DS.Colors.secondary)
             }
-            
+
             // Description
             Text("A powerful PDF reader designed for developers, with advanced note-taking, code integration, and research tools.")
-                .font(.body)
+                .font(DS.Typography.body)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 20)
-            
+                .foregroundStyle(DS.Colors.secondary)
+                .padding(.horizontal, DS.Spacing.xl)
+
             // Features
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 FeatureRow(icon: "note.text", title: "Smart Notes", description: "Take notes with automatic page linking")
                 FeatureRow(icon: "code", title: "Code Integration", description: "Embed and manage code snippets")
                 FeatureRow(icon: "paintbrush", title: "Sketch Tools", description: "Draw and annotate directly on PDFs")
                 FeatureRow(icon: "magnifyingglass", title: "Advanced Search", description: "Fast search across large documents")
             }
-            .padding(.horizontal, 20)
-            
+            .padding(.horizontal, DS.Spacing.xl)
+
             // Credits
-            VStack(spacing: 12) {
+            VStack(spacing: DS.Spacing.md) {
                 Text("Built with SwiftUI and PDFKit")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
-                
+                    .font(DS.Typography.caption)
+                    .foregroundStyle(DS.Colors.tertiary)
+
                 Text("© \(Calendar.current.component(.year, from: Date())) DevReader. All rights reserved.")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                    .font(DS.Typography.caption)
+                    .foregroundStyle(DS.Colors.tertiary)
             }
-            
+
             // Action buttons
-            HStack(spacing: 16) {
+            HStack(spacing: DS.Spacing.lg) {
                 Button("Privacy Policy") {
                     // Open privacy policy
                     if let url = URL(string: "https://devreader.app/privacy") {
                         NSWorkspace.shared.open(url)
                     }
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(DSSecondaryButtonStyle())
                 .accessibilityIdentifier("aboutPrivacyPolicy")
 
                 Button("Support") {
@@ -65,7 +65,7 @@ struct AboutView: View {
                         NSWorkspace.shared.open(url)
                     }
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(DSSecondaryButtonStyle())
                 .accessibilityIdentifier("aboutSupport")
 
                 Button("Close") {
@@ -75,10 +75,10 @@ struct AboutView: View {
                 .accessibilityIdentifier("aboutClose")
             }
         }
-        .padding(32)
+        .padding(DS.Spacing.xxl)
         .frame(width: 500, height: 600)
         .background(.regularMaterial)
-        .cornerRadius(16)
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.xl))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("About DevReader dialog")
     }
@@ -96,20 +96,20 @@ struct FeatureRow: View {
     let description: String
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DS.Spacing.md) {
             Image(systemName: icon)
                 .font(.title3)
-                .foregroundStyle(.blue)
-                .frame(width: 24)
-            
-            VStack(alignment: .leading, spacing: 2) {
+                .foregroundStyle(DS.Colors.info)
+                .frame(width: DS.Spacing.xl)
+
+            VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                 Text(title)
-                    .font(.headline)
+                    .font(DS.Typography.heading)
                 Text(description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(DS.Typography.caption)
+                    .foregroundStyle(DS.Colors.secondary)
             }
-            
+
             Spacer()
         }
         .accessibilityElement(children: .combine)

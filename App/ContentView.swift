@@ -60,7 +60,7 @@ struct ContentView: View {
                         appEnvironment.tabManager.openInTab(libraryItem: item)
                     }
                 )
-                .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
+                .navigationSplitViewColumnWidth(min: DS.Layout.sidebarMin, ideal: DS.Layout.sidebarIdeal, max: DS.Layout.sidebarMax)
             } detail: {
                 // Center: Tab bar + PDF viewer with optional thumbnail pane
                 VStack(spacing: 0) {
@@ -71,7 +71,7 @@ struct ContentView: View {
                 HStack(spacing: 0) {
                     if showingThumbnails, appEnvironment.pdfController.document != nil {
                         PDFThumbnailPane(pdf: appEnvironment.pdfController)
-                            .frame(width: 160)
+                            .frame(width: DS.Layout.thumbnailWidth)
                             .transition(.move(edge: .leading))
                         Divider()
                     }
@@ -120,23 +120,23 @@ struct ContentView: View {
                                     .transition(.move(edge: .bottom).combined(with: .opacity))
                             }
                         }
-                        .padding(.horizontal, 40)
-                        .padding(.bottom, 8)
+                        .padding(.horizontal, DS.Spacing.xxl)
+                        .padding(.bottom, DS.Spacing.sm)
                     }
                 }
-                .animation(.easeInOut(duration: 0.2), value: showingSearch)
-                .animation(.easeInOut(duration: 0.2), value: showingSplitView)
-                .animation(.easeInOut(duration: 0.2), value: appEnvironment.pdfController.document != nil)
+                .animation(DS.Animation.standard, value: showingSearch)
+                .animation(DS.Animation.standard, value: showingSplitView)
+                .animation(DS.Animation.standard, value: appEnvironment.pdfController.document != nil)
                 }
-                .animation(.easeInOut(duration: 0.2), value: showingThumbnails)
+                .animation(DS.Animation.standard, value: showingThumbnails)
                 }
-                .animation(.easeInOut(duration: 0.15), value: appEnvironment.tabManager.showTabBar)
+                .animation(DS.Animation.quick, value: appEnvironment.tabManager.showTabBar)
                     .navigationTitle(documentTitle)
                     .navigationSubtitle(pageInfo)
                     // Right: Tools inspector
                     .inspector(isPresented: $showingRightPanel) {
                         rightSidebar
-                            .inspectorColumnWidth(min: 300, ideal: 360, max: 480)
+                            .inspectorColumnWidth(min: DS.Layout.inspectorMin, ideal: DS.Layout.inspectorIdeal, max: DS.Layout.inspectorMax)
                     }
                     // Native macOS toolbar
                     .toolbar {
@@ -294,7 +294,7 @@ struct ContentView: View {
                 Label("Web", systemImage: "globe").labelStyle(.iconOnly).help("Web").tag(RightTab.web)
             }
             .pickerStyle(.segmented)
-            .padding(12)
+            .padding(DS.Spacing.md)
             .accessibilityIdentifier("rightTabPicker")
             .accessibilityLabel("Right panel tab selector")
 
@@ -311,18 +311,18 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(Color(NSColor.windowBackgroundColor))
+        .background(DS.Colors.surface)
     }
 
     // MARK: - TTS Controls
     private var ttsControls: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.sm) {
             Button {
                 appEnvironment.commandPauseSpeech()
             } label: {
                 Image(systemName: appEnvironment.ttsService.isPaused ? "play.fill" : "pause.fill")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(DSToolbarButtonStyle())
             .help(appEnvironment.ttsService.isPaused ? "Resume" : "Pause")
             .accessibilityLabel(appEnvironment.ttsService.isPaused ? "Resume reading" : "Pause reading")
 
@@ -331,20 +331,16 @@ struct ContentView: View {
             } label: {
                 Image(systemName: "stop.fill")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(DSToolbarButtonStyle())
             .help("Stop")
             .accessibilityLabel("Stop reading")
 
             Text("Reading page \(appEnvironment.ttsService.currentPage + 1)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(DS.Typography.caption)
+                .foregroundStyle(DS.Colors.secondary)
                 .monospacedDigit()
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .shadow(color: .black.opacity(0.15), radius: 4, y: -2)
+        .floatingToolbarStyle()
     }
 
     // MARK: - Autosave
@@ -432,9 +428,9 @@ private struct PDFSearchBar: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: DS.Spacing.sm) {
             Image(systemName: "magnifyingglass")
-                .foregroundColor(.secondary)
+                .foregroundStyle(DS.Colors.secondary)
 
             TextField("Search in PDF…", text: $query)
                 .textFieldStyle(.plain)
@@ -445,8 +441,8 @@ private struct PDFSearchBar: View {
 
             if !searchManager.searchResults.isEmpty {
                 Text("\(searchManager.searchIndex + 1) of \(searchManager.searchResults.count)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(DS.Typography.caption)
+                    .foregroundStyle(DS.Colors.secondary)
                     .monospacedDigit()
             } else if searchManager.isSearching {
                 ProgressView()
@@ -458,7 +454,7 @@ private struct PDFSearchBar: View {
             } label: {
                 Image(systemName: "chevron.up")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(DSToolbarButtonStyle())
             .disabled(searchManager.searchResults.isEmpty)
             .accessibilityIdentifier("searchPrevious")
             .accessibilityLabel("Previous result")
@@ -468,7 +464,7 @@ private struct PDFSearchBar: View {
             } label: {
                 Image(systemName: "chevron.down")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(DSToolbarButtonStyle())
             .disabled(searchManager.searchResults.isEmpty)
             .accessibilityIdentifier("searchNext")
             .accessibilityLabel("Next result")
@@ -478,17 +474,13 @@ private struct PDFSearchBar: View {
             } label: {
                 Image(systemName: "xmark")
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(DSToolbarButtonStyle())
             .accessibilityIdentifier("searchClose")
             .accessibilityLabel("Close search")
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-        .padding(.horizontal, 40)
-        .padding(.top, 8)
+        .floatingToolbarStyle()
+        .padding(.horizontal, DS.Spacing.xxl)
+        .padding(.top, DS.Spacing.sm)
         .onAppear {
             isFocused = true
             if query.isEmpty { searchManager.clearSearch() }

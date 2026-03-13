@@ -7,13 +7,13 @@ struct AnnotationListView: View {
 	var body: some View {
 		VStack(spacing: 0) {
 			HStack {
-				Text("Annotations").font(.headline)
+				Text("Annotations").font(DS.Typography.heading)
 				Spacer()
 				Text("Page \(pdf.currentPageIndex + 1)")
-					.font(.caption)
-					.foregroundStyle(.secondary)
+					.font(DS.Typography.caption)
+					.foregroundStyle(DS.Colors.secondary)
 			}
-			.padding(8)
+			.padding(DS.Spacing.sm)
 
 			Divider()
 
@@ -21,8 +21,8 @@ struct AnnotationListView: View {
 				VStack {
 					Spacer()
 					Text("No annotations on this page")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 					Spacer()
 				}
 			} else {
@@ -41,13 +41,13 @@ struct AnnotationListView: View {
 					pdf.annotationManager.removeAnnotationsOnCurrentPage()
 					refreshAnnotations()
 				}
-				.buttonStyle(.bordered)
+				.buttonStyle(DSDestructiveButtonStyle())
 				.controlSize(.small)
 				.disabled(pageAnnotations.isEmpty)
 				.accessibilityLabel("Remove all annotations on current page")
 				Spacer()
 			}
-			.padding(8)
+			.padding(DS.Spacing.sm)
 		}
 		.onAppear { refreshAnnotations() }
 		.onChange(of: pdf.currentPageIndex) { _, _ in refreshAnnotations() }
@@ -62,18 +62,18 @@ struct AnnotationListView: View {
 			Button {
 				pdf.goToPage(item.record.pageIndex)
 			} label: {
-				VStack(alignment: .leading, spacing: 2) {
-					HStack(spacing: 4) {
+				VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
+					HStack(spacing: DS.Spacing.xs) {
 						Text(item.record.type.rawValue.capitalized)
-							.font(.caption.bold())
+							.font(DS.Typography.caption.bold())
 						Text("p.\(item.record.pageIndex + 1)")
-							.font(.caption2)
-							.foregroundStyle(.tertiary)
+							.font(DS.Typography.caption2)
+							.foregroundStyle(DS.Colors.tertiary)
 					}
 					if let text = item.record.text, !text.isEmpty {
 						Text(text)
-							.font(.caption2)
-							.foregroundStyle(.secondary)
+							.font(DS.Typography.caption2)
+							.foregroundStyle(DS.Colors.secondary)
 							.lineLimit(2)
 					}
 				}
@@ -88,10 +88,10 @@ struct AnnotationListView: View {
 				refreshAnnotations()
 			} label: {
 				Image(systemName: "trash")
-					.font(.caption)
-					.foregroundStyle(.red)
+					.font(DS.Typography.caption)
+					.foregroundStyle(DS.Colors.error)
 			}
-			.buttonStyle(.borderless)
+			.buttonStyle(DSToolbarButtonStyle())
 			.accessibilityLabel("Delete annotation")
 		}
 	}

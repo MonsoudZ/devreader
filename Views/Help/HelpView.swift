@@ -32,7 +32,7 @@ struct HelpView: View {
             .frame(minWidth: 200)
         } detail: {
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: DS.Spacing.xl) {
                     switch selectedSection {
                     case .keyboard:
                         KeyboardShortcutsView()
@@ -63,19 +63,19 @@ struct HelpView: View {
 
 struct KeyboardShortcutsView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: DS.Spacing.lg) {
             Text("Keyboard Shortcuts")
-                .font(.largeTitle)
+                .font(DS.Typography.largeTitle)
                 .fontWeight(.bold)
-            
+
             Text("Master DevReader with these essential keyboard shortcuts.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
+                .font(DS.Typography.subheading)
+                .foregroundStyle(DS.Colors.secondary)
+
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible())
-            ], spacing: 16) {
+            ], spacing: DS.Spacing.lg) {
                 ShortcutGroupView(
                     title: "File Operations",
                     shortcuts: [
@@ -141,10 +141,10 @@ struct KeyboardShortcutsView: View {
             Divider()
             
             Text("Tips")
-                .font(.headline)
+                .font(DS.Typography.heading)
                 .fontWeight(.semibold)
-            
-            VStack(alignment: .leading, spacing: 8) {
+
+            VStack(alignment: .leading, spacing: DS.Spacing.sm) {
                 TipView(
                     icon: "lightbulb",
                     text: "Hold ⌘ while hovering over buttons to see their keyboard shortcuts."
@@ -168,19 +168,19 @@ struct KeyboardShortcutsView: View {
 
 struct FeaturesView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
             Text("DevReader Features")
-                .font(.largeTitle)
+                .font(DS.Typography.largeTitle)
                 .fontWeight(.bold)
-            
+
             Text("Discover the powerful features that make DevReader the ultimate PDF reader for developers.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
+                .font(DS.Typography.subheading)
+                .foregroundStyle(DS.Colors.secondary)
+
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible())
-            ], spacing: 20) {
+            ], spacing: DS.Spacing.xl) {
                 FeatureCardView(
                     icon: "doc.text.magnifyingglass",
                     title: "PDF Reading",
@@ -231,16 +231,16 @@ struct FeaturesView: View {
 
 struct TroubleshootingView: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: DS.Spacing.xl) {
             Text("Troubleshooting")
-                .font(.largeTitle)
+                .font(DS.Typography.largeTitle)
                 .fontWeight(.bold)
-            
+
             Text("Common issues and their solutions.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
-            VStack(spacing: 16) {
+                .font(DS.Typography.subheading)
+                .foregroundStyle(DS.Colors.secondary)
+
+            VStack(spacing: DS.Spacing.lg) {
                 TroubleshootingItemView(
                     problem: "PDF not loading",
                     solution: "Try the repair function in Settings → Data Management → Validate Data Integrity",
@@ -275,10 +275,10 @@ struct TroubleshootingView: View {
             Divider()
             
             Text("Getting Help")
-                .font(.headline)
+                .font(DS.Typography.heading)
                 .fontWeight(.semibold)
-            
-            VStack(alignment: .leading, spacing: 12) {
+
+            VStack(alignment: .leading, spacing: DS.Spacing.md) {
                 HelpLinkView(
                     title: "GitHub Issues",
                     description: "Report bugs and request features",
@@ -308,32 +308,32 @@ struct ShortcutGroupView: View {
     let shortcuts: [(String, String)]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: DS.Spacing.sm) {
             Text(title)
-                .font(.headline)
+                .font(DS.Typography.heading)
                 .fontWeight(.semibold)
-            
-            VStack(alignment: .leading, spacing: 4) {
+
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 ForEach(shortcuts, id: \.0) { shortcut, description in
                     HStack {
                         Text(shortcut)
-                            .font(.system(.body, design: .monospaced))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(Color.secondary.opacity(0.2))
-                            .cornerRadius(4)
-                        
+                            .font(DS.Typography.mono)
+                            .padding(.horizontal, DS.Spacing.sm)
+                            .padding(.vertical, DS.Spacing.xxs)
+                            .background(DS.Colors.secondary.opacity(0.2))
+                            .clipShape(RoundedRectangle(cornerRadius: DS.Radius.sm))
+
                         Text(description)
-                            .font(.subheadline)
-                        
+                            .font(DS.Typography.subheading)
+
                         Spacer()
                     }
                 }
             }
         }
-        .padding()
-        .background(Color.secondary.opacity(0.1))
-        .cornerRadius(8)
+        .padding(DS.Spacing.lg)
+        .background(DS.Colors.secondary.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg))
     }
 }
 
@@ -344,40 +344,40 @@ struct FeatureCardView: View {
     let features: [String]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: DS.Spacing.md) {
             HStack {
                 Image(systemName: icon)
                     .font(.title2)
-                    .foregroundStyle(.blue)
-                
+                    .foregroundStyle(DS.Colors.info)
+
                 Text(title)
-                    .font(.headline)
+                    .font(DS.Typography.heading)
                     .fontWeight(.semibold)
-                
+
                 Spacer()
             }
-            
+
             Text(description)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-            
-            VStack(alignment: .leading, spacing: 4) {
+                .font(DS.Typography.subheading)
+                .foregroundStyle(DS.Colors.secondary)
+
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 ForEach(features, id: \.self) { feature in
                     HStack {
                         Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                            .font(.caption)
-                        
+                            .foregroundStyle(DS.Colors.success)
+                            .font(DS.Typography.caption)
+
                         Text(feature)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .font(DS.Typography.caption)
+                            .foregroundStyle(DS.Colors.secondary)
                     }
                 }
             }
         }
-        .padding()
-        .background(Color.secondary.opacity(0.1))
-        .cornerRadius(8)
+        .padding(DS.Spacing.lg)
+        .background(DS.Colors.secondary.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg))
     }
 }
 
@@ -387,27 +387,27 @@ struct TroubleshootingItemView: View {
     let icon: String
     
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: DS.Spacing.md) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(.orange)
-                .frame(width: 24)
-            
-            VStack(alignment: .leading, spacing: 4) {
+                .foregroundStyle(DS.Colors.warning)
+                .frame(width: DS.Spacing.xl)
+
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 Text(problem)
-                    .font(.headline)
+                    .font(DS.Typography.heading)
                     .fontWeight(.semibold)
-                
+
                 Text(solution)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(DS.Typography.subheading)
+                    .foregroundStyle(DS.Colors.secondary)
             }
-            
+
             Spacer()
         }
-        .padding()
-        .background(Color.secondary.opacity(0.1))
-        .cornerRadius(8)
+        .padding(DS.Spacing.lg)
+        .background(DS.Colors.secondary.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg))
     }
 }
 
@@ -423,27 +423,27 @@ struct HelpLinkView: View {
             }
         }) {
             HStack {
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
                     Text(title)
-                        .font(.headline)
+                        .font(DS.Typography.heading)
                         .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-                    
+                        .foregroundStyle(DS.Colors.primary)
+
                     Text(description)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(DS.Typography.subheading)
+                        .foregroundStyle(DS.Colors.secondary)
                 }
-                
+
                 Spacer()
-                
+
                 Image(systemName: "arrow.up.right")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(DS.Colors.secondary)
             }
         }
         .buttonStyle(.plain)
-        .padding()
-        .background(Color.secondary.opacity(0.1))
-        .cornerRadius(8)
+        .padding(DS.Spacing.lg)
+        .background(DS.Colors.secondary.opacity(0.1))
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.lg))
     }
 }
 
@@ -452,15 +452,15 @@ struct TipView: View {
     let text: String
     
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: DS.Spacing.sm) {
             Image(systemName: icon)
-                .foregroundStyle(.blue)
-                .font(.caption)
-                .frame(width: 16)
-            
+                .foregroundStyle(DS.Colors.info)
+                .font(DS.Typography.caption)
+                .frame(width: DS.Spacing.lg)
+
             Text(text)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(DS.Typography.subheading)
+                .foregroundStyle(DS.Colors.secondary)
         }
     }
 }

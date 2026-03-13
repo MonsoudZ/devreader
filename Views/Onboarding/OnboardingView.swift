@@ -13,76 +13,76 @@ struct OnboardingView: View {
 			Color(.windowBackgroundColor)
 				.ignoresSafeArea()
 			
-			VStack(spacing: 40) {
+			VStack(spacing: DS.Spacing.xxl) {
 				Spacer()
-				
+
 				// Main content
-				VStack(spacing: 30) {
+				VStack(spacing: DS.Spacing.xl) {
 					// Icon
 					Image(systemName: steps[currentStep].icon)
 						.font(.system(size: 80))
-						.foregroundStyle(.blue)
+						.foregroundStyle(DS.Colors.info)
 						.symbolEffect(.bounce, value: currentStep)
 						.accessibilityLabel(steps[currentStep].accessibilityLabel)
 						.accessibilityHint(steps[currentStep].accessibilityHint)
-					
+
 					// Text content
-					VStack(spacing: 16) {
+					VStack(spacing: DS.Spacing.lg) {
 						Text(steps[currentStep].title)
 							.font(.largeTitle)
 							.fontWeight(.bold)
 							.multilineTextAlignment(.center)
-						
+
 						Text(steps[currentStep].subtitle)
-							.font(.title2)
-							.foregroundStyle(.secondary)
+							.font(DS.Typography.title)
+							.foregroundStyle(DS.Colors.secondary)
 							.multilineTextAlignment(.center)
-						
+
 						Text(steps[currentStep].description)
-							.font(.body)
+							.font(DS.Typography.body)
 							.multilineTextAlignment(.center)
-							.padding(.horizontal, 40)
-							.foregroundStyle(.secondary)
+							.padding(.horizontal, DS.Spacing.xxl)
+							.foregroundStyle(DS.Colors.secondary)
 					}
-					.animation(.easeInOut(duration: 0.3), value: currentStep)
+					.animation(DS.Animation.smooth, value: currentStep)
 				}
-				
+
 				Spacer()
-				
+
 				// Progress indicators
-				HStack(spacing: 12) {
+				HStack(spacing: DS.Spacing.md) {
 					ForEach(0..<steps.count, id: \.self) { index in
 						Circle()
-							.fill(index == currentStep ? .blue : .gray.opacity(0.3))
-							.frame(width: 12, height: 12)
-							.animation(.easeInOut(duration: 0.2), value: currentStep)
+							.fill(index == currentStep ? DS.Colors.info : .gray.opacity(0.3))
+							.frame(width: DS.Spacing.md, height: DS.Spacing.md)
+							.animation(DS.Animation.standard, value: currentStep)
 					}
 				}
-				
+
 				// Navigation buttons
-				HStack(spacing: 20) {
+				HStack(spacing: DS.Spacing.xl) {
 					if currentStep > 0 {
 						Button("Back") {
-							withAnimation(.easeInOut(duration: 0.3)) {
+							withAnimation(DS.Animation.smooth) {
 								currentStep -= 1
 							}
 						}
-						.buttonStyle(.bordered)
+						.buttonStyle(DSSecondaryButtonStyle())
 						.controlSize(.large)
 						.accessibilityIdentifier("onboardingBack")
 						.accessibilityLabel("Go to previous step")
 						.accessibilityHint("Return to the previous onboarding step")
 					}
-					
+
 					Spacer()
-					
+
 					if currentStep < steps.count - 1 {
 						Button("Next") {
-							withAnimation(.easeInOut(duration: 0.3)) {
+							withAnimation(DS.Animation.smooth) {
 								currentStep += 1
 							}
 						}
-						.buttonStyle(.borderedProminent)
+						.buttonStyle(DSPrimaryButtonStyle())
 						.controlSize(.large)
 						.accessibilityIdentifier("onboardingNext")
 						.accessibilityLabel("Go to next step")
@@ -92,15 +92,15 @@ struct OnboardingView: View {
 							didSeeOnboarding = true
 							dismiss()
 						}
-						.buttonStyle(.borderedProminent)
+						.buttonStyle(DSPrimaryButtonStyle())
 						.controlSize(.large)
 						.accessibilityIdentifier("onboardingGetStarted")
 						.accessibilityLabel("Complete onboarding")
 						.accessibilityHint("Finish the onboarding process and start using DevReader")
 					}
 				}
-				.padding(.horizontal, 40)
-				.padding(.bottom, 40)
+				.padding(.horizontal, DS.Spacing.xxl)
+				.padding(.bottom, DS.Spacing.xxl)
 			}
 		}
 		.frame(minWidth: 600, minHeight: 500)
@@ -110,7 +110,7 @@ struct OnboardingView: View {
 		}
 		.onKeyPress(.rightArrow) {
 			if currentStep < steps.count - 1 {
-				withAnimation(.easeInOut(duration: 0.3)) {
+				withAnimation(DS.Animation.smooth) {
 					currentStep += 1
 				}
 				return .handled
@@ -119,7 +119,7 @@ struct OnboardingView: View {
 		}
 		.onKeyPress(.leftArrow) {
 			if currentStep > 0 {
-				withAnimation(.easeInOut(duration: 0.3)) {
+				withAnimation(DS.Animation.smooth) {
 					currentStep -= 1
 				}
 				return .handled
@@ -128,7 +128,7 @@ struct OnboardingView: View {
 		}
 		.onKeyPress(.return) {
 			if currentStep < steps.count - 1 {
-				withAnimation(.easeInOut(duration: 0.3)) {
+				withAnimation(DS.Animation.smooth) {
 					currentStep += 1
 				}
 			} else {

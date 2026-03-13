@@ -9,7 +9,7 @@ struct CodePane: View {
 				Text("Monaco").tag(CodeMode.monaco)
 			}
 			.pickerStyle(.segmented)
-			.padding(8)
+			.padding(DS.Spacing.sm)
 			.accessibilityIdentifier("codeModePicker")
 			.accessibilityLabel("Editor mode")
 			.accessibilityHint("Switch between scratchpad and Monaco editor")

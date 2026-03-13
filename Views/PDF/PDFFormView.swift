@@ -21,13 +21,13 @@ struct PDFFormView: View {
 		VStack(spacing: 0) {
 			// Header
 			HStack {
-				Text("Form Fields").font(.headline)
+				Text("Form Fields").font(DS.Typography.heading)
 				Spacer()
 				Text("\(formFields.count) fields")
-					.font(.caption)
-					.foregroundStyle(.secondary)
+					.font(DS.Typography.caption)
+					.foregroundStyle(DS.Colors.secondary)
 			}
-			.padding(8)
+			.padding(DS.Spacing.sm)
 
 			Divider()
 
@@ -56,19 +56,19 @@ struct PDFFormView: View {
 			Spacer()
 			if pdf.document != nil {
 				Image(systemName: "doc.text.magnifyingglass")
-					.font(.largeTitle)
-					.foregroundStyle(.secondary)
+					.font(.system(size: DS.Layout.iconXl))
+					.foregroundStyle(DS.Colors.secondary)
 				Text("No form fields found")
-					.font(.caption)
-					.foregroundStyle(.secondary)
+					.font(DS.Typography.caption)
+					.foregroundStyle(DS.Colors.secondary)
 				Text("This PDF does not contain fillable form fields.")
-					.font(.caption2)
-					.foregroundStyle(.tertiary)
-					.padding(.top, 2)
+					.font(DS.Typography.caption2)
+					.foregroundStyle(DS.Colors.tertiary)
+					.padding(.top, DS.Spacing.xxs)
 			} else {
 				Text("No PDF open")
-					.font(.caption)
-					.foregroundStyle(.secondary)
+					.font(DS.Typography.caption)
+					.foregroundStyle(DS.Colors.secondary)
 			}
 			Spacer()
 		}
@@ -91,26 +91,24 @@ struct PDFFormView: View {
 
 	@ViewBuilder
 	private var actionButtons: some View {
-		VStack(spacing: 6) {
+		VStack(spacing: DS.Spacing.md) {
 			Button {
 				saveFilledPDF()
 			} label: {
 				Label("Save Filled PDF\u{2026}", systemImage: "square.and.arrow.down")
 					.frame(maxWidth: .infinity)
 			}
-			.buttonStyle(.borderedProminent)
-			.controlSize(.small)
+			.buttonStyle(DSPrimaryButtonStyle())
 
-			Button(role: .destructive) {
+			Button {
 				clearAllFields()
 			} label: {
 				Label("Clear All Fields", systemImage: "trash")
 					.frame(maxWidth: .infinity)
 			}
-			.buttonStyle(.bordered)
-			.controlSize(.small)
+			.buttonStyle(DSDestructiveButtonStyle())
 		}
-		.padding(8)
+		.padding(DS.Spacing.sm)
 	}
 
 	// MARK: - Scanning
@@ -215,25 +213,25 @@ private struct FormFieldRow: View {
 	@State private var selectedChoice: String = ""
 
 	var body: some View {
-		VStack(alignment: .leading, spacing: 4) {
+		VStack(alignment: .leading, spacing: DS.Spacing.xs) {
 			// Field header with name + page navigation
 			HStack {
 				Image(systemName: iconForFieldType(field.fieldType))
-					.foregroundStyle(.secondary)
+					.foregroundStyle(DS.Colors.secondary)
 					.frame(width: 16)
 				Text(field.fieldName.isEmpty ? "Unnamed Field" : field.fieldName)
-					.font(.caption)
+					.font(DS.Typography.caption)
 					.lineLimit(1)
 				Spacer()
 				Button {
 					navigateAction()
 				} label: {
 					Text("Page \(field.pageIndex + 1)")
-						.font(.caption2)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption2)
+						.foregroundStyle(DS.Colors.secondary)
 					Image(systemName: "chevron.right")
-						.font(.caption2)
-						.foregroundStyle(.tertiary)
+						.font(DS.Typography.caption2)
+						.foregroundStyle(DS.Colors.tertiary)
 				}
 				.buttonStyle(.plain)
 				.help("Navigate to this field in the PDF")
@@ -242,7 +240,7 @@ private struct FormFieldRow: View {
 			// Inline editor based on field type
 			fieldEditor
 		}
-		.padding(.vertical, 2)
+		.padding(.vertical, DS.Spacing.xxs)
 		.onAppear { loadCurrentValue() }
 	}
 
@@ -252,7 +250,7 @@ private struct FormFieldRow: View {
 		case .text:
 			TextField("Enter value", text: $textValue)
 				.textFieldStyle(.roundedBorder)
-				.font(.caption)
+				.font(DS.Typography.caption)
 				.onChange(of: textValue) { _, newValue in
 					field.annotation.widgetStringValue = newValue
 				}
@@ -260,8 +258,8 @@ private struct FormFieldRow: View {
 		case .button:
 			Toggle(isOn: $isChecked) {
 				Text("Checked")
-					.font(.caption2)
-					.foregroundStyle(.secondary)
+					.font(DS.Typography.caption2)
+					.foregroundStyle(DS.Colors.secondary)
 			}
 			.toggleStyle(.checkbox)
 			.onChange(of: isChecked) { _, newValue in
@@ -273,7 +271,7 @@ private struct FormFieldRow: View {
 			if choices.isEmpty {
 				TextField("Enter value", text: $textValue)
 					.textFieldStyle(.roundedBorder)
-					.font(.caption)
+					.font(DS.Typography.caption)
 					.onChange(of: textValue) { _, newValue in
 						field.annotation.widgetStringValue = newValue
 					}
@@ -285,7 +283,7 @@ private struct FormFieldRow: View {
 					}
 				}
 				.pickerStyle(.menu)
-				.font(.caption)
+				.font(DS.Typography.caption)
 				.onChange(of: selectedChoice) { _, newValue in
 					field.annotation.widgetStringValue = newValue
 				}
@@ -296,17 +294,16 @@ private struct FormFieldRow: View {
 				// Placeholder for signature agent integration
 			} label: {
 				Label("Sign", systemImage: "signature")
-					.font(.caption)
+					.font(DS.Typography.caption)
 			}
-			.buttonStyle(.bordered)
-			.controlSize(.small)
+			.buttonStyle(DSSecondaryButtonStyle())
 			.disabled(true)
 			.help("Signature support coming soon")
 
 		default:
 			Text("Unsupported field type")
-				.font(.caption2)
-				.foregroundStyle(.tertiary)
+				.font(DS.Typography.caption2)
+				.foregroundStyle(DS.Colors.tertiary)
 		}
 	}
 

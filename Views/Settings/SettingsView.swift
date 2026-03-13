@@ -25,7 +25,7 @@ struct SettingsView: View {
 			// Title bar
 			HStack {
 				Text("Settings")
-					.font(.headline)
+					.font(DS.Typography.heading)
 				Spacer()
 				Button("Done") { dismiss() }
 					.buttonStyle(.borderedProminent)
@@ -34,8 +34,8 @@ struct SettingsView: View {
 					.accessibilityLabel("Done")
 					.accessibilityHint("Close the settings window")
 			}
-			.padding(.horizontal, 20)
-			.padding(.vertical, 12)
+			.padding(.horizontal, DS.Spacing.xl)
+			.padding(.vertical, DS.Spacing.md)
 
 			Divider()
 
@@ -103,41 +103,41 @@ struct SettingsView: View {
 						.accessibilityLabel("Autosave interval")
 						.accessibilityHint("Choose how often notes are automatically saved")
 					}
-					Text("Notes and annotations are automatically saved to your Mac.").font(.caption).foregroundStyle(.secondary)
+					Text("Notes and annotations are automatically saved to your Mac.").font(DS.Typography.caption).foregroundStyle(DS.Colors.secondary)
 				}
 				Section("Performance") {
 					HStack {
 						Text("Memory Usage")
 						Spacer()
 						Text(performanceMonitor.formatBytes(performanceMonitor.memoryUsage))
-							.font(.caption)
-							.foregroundStyle(.secondary)
+							.font(DS.Typography.caption)
+							.foregroundStyle(DS.Colors.secondary)
 					}
 					HStack {
 						Text("Memory Pressure")
 						Spacer()
 						Text(performanceMonitor.getMemoryPressure())
-							.font(.caption)
-							.foregroundStyle(performanceMonitor.getMemoryPressure() == "Critical" ? .red :
-											performanceMonitor.getMemoryPressure() == "Warning" ? .orange : .green)
+							.font(DS.Typography.caption)
+							.foregroundStyle(performanceMonitor.getMemoryPressure() == "Critical" ? DS.Colors.error :
+											performanceMonitor.getMemoryPressure() == "Warning" ? DS.Colors.warning : DS.Colors.success)
 					}
 					HStack {
 						Text("Monitoring")
 						Spacer()
 						Text(performanceMonitor.isMonitoring ? "Active" : "Inactive")
-							.font(.caption)
-							.foregroundStyle(performanceMonitor.isMonitoring ? .green : .secondary)
+							.font(DS.Typography.caption)
+							.foregroundStyle(performanceMonitor.isMonitoring ? DS.Colors.success : DS.Colors.secondary)
 					}
 				}
 
 				Section("Large PDF Performance") {
 					Text("Large PDF performance monitoring will be available in a future update.")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 					Button("Export Performance Report") {
 						exportPerformanceReport()
 					}
-					.buttonStyle(.bordered)
+					.buttonStyle(DSSecondaryButtonStyle())
 					.controlSize(.small)
 					.accessibilityIdentifier("exportPerformanceReport")
 					.accessibilityLabel("Export performance report")
@@ -160,35 +160,35 @@ struct SettingsView: View {
 						if lastAutoBackupTimestamp > 0 {
 							let lastDate = Date(timeIntervalSince1970: lastAutoBackupTimestamp)
 							Text("Last backup: \(lastDate.formatted(date: .abbreviated, time: .shortened))")
-								.font(.caption)
-								.foregroundStyle(.secondary)
+								.font(DS.Typography.caption)
+								.foregroundStyle(DS.Colors.secondary)
 						} else {
 							Text("No automatic backup yet")
-								.font(.caption)
-								.foregroundStyle(.secondary)
+								.font(DS.Typography.caption)
+								.foregroundStyle(DS.Colors.secondary)
 						}
 					}
 				}
 
 				Section("Data Management") {
 					Text("Data is stored in JSON files for better performance:")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 					Text("\u{2022} Library & Settings: ~/Library/Application Support/DevReader/Data/")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 					Text("\u{2022} Annotated PDFs: ~/Library/Application Support/DevReader/Annotations/")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 					Text("\u{2022} Backups: ~/Library/Application Support/DevReader/Backups/")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 
-					HStack(spacing: 12) {
+					HStack(spacing: DS.Spacing.md) {
 						Button("Create Backup") {
 							createBackup()
 						}
-						.buttonStyle(.bordered)
+						.buttonStyle(DSSecondaryButtonStyle())
 						.controlSize(.small)
 						.accessibilityIdentifier("createBackup")
 						.accessibilityLabel("Create backup")
@@ -197,7 +197,7 @@ struct SettingsView: View {
 						Button("Restore Backup…") {
 							restoreBackup()
 						}
-						.buttonStyle(.bordered)
+						.buttonStyle(DSSecondaryButtonStyle())
 						.controlSize(.small)
 						.accessibilityIdentifier("restoreBackup")
 						.accessibilityLabel("Restore backup")
@@ -206,13 +206,13 @@ struct SettingsView: View {
 						Button("Validate Data") {
 							validateData()
 						}
-						.buttonStyle(.bordered)
+						.buttonStyle(DSSecondaryButtonStyle())
 						.controlSize(.small)
 						.accessibilityIdentifier("validateData")
 						.accessibilityLabel("Validate data")
 						.accessibilityHint("Check all data files for corruption or integrity issues")
 					}
-					.padding(.top, 4)
+					.padding(.top, DS.Spacing.xs)
 				}
 				Section("Code Execution Sandbox") {
 					CodeSandboxSettingsView()

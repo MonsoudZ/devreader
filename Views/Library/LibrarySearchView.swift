@@ -17,17 +17,17 @@ struct LibrarySearchView: View {
 		VStack(spacing: 0) {
 			HStack {
 				Text("Search All PDFs")
-					.font(.headline)
+					.font(DS.Typography.heading)
 				Spacer()
 				Button("Done") { dismiss() }
-					.buttonStyle(.bordered)
+					.buttonStyle(DSSecondaryButtonStyle())
 					.controlSize(.small)
 			}
-			.padding()
+			.padding(DS.Spacing.lg)
 
-			HStack(spacing: 8) {
+			HStack(spacing: DS.Spacing.sm) {
 				Image(systemName: "magnifyingglass")
-					.foregroundStyle(.secondary)
+					.foregroundStyle(DS.Colors.secondary)
 				TextField("Search across library…", text: $query)
 					.textFieldStyle(.plain)
 					.onSubmit { performSearch() }
@@ -37,45 +37,42 @@ struct LibrarySearchView: View {
 				if isSearching {
 					if searchProgress.total > 0 {
 						Text("\(searchProgress.current)/\(searchProgress.total)")
-							.font(.caption)
-							.foregroundStyle(.secondary)
+							.font(DS.Typography.caption)
+							.foregroundStyle(DS.Colors.secondary)
 							.monospacedDigit()
 					}
 					ProgressView()
 						.controlSize(.small)
 				}
 			}
-			.padding(.horizontal, 12)
-			.padding(.vertical, 8)
-			.background(Color(NSColor.controlBackgroundColor))
-			.clipShape(RoundedRectangle(cornerRadius: 6))
-			.padding(.horizontal)
-			.padding(.bottom, 8)
+			.searchFieldStyle()
+			.padding(.horizontal, DS.Spacing.lg)
+			.padding(.bottom, DS.Spacing.sm)
 
 			Divider()
 
 			if results.isEmpty && !isSearching && !query.isEmpty {
-				VStack(spacing: 8) {
+				VStack(spacing: DS.Spacing.sm) {
 					Spacer()
 					Image(systemName: "doc.text.magnifyingglass")
-						.font(.system(size: 40))
-						.foregroundStyle(.secondary)
+						.font(.system(size: DS.Layout.iconXl))
+						.foregroundStyle(DS.Colors.secondary)
 					Text("No results found")
-						.foregroundStyle(.secondary)
+						.foregroundStyle(DS.Colors.secondary)
 					Spacer()
 				}
 			} else if results.isEmpty && query.isEmpty {
-				VStack(spacing: 8) {
+				VStack(spacing: DS.Spacing.sm) {
 					Spacer()
 					Image(systemName: "text.magnifyingglass")
-						.font(.system(size: 40))
-						.foregroundStyle(.secondary)
+						.font(.system(size: DS.Layout.iconXl))
+						.foregroundStyle(DS.Colors.secondary)
 					Text("Enter a search term to search across all PDFs")
-						.foregroundStyle(.secondary)
+						.foregroundStyle(DS.Colors.secondary)
 						.multilineTextAlignment(.center)
 					Spacer()
 				}
-				.padding()
+				.padding(DS.Spacing.lg)
 			} else {
 				List {
 					ForEach(results) { result in
@@ -85,13 +82,13 @@ struct LibrarySearchView: View {
 									onOpen(result.item, match.pageIndex)
 									dismiss()
 								} label: {
-									VStack(alignment: .leading, spacing: 2) {
+									VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
 										Text("Page \(match.pageIndex + 1)")
-											.font(.caption)
-											.foregroundStyle(.blue)
+											.font(DS.Typography.caption)
+											.foregroundStyle(DS.Colors.accent)
 										Text(match.contextSnippet)
-											.font(.caption2)
-											.foregroundStyle(.secondary)
+											.font(DS.Typography.caption2)
+											.foregroundStyle(DS.Colors.secondary)
 											.lineLimit(2)
 									}
 								}
@@ -100,13 +97,13 @@ struct LibrarySearchView: View {
 						} header: {
 							HStack {
 								Image(systemName: "doc.fill")
-									.foregroundStyle(.blue)
+									.foregroundStyle(DS.Colors.accent)
 								Text(result.item.title)
-									.font(.subheadline.bold())
+									.font(DS.Typography.subheading)
 								Spacer()
 								Text("\(result.matches.count) match\(result.matches.count == 1 ? "" : "es")")
-									.font(.caption)
-									.foregroundStyle(.secondary)
+									.font(DS.Typography.caption)
+									.foregroundStyle(DS.Colors.secondary)
 							}
 						}
 					}

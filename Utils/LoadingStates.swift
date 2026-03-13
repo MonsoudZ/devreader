@@ -107,13 +107,13 @@ struct LoadingOverlay: View {
     var body: some View {
         if loadingManager.isLoading {
             VStack {
-                HStack(spacing: 8) {
+                HStack(spacing: DS.Spacing.sm) {
                     ProgressView()
                         .controlSize(.small)
 
                     Text(loadingManager.loadingMessage)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(DS.Typography.caption)
+                        .foregroundStyle(DS.Colors.secondary)
                         .lineLimit(1)
 
                     if loadingManager.loadingProgress > 0 {
@@ -122,17 +122,17 @@ struct LoadingOverlay: View {
                             .frame(width: 80)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, DS.Spacing.md)
+                .padding(.vertical, DS.Spacing.xs)
                 .background(.regularMaterial, in: Capsule())
-                .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
-                .padding(.top, 8)
+                .shadow(color: .black.opacity(0.1), radius: DS.Radius.sm, y: 2)
+                .padding(.top, DS.Spacing.sm)
 
                 Spacer()
             }
             .allowsHitTesting(false)
             .transition(.move(edge: .top).combined(with: .opacity))
-            .animation(.easeInOut(duration: 0.25), value: loadingManager.isLoading)
+            .animation(DS.Animation.standard, value: loadingManager.isLoading)
         }
     }
 }

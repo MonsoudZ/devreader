@@ -39,28 +39,30 @@ struct SignatureChooserView: View {
 	private var chooserContent: some View {
 		VStack(spacing: 0) {
 			Text("Choose Signature")
-				.font(.headline)
-				.padding(.top, 12)
+				.font(DS.Typography.heading)
+				.padding(.top, DS.Spacing.md)
 
 			ScrollView {
-				LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 12)], spacing: 12) {
+				LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: DS.Spacing.md)], spacing: DS.Spacing.md) {
 					ForEach(signatureStore.signatures) { sig in
 						signatureCard(sig)
 					}
 				}
-				.padding(16)
+				.padding(DS.Spacing.lg)
 			}
 
 			Divider()
 
 			HStack {
 				Button("Cancel") { onCancel() }
+					.buttonStyle(DSSecondaryButtonStyle())
 					.keyboardShortcut(.cancelAction)
 				Spacer()
 				Button("Create New") { isShowingPad = true }
+					.buttonStyle(DSPrimaryButtonStyle())
 			}
-			.padding(.horizontal, 24)
-			.padding(.vertical, 12)
+			.padding(.horizontal, DS.Spacing.xl)
+			.padding(.vertical, DS.Spacing.md)
 		}
 	}
 
@@ -69,7 +71,7 @@ struct SignatureChooserView: View {
 			Button {
 				applyExistingSignature(signature)
 			} label: {
-				VStack(spacing: 6) {
+				VStack(spacing: DS.Spacing.md) {
 					if let nsImage = NSImage(data: signature.imageData) {
 						Image(nsImage: nsImage)
 							.resizable()
@@ -77,22 +79,22 @@ struct SignatureChooserView: View {
 							.frame(height: 60)
 					} else {
 						Image(systemName: "signature")
-							.font(.largeTitle)
-							.foregroundColor(.secondary)
+							.font(.system(size: DS.Layout.iconXl))
+							.foregroundStyle(DS.Colors.secondary)
 							.frame(height: 60)
 					}
 					Text(signature.name)
-						.font(.caption)
+						.font(DS.Typography.caption)
 						.lineLimit(1)
 				}
 				.frame(maxWidth: .infinity)
-				.padding(10)
+				.padding(DS.Spacing.sm + DS.Spacing.xxs)
 				.background(
-					RoundedRectangle(cornerRadius: 8)
-						.fill(Color(nsColor: .controlBackgroundColor))
+					RoundedRectangle(cornerRadius: DS.Radius.lg)
+						.fill(DS.Colors.controlSurface)
 				)
 				.overlay(
-					RoundedRectangle(cornerRadius: 8)
+					RoundedRectangle(cornerRadius: DS.Radius.lg)
 						.stroke(Color.gray.opacity(0.3), lineWidth: 1)
 				)
 			}
@@ -102,11 +104,11 @@ struct SignatureChooserView: View {
 				signatureStore.delete(signature)
 			} label: {
 				Image(systemName: "xmark.circle.fill")
-					.foregroundColor(.secondary)
+					.foregroundStyle(DS.Colors.secondary)
 					.font(.system(size: 16))
 			}
 			.buttonStyle(.plain)
-			.padding(4)
+			.padding(DS.Spacing.xs)
 			.help("Delete signature")
 		}
 	}

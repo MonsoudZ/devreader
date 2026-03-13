@@ -23,24 +23,24 @@ struct PDFTabBar: View {
                     } label: {
                         Image(systemName: "plus")
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundStyle(.secondary)
-                            .frame(width: 28, height: 28)
+                            .foregroundStyle(DS.Colors.secondary)
+                            .frame(width: DS.Layout.minTapTarget, height: DS.Layout.minTapTarget)
                             .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(DSToolbarButtonStyle())
                     .help("New Tab")
                     .accessibilityLabel("New tab")
                     .accessibilityIdentifier("newTabButton")
                 }
             }
-            .padding(.horizontal, 4)
+            .padding(.horizontal, DS.Spacing.xs)
         }
-        .frame(height: 32)
-        .background(Color(NSColor.windowBackgroundColor))
+        .frame(height: DS.Layout.tabBarHeight)
+        .background(DS.Colors.surface)
         .overlay(alignment: .bottom) {
             Divider()
         }
-        .animation(.easeInOut, value: tabManager.tabs.count)
+        .animation(DS.Animation.standard, value: tabManager.tabs.count)
     }
 }
 
@@ -54,9 +54,9 @@ private struct PDFTabButton: View {
 
     var body: some View {
         Button(action: onSelect) {
-            HStack(spacing: 4) {
+            HStack(spacing: DS.Spacing.xs) {
                 Text(tab.title)
-                    .font(.system(size: 12))
+                    .font(DS.Typography.caption)
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .frame(maxWidth: 160, alignment: .leading)
@@ -64,7 +64,7 @@ private struct PDFTabButton: View {
                 Button(action: onClose) {
                     Image(systemName: "xmark")
                         .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(DS.Colors.secondary)
                         .frame(width: 16, height: 16)
                         .contentShape(Rectangle())
                 }
@@ -74,18 +74,18 @@ private struct PDFTabButton: View {
             }
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
+        .padding(.horizontal, DS.Spacing.sm + DS.Spacing.xxs)
+        .padding(.vertical, DS.Spacing.xs)
         .background(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: DS.Radius.md)
                 .fill(isActive
-                      ? Color(NSColor.controlAccentColor).opacity(0.15)
+                      ? DS.Colors.selectedSurface
                       : Color.clear)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: DS.Radius.md)
                 .strokeBorder(isActive
-                              ? Color(NSColor.controlAccentColor).opacity(0.3)
+                              ? DS.Colors.accent.opacity(0.3)
                               : Color.clear,
                               lineWidth: 1)
         )

@@ -23,11 +23,11 @@ final class EnhancedToastCenter: ObservableObject {
             
             var color: Color {
                 switch self {
-                case .info: return .blue
-                case .success: return .green
-                case .warning: return .orange
-                case .error: return .red
-                case .critical: return .purple
+                case .info: return DS.Colors.info
+                case .success: return DS.Colors.success
+                case .warning: return DS.Colors.warning
+                case .error: return DS.Colors.error
+                case .critical: return DS.Colors.critical
                 }
             }
             
@@ -173,14 +173,14 @@ struct EnhancedToastOverlay: ViewModifier {
         ZStack(alignment: .topTrailing) {
             content
             
-            VStack(alignment: .trailing, spacing: 12) {
+            VStack(alignment: .trailing, spacing: DS.Spacing.md) {
                 ForEach(center.toasts) { toast in
                     EnhancedToastView(toast: toast) {
                         center.dismissToast(toast)
                     }
                 }
             }
-            .padding(16)
+            .padding(DS.Spacing.lg)
         }
     }
 }
@@ -191,63 +191,63 @@ struct EnhancedToastView: View {
     @State private var isVisible = false
     
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: DS.Spacing.md) {
             // Icon
             VStack {
                 Image(systemName: toast.style.icon)
                     .foregroundStyle(toast.style.color)
                     .font(.title2)
-                
+
                 Image(systemName: toast.category.icon)
-                    .foregroundStyle(.secondary)
-                    .font(.caption)
+                    .foregroundStyle(DS.Colors.secondary)
+                    .font(DS.Typography.caption)
             }
-            
+
             // Content
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: DS.Spacing.xs) {
                 Text(toast.title)
-                    .font(.headline)
+                    .font(DS.Typography.heading)
                     .fontWeight(.semibold)
-                    .foregroundStyle(.primary)
-                
+                    .foregroundStyle(DS.Colors.primary)
+
                 Text(toast.message)
-                    .font(.body)
-                    .foregroundStyle(.secondary)
+                    .font(DS.Typography.body)
+                    .foregroundStyle(DS.Colors.secondary)
                     .multilineTextAlignment(.leading)
-                
+
                 // Category and timestamp
                 HStack {
                     Text(toast.category.rawValue)
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                    
+                        .font(DS.Typography.caption)
+                        .foregroundStyle(DS.Colors.tertiary)
+
                     Spacer()
-                    
+
                     Text(toast.timestamp.formatted(date: .omitted, time: .shortened))
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .font(DS.Typography.caption)
+                        .foregroundStyle(DS.Colors.tertiary)
                 }
             }
-            
+
             // Dismiss button
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(DS.Typography.caption)
+                    .foregroundStyle(DS.Colors.secondary)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(DSToolbarButtonStyle())
         }
-        .padding(16)
+        .padding(DS.Spacing.lg)
         .background(.ultraThinMaterial)
-        .cornerRadius(12)
-        .shadow(color: toast.style.color.opacity(0.3), radius: 8, x: 0, y: 4)
+        .clipShape(RoundedRectangle(cornerRadius: DS.Radius.xl))
+        .shadow(color: DS.Shadow.glow(toast.style.color).color, radius: DS.Shadow.glow(toast.style.color).radius, x: DS.Shadow.glow(toast.style.color).x, y: DS.Shadow.glow(toast.style.color).y)
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: DS.Radius.xl)
                 .stroke(toast.style.color.opacity(0.5), lineWidth: 1)
         )
         .scaleEffect(isVisible ? 1.0 : 0.8)
         .opacity(isVisible ? 1.0 : 0.0)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isVisible)
+        .animation(DS.Animation.spring, value: isVisible)
         .onAppear {
             isVisible = true
         }

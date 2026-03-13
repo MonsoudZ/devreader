@@ -18,15 +18,14 @@ struct WebPane: View {
 
 	var body: some View {
 		VStack(spacing: 0) {
-			HStack(spacing: 6) {
+			HStack(spacing: DS.Spacing.xs) {
 				Button {
 					goBack()
 				} label: {
 					Label("Back", systemImage: "chevron.left")
 						.labelStyle(.iconOnly)
 				}
-				.buttonStyle(.bordered)
-				.controlSize(.small)
+				.buttonStyle(DSToolbarButtonStyle())
 				.disabled(!canGoBack)
 				.accessibilityIdentifier("webBack")
 
@@ -36,8 +35,7 @@ struct WebPane: View {
 					Label("Forward", systemImage: "chevron.right")
 						.labelStyle(.iconOnly)
 				}
-				.buttonStyle(.bordered)
-				.controlSize(.small)
+				.buttonStyle(DSToolbarButtonStyle())
 				.disabled(!canGoForward)
 				.accessibilityIdentifier("webForward")
 
@@ -48,8 +46,7 @@ struct WebPane: View {
 						Label("Stop", systemImage: "xmark")
 							.labelStyle(.iconOnly)
 					}
-					.buttonStyle(.bordered)
-					.controlSize(.small)
+					.buttonStyle(DSToolbarButtonStyle())
 					.accessibilityIdentifier("webStop")
 					.accessibilityLabel("Stop loading")
 				} else {
@@ -59,8 +56,7 @@ struct WebPane: View {
 						Label("Reload", systemImage: "arrow.clockwise")
 							.labelStyle(.iconOnly)
 					}
-					.buttonStyle(.bordered)
-					.controlSize(.small)
+					.buttonStyle(DSToolbarButtonStyle())
 					.disabled(currentURL == nil)
 					.accessibilityIdentifier("webReload")
 					.accessibilityLabel("Reload page")
@@ -70,8 +66,7 @@ struct WebPane: View {
 					.accessibilityIdentifier("webURLField")
 
 				Button("Go") { loadURL() }
-					.buttonStyle(.bordered)
-					.controlSize(.small)
+					.buttonStyle(DSSecondaryButtonStyle())
 					.accessibilityIdentifier("webGoButton")
 
 				Menu {
@@ -96,11 +91,10 @@ struct WebPane: View {
 					Label("Open in Browser", systemImage: "safari")
 						.labelStyle(.iconOnly)
 				}
-				.buttonStyle(.bordered)
-				.controlSize(.small)
+				.buttonStyle(DSToolbarButtonStyle())
 				.disabled(currentURL == nil)
 				.accessibilityIdentifier("webOpenInBrowser")
-			}.padding(8)
+			}.padding(DS.Spacing.sm)
 			Divider()
 			WebView(url: currentURL, actions: webActions) { newURL in
 				onNavigated(newURL)

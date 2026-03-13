@@ -31,8 +31,8 @@ struct SignaturePadView: View {
 	var body: some View {
 		VStack(spacing: 0) {
 			Text("Signature")
-				.font(.headline)
-				.padding(.top, 12)
+				.font(DS.Typography.heading)
+				.padding(.top, DS.Spacing.md)
 
 			Picker("Mode", selection: $selectedTab) {
 				ForEach(Tab.allCases, id: \.self) { tab in
@@ -40,8 +40,8 @@ struct SignaturePadView: View {
 				}
 			}
 			.pickerStyle(.segmented)
-			.padding(.horizontal, 24)
-			.padding(.top, 8)
+			.padding(.horizontal, DS.Spacing.xl)
+			.padding(.top, DS.Spacing.sm)
 
 			Group {
 				switch selectedTab {
@@ -51,23 +51,25 @@ struct SignaturePadView: View {
 					typeTabContent
 				}
 			}
-			.padding(.horizontal, 24)
-			.padding(.top, 12)
+			.padding(.horizontal, DS.Spacing.xl)
+			.padding(.top, DS.Spacing.md)
 
 			Toggle("Save for Reuse", isOn: $saveForReuse)
-				.padding(.horizontal, 24)
-				.padding(.top, 8)
+				.padding(.horizontal, DS.Spacing.xl)
+				.padding(.top, DS.Spacing.sm)
 
 			HStack {
 				Button("Cancel") { onCancel() }
+					.buttonStyle(DSSecondaryButtonStyle())
 					.keyboardShortcut(.cancelAction)
 				Spacer()
 				Button("Apply") { applySignature() }
+					.buttonStyle(DSPrimaryButtonStyle())
 					.keyboardShortcut(.defaultAction)
 					.disabled(!canApply)
 			}
-			.padding(.horizontal, 24)
-			.padding(.vertical, 12)
+			.padding(.horizontal, DS.Spacing.xl)
+			.padding(.vertical, DS.Spacing.md)
 		}
 		.frame(width: 460)
 	}
@@ -75,12 +77,12 @@ struct SignaturePadView: View {
 	// MARK: - Draw Tab
 
 	private var drawTabContent: some View {
-		VStack(spacing: 8) {
+		VStack(spacing: DS.Spacing.sm) {
 			ZStack {
-				RoundedRectangle(cornerRadius: 8)
+				RoundedRectangle(cornerRadius: DS.Radius.lg)
 					.fill(Color.white)
 					.overlay(
-						RoundedRectangle(cornerRadius: 8)
+						RoundedRectangle(cornerRadius: DS.Radius.lg)
 							.stroke(Color.gray.opacity(0.4), lineWidth: 1)
 					)
 
@@ -140,7 +142,7 @@ struct SignaturePadView: View {
 	// MARK: - Type Tab
 
 	private var typeTabContent: some View {
-		VStack(spacing: 12) {
+		VStack(spacing: DS.Spacing.md) {
 			TextField("Your name", text: $typedName)
 				.textFieldStyle(.roundedBorder)
 
@@ -152,10 +154,10 @@ struct SignaturePadView: View {
 
 			// Live preview
 			ZStack {
-				RoundedRectangle(cornerRadius: 8)
+				RoundedRectangle(cornerRadius: DS.Radius.lg)
 					.fill(Color.white)
 					.overlay(
-						RoundedRectangle(cornerRadius: 8)
+						RoundedRectangle(cornerRadius: DS.Radius.lg)
 							.stroke(Color.gray.opacity(0.4), lineWidth: 1)
 					)
 
@@ -164,7 +166,7 @@ struct SignaturePadView: View {
 					.foregroundColor(typedName.isEmpty ? .gray.opacity(0.4) : .black)
 					.lineLimit(1)
 					.minimumScaleFactor(0.5)
-					.padding(.horizontal, 12)
+					.padding(.horizontal, DS.Spacing.md)
 			}
 			.frame(width: canvasWidth, height: 80)
 		}

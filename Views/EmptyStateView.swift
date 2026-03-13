@@ -8,20 +8,20 @@ struct EmptyStateView: View {
 	var action: (() -> Void)? = nil
 
 	var body: some View {
-		VStack(spacing: 12) {
+		VStack(spacing: DS.Spacing.md) {
 			Spacer()
 			Image(systemName: icon)
-				.font(.system(size: 40))
-				.foregroundStyle(.secondary)
+				.font(.system(size: DS.Layout.iconXl))
+				.foregroundStyle(DS.Colors.secondary)
 			Text(title)
-				.font(.headline)
-				.foregroundStyle(.secondary)
+				.font(DS.Typography.heading)
+				.foregroundStyle(DS.Colors.secondary)
 			Text(subtitle)
-				.font(.caption)
-				.foregroundStyle(.tertiary)
+				.font(DS.Typography.caption)
+				.foregroundStyle(DS.Colors.tertiary)
 			if let actionLabel, let action {
 				Button(actionLabel, action: action)
-					.buttonStyle(.bordered)
+					.buttonStyle(DSSecondaryButtonStyle())
 			}
 			Spacer()
 		}

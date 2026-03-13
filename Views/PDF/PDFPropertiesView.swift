@@ -7,14 +7,14 @@ struct PDFPropertiesView: View {
 	var body: some View {
 		VStack(spacing: 0) {
 			HStack {
-				Text("Document Properties").font(.headline)
+				Text("Document Properties").font(DS.Typography.heading)
 				Spacer()
 				Button("Done") { dismiss() }
 					.buttonStyle(.borderedProminent)
 					.controlSize(.small)
 			}
-			.padding(.horizontal, 20)
-			.padding(.vertical, 12)
+			.padding(.horizontal, DS.Spacing.xl)
+			.padding(.vertical, DS.Spacing.md)
 
 			Divider()
 
@@ -22,8 +22,8 @@ struct PDFPropertiesView: View {
 				VStack {
 					Spacer()
 					Text("No PDF open")
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 					Spacer()
 				}
 			} else {
@@ -31,11 +31,11 @@ struct PDFPropertiesView: View {
 					ForEach(properties, id: \.0) { key, value in
 						HStack(alignment: .top) {
 							Text(key)
-								.font(.caption.bold())
+								.font(DS.Typography.caption.bold())
 								.frame(width: 120, alignment: .trailing)
-								.foregroundStyle(.secondary)
+								.foregroundStyle(DS.Colors.secondary)
 							Text(value)
-								.font(.caption)
+								.font(DS.Typography.caption)
 								.textSelection(.enabled)
 						}
 					}

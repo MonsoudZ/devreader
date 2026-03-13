@@ -72,6 +72,7 @@
 		D00100132F00000000000010 /* Services/AnnotationPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */; };
 		E10100012F00000000000001 /* Services/AnnotationExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100002F00000000000001 /* Services/AnnotationExportService.swift */; };
 		E10100032F00000000000002 /* Utils/LanguageDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100022F00000000000002 /* Utils/LanguageDetector.swift */; };
+		F10100012F00000000000001 /* Utils/DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10100002F00000000000001 /* Utils/DesignSystem.swift */; };
 		E10100052F00000000000003 /* Views/PDF/PDFComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100042F00000000000003 /* Views/PDF/PDFComparisonView.swift */; };
 		E10100072F00000000000004 /* ViewModels/TabManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100062F00000000000004 /* ViewModels/TabManager.swift */; };
 		E10100092F00000000000005 /* Views/PDF/PDFTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100082F00000000000005 /* Views/PDF/PDFTabBar.swift */; };
@@ -183,6 +184,7 @@
 		D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnnotationPersistenceService.swift; sourceTree = "<group>"; };
 		E10100002F00000000000001 /* Services/AnnotationExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnnotationExportService.swift; sourceTree = "<group>"; };
 		E10100022F00000000000002 /* Utils/LanguageDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/LanguageDetector.swift; sourceTree = "<group>"; };
+		F10100002F00000000000001 /* Utils/DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/DesignSystem.swift; sourceTree = "<group>"; };
 		E10100042F00000000000003 /* Views/PDF/PDFComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFComparisonView.swift; sourceTree = "<group>"; };
 		E10100062F00000000000004 /* ViewModels/TabManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/TabManager.swift; sourceTree = "<group>"; };
 		E10100082F00000000000005 /* Views/PDF/PDFTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFTabBar.swift; sourceTree = "<group>"; };
@@ -341,6 +343,7 @@
 				E10100002F00000000000001 /* Services/AnnotationExportService.swift */,
 				E101000A2F00000000000006 /* Services/FormDataPersistenceService.swift */,
 				E10100022F00000000000002 /* Utils/LanguageDetector.swift */,
+				F10100002F00000000000001 /* Utils/DesignSystem.swift */,
 				E20100002F00000000000001 /* Models/SignatureItem.swift */,
 				E20100022F00000000000002 /* Services/SignaturePersistenceService.swift */,
 				E20100042F00000000000003 /* ViewModels/SignatureStore.swift */,
@@ -588,6 +591,7 @@
 				D00100132F00000000000010 /* Services/AnnotationPersistenceService.swift in Sources */,
 				E10100012F00000000000001 /* Services/AnnotationExportService.swift in Sources */,
 				E10100032F00000000000002 /* Utils/LanguageDetector.swift in Sources */,
+				F10100012F00000000000001 /* Utils/DesignSystem.swift in Sources */,
 				E10100052F00000000000003 /* Views/PDF/PDFComparisonView.swift in Sources */,
 				E10100072F00000000000004 /* ViewModels/TabManager.swift in Sources */,
 				E10100092F00000000000005 /* Views/PDF/PDFTabBar.swift in Sources */,

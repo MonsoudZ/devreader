@@ -13,39 +13,39 @@ struct NoteRow: View {
 	@State private var showMarkdownPreview = false
 
 	var body: some View {
-		VStack(alignment: .leading, spacing: 6) {
+		VStack(alignment: .leading, spacing: DS.Spacing.md) {
 			HStack(alignment: .top) {
-				VStack(alignment: .leading, spacing: 4) {
+				VStack(alignment: .leading, spacing: DS.Spacing.xs) {
 					if isEditing {
-						VStack(alignment: .leading, spacing: 4) {
+						VStack(alignment: .leading, spacing: DS.Spacing.xs) {
 							TextField("Note title (optional)", text: $editingTitle)
 								.textFieldStyle(.roundedBorder)
-								.font(.headline)
+								.font(DS.Typography.heading)
 							TextEditor(text: $editingText)
-								.font(.body)
+								.font(DS.Typography.body)
 								.frame(minHeight: 60)
-								.overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.quaternary))
+								.overlay(RoundedRectangle(cornerRadius: DS.Radius.md).strokeBorder(.quaternary))
 						}
 					} else {
-						VStack(alignment: .leading, spacing: 2) {
+						VStack(alignment: .leading, spacing: DS.Spacing.xxs) {
 							if !item.text.isEmpty {
 								if showMarkdownPreview {
 									Text(markdownAttributedString)
-										.font(.body)
+										.font(DS.Typography.body)
 										.textSelection(.enabled)
 								} else {
-									Text(item.text).font(.body)
+									Text(item.text).font(DS.Typography.body)
 								}
 							} else {
-								Text("Empty note - click Edit to add content").font(.body).foregroundStyle(.secondary).italic()
+								Text("Empty note - click Edit to add content").font(DS.Typography.body).foregroundStyle(DS.Colors.secondary).italic()
 							}
 						}
 					}
-					Text("Page \(item.pageIndex + 1)").font(.caption).foregroundStyle(.secondary)
+					Text("Page \(item.pageIndex + 1)").font(DS.Typography.caption).foregroundStyle(DS.Colors.secondary)
 				}
 				Spacer()
 				if isEditing {
-					VStack(spacing: 4) {
+					VStack(spacing: DS.Spacing.xs) {
 						Button("Save") { saveEdit() }
 							.buttonStyle(.bordered)
 							.controlSize(.small)
@@ -60,7 +60,7 @@ struct NoteRow: View {
 							.accessibilityHint("Discard changes and exit edit mode")
 					}
 				} else {
-					VStack(spacing: 4) {
+					VStack(spacing: DS.Spacing.xs) {
 						Button("Edit") { startEdit() }
 							.buttonStyle(.bordered)
 							.controlSize(.small)
@@ -89,7 +89,7 @@ struct NoteRow: View {
 			}
 			
 			// Tags section
-			VStack(alignment: .leading, spacing: 4) {
+			VStack(alignment: .leading, spacing: DS.Spacing.xs) {
 				if isEditing {
 					HStack {
 						TextField("Add tag...", text: $newTag)
@@ -110,17 +110,13 @@ struct NoteRow: View {
 				if !item.tags.isEmpty {
 					HStack {
 						ForEach(item.tags, id: \.self) { tag in
-							HStack(spacing: 2) {
+							HStack(spacing: DS.Spacing.xxs) {
 								Text(tag)
-									.font(.caption)
-									.padding(.horizontal, 6)
-									.padding(.vertical, 2)
-									.background(Color.blue.opacity(0.2))
-									.cornerRadius(4)
+									.tagPill(DS.Colors.tag(for: tag))
 								if isEditing {
 									Button("×") { notes.removeTag(tag, from: item) }
-										.font(.caption)
-										.foregroundStyle(.red)
+										.font(DS.Typography.caption)
+										.foregroundStyle(DS.Colors.error)
 										.accessibilityLabel("Remove tag \(tag)")
 										.accessibilityHint("Remove this tag from the note")
 								}
@@ -133,7 +129,7 @@ struct NoteRow: View {
 				if !isEditing && item.tags.isEmpty {
 					HStack {
 						Button("+ Add Tag") { showingTagEditor = true }
-							.font(.caption)
+							.font(DS.Typography.caption)
 							.buttonStyle(.bordered)
 							.controlSize(.small)
 							.accessibilityIdentifier("noteRowAddTagPrompt")
@@ -144,9 +140,9 @@ struct NoteRow: View {
 				}
 			}
 		}
-		.padding(8)
-		.background(isEditing ? Color.blue.opacity(0.05) : Color.clear)
-		.cornerRadius(8)
+		.padding(DS.Spacing.sm)
+		.background(isEditing ? DS.Colors.accent.opacity(0.05) : Color.clear)
+		.cornerRadius(DS.Radius.lg)
 		.onAppear {
 			// Auto-start editing if this is a new empty note
 			if item.text.isEmpty && item.tags.isEmpty {
@@ -156,7 +152,7 @@ struct NoteRow: View {
 		}
 		.sheet(isPresented: $showingTagEditor) {
 			VStack {
-				Text("Add Tag").font(.headline)
+				Text("Add Tag").font(DS.Typography.heading)
 				TextField("Enter tag name", text: $newTag).textFieldStyle(.roundedBorder)
 				HStack {
 					Button("Cancel") { showingTagEditor = false; newTag = "" }
@@ -166,7 +162,7 @@ struct NoteRow: View {
 					}
 				}
 			}
-			.padding().frame(width: 300, height: 150)
+			.padding(DS.Spacing.lg).frame(width: 300, height: 150)
 		}
 	}
 	

@@ -51,31 +51,31 @@ struct NotesPane: View {
 
 			// Export progress indicator
 			if isExporting {
-				VStack(spacing: 8) {
+				VStack(spacing: DS.Spacing.sm) {
 					HStack {
 						ProgressView(value: exportProgress, total: 1.0)
 							.progressViewStyle(.linear)
 						Text("\(Int(exportProgress * 100))%")
-							.font(.caption)
-							.foregroundStyle(.secondary)
+							.font(DS.Typography.caption)
+							.foregroundStyle(DS.Colors.secondary)
 					}
 					Text(exportStatus)
-						.font(.caption)
-						.foregroundStyle(.secondary)
+						.font(DS.Typography.caption)
+						.foregroundStyle(DS.Colors.secondary)
 				}
-				.padding(.horizontal, 8)
-				.padding(.bottom, 4)
+				.padding(.horizontal, DS.Spacing.sm)
+				.padding(.bottom, DS.Spacing.xs)
 				.accessibilityElement(children: .combine)
 				.accessibilityLabel("Export progress \(Int(exportProgress * 100)) percent")
 			}
 
 			if let doc = pdf.document, let url = doc.documentURL {
 				HStack {
-					Image(systemName: "doc.text.fill").foregroundStyle(.blue)
-					Text(url.deletingPathExtension().lastPathComponent).font(.caption).foregroundStyle(.secondary)
+					Image(systemName: "doc.text.fill").foregroundStyle(DS.Colors.accent)
+					Text(url.deletingPathExtension().lastPathComponent).font(DS.Typography.caption).foregroundStyle(DS.Colors.secondary)
 					Spacer()
 				}
-				.padding(.horizontal, 8).padding(.bottom, 4)
+				.padding(.horizontal, DS.Spacing.sm).padding(.bottom, DS.Spacing.xs)
 			}
 
 			Divider()
@@ -88,30 +88,30 @@ struct NotesPane: View {
 				.accessibilityLabel("No PDF open. Open a PDF to start taking notes.")
 			} else {
 				ScrollView {
-					LazyVStack(alignment: .leading, spacing: 12) {
+					LazyVStack(alignment: .leading, spacing: DS.Spacing.md) {
 						if showPageNotes { pageNotesEditor }
 						Divider()
 						if !bookmarkManager.bookmarks.isEmpty {
-							VStack(alignment: .leading, spacing: 6) {
-								Text("Bookmarks").font(.headline)
+							VStack(alignment: .leading, spacing: DS.Spacing.md) {
+								Text("Bookmarks").font(DS.Typography.heading)
 								ForEach(Array(bookmarkManager.bookmarks).sorted(), id: \.self) { pageIndex in
 									HStack {
-										Image(systemName: "bookmark.fill").foregroundStyle(.blue)
-										Text("Page \(pageIndex + 1)").font(.body)
+										Image(systemName: "bookmark.fill").foregroundStyle(DS.Colors.accent)
+										Text("Page \(pageIndex + 1)").font(DS.Typography.body)
 										Spacer()
 										Button("Go") { pdf.goToPage(pageIndex) }
 											.buttonStyle(.bordered).controlSize(.small)
 									}
-									.padding(.horizontal, 8).padding(.vertical, 4)
-									.background(Color(NSColor.controlBackgroundColor)).cornerRadius(6)
+									.padding(.horizontal, DS.Spacing.sm).padding(.vertical, DS.Spacing.xs)
+									.background(DS.Colors.controlSurface).cornerRadius(DS.Radius.md)
 								}
 							}
-							.padding(.horizontal, 8)
+							.padding(.horizontal, DS.Spacing.sm)
 							Divider()
 						}
 						ForEach(cachedFilteredGroups, id: \.key) { group in
-							VStack(alignment: .leading, spacing: 6) {
-								Text(group.key).font(.headline)
+							VStack(alignment: .leading, spacing: DS.Spacing.md) {
+								Text(group.key).font(DS.Typography.heading)
 								ForEach(group.value) { item in
 									NoteRow(item: item, jump: { pdf.goToPage(item.pageIndex) }, notes: notes)
 								}
@@ -119,7 +119,7 @@ struct NotesPane: View {
 									notes.moveNotes(in: group.key, from: source, to: destination)
 								}
 							}
-							.padding(.horizontal, 8)
+							.padding(.horizontal, DS.Spacing.sm)
 							Divider()
 						}
 					}
@@ -147,7 +147,7 @@ struct NotesPane: View {
 	// MARK: - Toolbar
 
 	private var notesToolbar: some View {
-		HStack(spacing: 6) {
+		HStack(spacing: DS.Spacing.md) {
 			TextField("Filter notes…", text: $filter)
 				.accessibilityIdentifier("notesFilterField")
 				.accessibilityLabel("Filter notes")
@@ -220,15 +220,15 @@ struct NotesPane: View {
 			.accessibilityIdentifier("printNotes")
 			.accessibilityLabel("Print notes")
 			.accessibilityHint("Print all notes using the system print dialog")
-		}.padding(8)
+		}.padding(DS.Spacing.sm)
 	}
 
 	// MARK: - Filter Popover
 
 	private var filterPopoverContent: some View {
-		VStack(alignment: .leading, spacing: 12) {
+		VStack(alignment: .leading, spacing: DS.Spacing.md) {
 			Text("Export Filters")
-				.font(.headline)
+				.font(DS.Typography.heading)
 
 			Menu {
 				Button("All Tags") { selectedTag = nil }
@@ -289,7 +289,7 @@ struct NotesPane: View {
 			.accessibilityLabel("Export presets")
 			.accessibilityHint("Save, load, or delete export filter presets")
 		}
-		.padding(16)
+		.padding(DS.Spacing.lg)
 		.frame(width: 280)
 	}
 
@@ -317,24 +317,24 @@ struct NotesPane: View {
 	}
 
 	var pageNotesEditor: some View {
-		VStack(alignment: .leading, spacing: 4) {
+		VStack(alignment: .leading, spacing: DS.Spacing.xs) {
 			if pdf.document != nil {
 				let page = pdf.currentPageIndex + 1
-				Text("Page Notes – p.\(page)").font(.headline)
+				Text("Page Notes – p.\(page)").font(DS.Typography.heading)
 				TextEditor(text: Binding(
 					get: { notes.note(for: pdf.currentPageIndex) },
 					set: { notes.setNote($0, for: pdf.currentPageIndex) }
 				))
-				.font(.system(.body, design: .monospaced))
+				.font(DS.Typography.mono)
 				.frame(minHeight: 180)
-				.overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(.quaternary))
+				.overlay(RoundedRectangle(cornerRadius: DS.Radius.md).strokeBorder(.quaternary))
 				Text("Tips: Use Markdown. Export bundles these too.")
-					.font(.caption).foregroundStyle(.secondary)
+					.font(DS.Typography.caption).foregroundStyle(DS.Colors.secondary)
 			} else {
-				Text("Open a PDF to edit page notes.").foregroundStyle(.secondary)
+				Text("Open a PDF to edit page notes.").foregroundStyle(DS.Colors.secondary)
 			}
 		}
-		.padding(8)
+		.padding(DS.Spacing.sm)
 		.sheet(isPresented: $showingPresetSheet) {
 			PresetSaveSheet(
 				presetName: $presetName,
@@ -396,13 +396,13 @@ struct PresetSaveSheet: View {
 	let onSave: (String) -> Void
 
 	var body: some View {
-		VStack(spacing: 20) {
+		VStack(spacing: DS.Spacing.xl) {
 			Text("Save Export Preset")
-				.font(.headline)
+				.font(DS.Typography.heading)
 
 			Text("Enter a name for this export filter preset:")
-				.font(.subheadline)
-				.foregroundStyle(.secondary)
+				.font(DS.Typography.subheading)
+				.foregroundStyle(DS.Colors.secondary)
 
 			TextField("Preset name", text: $presetName)
 				.textFieldStyle(.roundedBorder)
@@ -410,7 +410,7 @@ struct PresetSaveSheet: View {
 				.accessibilityLabel("Preset name")
 				.accessibilityHint("Enter a name for the export filter preset")
 
-			HStack(spacing: 12) {
+			HStack(spacing: DS.Spacing.md) {
 				Button("Cancel") {
 					isPresented = false
 				}
@@ -430,7 +430,7 @@ struct PresetSaveSheet: View {
 				.accessibilityHint("Save the export filter preset with the entered name")
 			}
 		}
-		.padding(20)
+		.padding(DS.Spacing.xl)
 		.frame(width: 300)
 	}
 }
