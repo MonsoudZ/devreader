@@ -5,16 +5,29 @@ import Foundation
 @MainActor
 final class PersistenceTests: XCTestCase {
 
+    /// Keys created during each test; cleaned up in tearDown without nuking the shared directory.
+    private var createdKeys: [String] = []
+
     override func tearDownWithError() throws {
-        // Clear all test data
-        PersistenceService.clearAllData()
+        // Only remove files created by this test instance — never call clearAllData()
+        // which deletes the entire shared data directory and races with parallel tests.
+        for key in createdKeys {
+            PersistenceService.delete(forKey: key)
+        }
+        createdKeys.removeAll()
+    }
+
+    /// Track a persistence key so tearDown cleans it up.
+    private func trackKey(_ key: String) {
+        createdKeys.append(key)
     }
 
     // MARK: - Atomic Persistence Tests
 
     func testAtomicWriteSuccess() async throws {
         let testData = ["key1": "value1", "key2": "value2"]
-        let key = "test.atomic.success"
+        let key = "test.atomic.success.\(UUID().uuidString)"
+        trackKey(key)
 
         // Save data
         try PersistenceService.saveCodable(testData, forKey: key)
@@ -53,7 +66,8 @@ final class PersistenceTests: XCTestCase {
 
     func testCorruptedDataRecovery() async throws {
         let testData = ["key1": "value1", "key2": "value2"]
-        let key = "test.corrupted.recovery"
+        let key = "test.corrupted.recovery.\(UUID().uuidString)"
+        trackKey(key)
 
         // Save valid data first
         try PersistenceService.saveCodable(testData, forKey: key)
@@ -82,7 +96,8 @@ final class PersistenceTests: XCTestCase {
         let envelope = LibraryEnvelope(items: items)
 
         // Save envelope
-        let key = "test.schema.versioning"
+        let key = "test.schema.versioning.\(UUID().uuidString)"
+        trackKey(key)
         try PersistenceService.saveCodable(envelope, forKey: key)
 
         // Load envelope
@@ -111,7 +126,8 @@ final class PersistenceTests: XCTestCase {
         ]
 
         // Save old format data
-        let key = "test.schema.migration"
+        let key = "test.schema.migration.\(UUID().uuidString)"
+        trackKey(key)
         try PersistenceService.saveCodable(oldItems, forKey: key)
 
         // Load and migrate
@@ -276,7 +292,8 @@ final class PersistenceTests: XCTestCase {
         let envelope = LibraryEnvelope(items: originalItems)
 
         // Save envelope
-        let key = "test.roundtrip"
+        let key = "test.roundtrip.\(UUID().uuidString)"
+        trackKey(key)
         try PersistenceService.saveCodable(envelope, forKey: key)
 
         // Load envelope
@@ -307,7 +324,8 @@ final class PersistenceTests: XCTestCase {
     // MARK: - Error Handling Tests
 
     func testInvalidDataHandling() async {
-        let key = "test.invalid.data"
+        let key = "test.invalid.data.\(UUID().uuidString)"
+        trackKey(key)
 
         // Ensure directory exists
         JSONStorageService.ensureDirectories()
@@ -326,7 +344,8 @@ final class PersistenceTests: XCTestCase {
     }
 
     func testDataRecovery() async throws {
-        let key = "test.data.recovery"
+        let key = "test.data.recovery.\(UUID().uuidString)"
+        trackKey(key)
         let testData = ["key1": "value1", "key2": "value2"]
 
         // Save valid data first

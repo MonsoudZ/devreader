@@ -131,7 +131,7 @@ struct SettingsView: View {
 				}
 
 				Section("Large PDF Performance") {
-					Text("Large PDF performance monitoring will be available in a future update.")
+					Text("PDFs over 500 pages are automatically optimized with lazy rendering and search throttling.")
 						.font(DS.Typography.caption)
 						.foregroundStyle(DS.Colors.secondary)
 					Button("Export Performance Report") {

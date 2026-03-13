@@ -202,12 +202,18 @@ final class TabManager: ObservableObject {
             return false
         }
 
-        // Flush state before closing.
-        tabs[idx].pdfController.flushPendingPersistence()
+        // Flush state and cancel async work before closing.
+        let closingController = tabs[idx].pdfController
+        closingController.flushPendingPersistence()
+        closingController.searchManager.cancelSearchTask()
         tabCancellables.removeValue(forKey: tabID)
 
         let wasActive = tabID == activeTabID
         tabs.remove(at: idx)
+
+        // Defer deallocation to avoid crash in PDFSearchManager deinit
+        // when Swift runtime cleans up task-local storage synchronously
+        Task { @MainActor in _ = closingController }
 
         if wasActive {
             // Switch to the nearest tab.

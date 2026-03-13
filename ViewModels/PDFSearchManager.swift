@@ -23,6 +23,12 @@ final class PDFSearchManager: ObservableObject {
         self.performanceMonitor = performanceMonitor
     }
 
+    /// Cancel the in-flight search task before deallocation.
+    func cancelSearchTask() {
+        searchTask?.cancel()
+        searchTask = nil
+    }
+
     func performSearch(_ query: String, in document: PDFDocument?) {
         guard let doc = document else { return }
 

@@ -9,12 +9,15 @@ final class JSONStorageTests: XCTestCase {
         try? JSONStorageService.ensureDirectories()
     }
     
+    /// Additional file URLs created during tests; cleaned up in tearDown.
+    private var additionalCleanupURLs: [URL] = []
+
     override func tearDown() {
         super.tearDown()
         // Clean up test files
         let testFiles = [
             "test.json",
-            "test_int.json", 
+            "test_int.json",
             "test_bool.json",
             "test_string.json",
             "test_optional.json",
@@ -26,11 +29,17 @@ final class JSONStorageTests: XCTestCase {
             "test_validation.json",
             "test_performance.json"
         ]
-        
+
         for fileName in testFiles {
             let url = JSONStorageService.dataDirectory.appendingPathComponent(fileName)
             JSONStorageService.delete(url: url)
         }
+
+        // Clean up any additional files registered by individual tests
+        for url in additionalCleanupURLs {
+            JSONStorageService.delete(url: url)
+        }
+        additionalCleanupURLs.removeAll()
     }
     
     // MARK: - Basic Storage Tests
@@ -208,10 +217,16 @@ final class JSONStorageTests: XCTestCase {
             exportDate: Date(),
             version: "1.0"
         )
-        
+
+        // Track files that importAllData will write so tearDown cleans them up
+        // instead of leaving them to conflict with parallel tests.
+        additionalCleanupURLs.append(JSONStorageService.libraryPath())
+        additionalCleanupURLs.append(JSONStorageService.recentsPath())
+        additionalCleanupURLs.append(JSONStorageService.pinnedPath())
+
         // Import data
         try JSONStorageService.importAllData(testData)
-        
+
         // Verify import succeeded (no crash)
         XCTAssertTrue(true, "Import should complete without crashing")
     }

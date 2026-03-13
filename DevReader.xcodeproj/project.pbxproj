@@ -59,6 +59,7 @@
 		C001000B2F00000000000006 /* Services/CodeFileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C001000A2F00000000000006 /* Services/CodeFileService.swift */; };
 		C001000D2F00000000000007 /* Services/SketchRenderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C001000C2F00000000000007 /* Services/SketchRenderService.swift */; };
 		C001000F2F00000000000008 /* ViewModels/MonacoEditorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C001000E2F00000000000008 /* ViewModels/MonacoEditorViewModel.swift */; };
+		C6870594E0CBABF7E8AEF467 /* Views/EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */; };
 		C82366A624D349A181E3B601 /* Services/TextToSpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82366A624D349A181E3B602 /* Services/TextToSpeechService.swift */; };
 		C82366A624D349A181E3B603 /* Views/PDF/PDFSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82366A624D349A181E3B604 /* Views/PDF/PDFSplitView.swift */; };
 		C82366A624D349A181E3B605 /* Views/PDF/PDFFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C82366A624D349A181E3B606 /* Views/PDF/PDFFormView.swift */; };
@@ -70,16 +71,20 @@
 		D001000B2F00000000000006 /* Views/Code/WebViewHTML.swift in Sources */ = {isa = PBXBuildFile; fileRef = D001000A2F00000000000006 /* Views/Code/WebViewHTML.swift */; };
 		D00100112F00000000000009 /* Models/PDFAnnotationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100102F00000000000009 /* Models/PDFAnnotationData.swift */; };
 		D00100132F00000000000010 /* Services/AnnotationPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */; };
+		D82366A624D349A181E3B701 /* Views/PDF/AnnotationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */; };
+		E00100012F00000000000001 /* Models/ToastMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00100002F00000000000001 /* Models/ToastMessage.swift */; };
 		E10100012F00000000000001 /* Services/AnnotationExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100002F00000000000001 /* Services/AnnotationExportService.swift */; };
 		E10100032F00000000000002 /* Utils/LanguageDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100022F00000000000002 /* Utils/LanguageDetector.swift */; };
-		F10100012F00000000000001 /* Utils/DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10100002F00000000000001 /* Utils/DesignSystem.swift */; };
 		E10100052F00000000000003 /* Views/PDF/PDFComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100042F00000000000003 /* Views/PDF/PDFComparisonView.swift */; };
 		E10100072F00000000000004 /* ViewModels/TabManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100062F00000000000004 /* ViewModels/TabManager.swift */; };
 		E10100092F00000000000005 /* Views/PDF/PDFTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100082F00000000000005 /* Views/PDF/PDFTabBar.swift */; };
 		E101000B2F00000000000006 /* Services/FormDataPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E101000A2F00000000000006 /* Services/FormDataPersistenceService.swift */; };
-		D82366A624D349A181E3B701 /* Views/PDF/AnnotationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */; };
-		C6870594E0CBABF7E8AEF467 /* Views/EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */; };
-		E00100012F00000000000001 /* Models/ToastMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00100002F00000000000001 /* Models/ToastMessage.swift */; };
+		E20100012F00000000000001 /* Models/SignatureItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100002F00000000000001 /* Models/SignatureItem.swift */; };
+		E20100032F00000000000002 /* Services/SignaturePersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100022F00000000000002 /* Services/SignaturePersistenceService.swift */; };
+		E20100052F00000000000003 /* ViewModels/SignatureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100042F00000000000003 /* ViewModels/SignatureStore.swift */; };
+		E20100072F00000000000004 /* Views/PDF/SignaturePadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100062F00000000000004 /* Views/PDF/SignaturePadView.swift */; };
+		E20100092F00000000000005 /* Views/PDF/SignatureChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100082F00000000000005 /* Views/PDF/SignatureChooserView.swift */; };
+		E201000B2F00000000000006 /* ViewModels/SignatureAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E201000A2F00000000000006 /* ViewModels/SignatureAnnotation.swift */; };
 		EB9A968A45CC4B97ABFB0385 /* Utils/DebouncedPersister.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9A968A45CC4B96ABFB0385 /* Utils/DebouncedPersister.swift */; };
 		F00100012F00000000000001 /* Views/Notes/TagManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100002F00000000000001 /* Views/Notes/TagManagementView.swift */; };
 		F00100032F00000000000002 /* Views/Library/LibrarySearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00100022F00000000000002 /* Views/Library/LibrarySearchView.swift */; };
@@ -89,12 +94,7 @@
 		F001000B2F00000000000006 /* Services/SpotlightService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001000A2F00000000000006 /* Services/SpotlightService.swift */; };
 		F001000D2F00000000000007 /* Views/Settings/CodeSandboxSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001000C2F00000000000007 /* Views/Settings/CodeSandboxSettingsView.swift */; };
 		F001000F2F00000000000008 /* App/AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F001000E2F00000000000008 /* App/AppDelegate.swift */; };
-		E20100012F00000000000001 /* Models/SignatureItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100002F00000000000001 /* Models/SignatureItem.swift */; };
-		E20100032F00000000000002 /* Services/SignaturePersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100022F00000000000002 /* Services/SignaturePersistenceService.swift */; };
-		E20100052F00000000000003 /* ViewModels/SignatureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100042F00000000000003 /* ViewModels/SignatureStore.swift */; };
-		E20100072F00000000000004 /* Views/PDF/SignaturePadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100062F00000000000004 /* Views/PDF/SignaturePadView.swift */; };
-		E20100092F00000000000005 /* Views/PDF/SignatureChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100082F00000000000005 /* Views/PDF/SignatureChooserView.swift */; };
-		E201000B2F00000000000006 /* ViewModels/SignatureAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E201000A2F00000000000006 /* ViewModels/SignatureAnnotation.swift */; };
+		F10100012F00000000000001 /* Utils/DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10100002F00000000000001 /* Utils/DesignSystem.swift */; };
 		F20100012F00000000000001 /* Views/PDF/PDFSelectionToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20100002F00000000000001 /* Views/PDF/PDFSelectionToolbar.swift */; };
 /* End PBXBuildFile section */
 
@@ -116,6 +116,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/EmptyStateView.swift; sourceTree = "<group>"; };
 		9932A8092E823C66001C0FFE /* DevReader.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DevReader.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9932A8162E823C67001C0FFE /* DevReaderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DevReaderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9932A8202E823C67001C0FFE /* DevReaderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DevReaderUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -183,16 +184,20 @@
 		D001000A2F00000000000006 /* Views/Code/WebViewHTML.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/WebViewHTML.swift; sourceTree = "<group>"; };
 		D00100102F00000000000009 /* Models/PDFAnnotationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/PDFAnnotationData.swift; sourceTree = "<group>"; };
 		D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnnotationPersistenceService.swift; sourceTree = "<group>"; };
+		D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/AnnotationListView.swift; sourceTree = "<group>"; };
+		E00100002F00000000000001 /* Models/ToastMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/ToastMessage.swift; sourceTree = "<group>"; };
 		E10100002F00000000000001 /* Services/AnnotationExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnnotationExportService.swift; sourceTree = "<group>"; };
 		E10100022F00000000000002 /* Utils/LanguageDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/LanguageDetector.swift; sourceTree = "<group>"; };
-		F10100002F00000000000001 /* Utils/DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/DesignSystem.swift; sourceTree = "<group>"; };
 		E10100042F00000000000003 /* Views/PDF/PDFComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFComparisonView.swift; sourceTree = "<group>"; };
 		E10100062F00000000000004 /* ViewModels/TabManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/TabManager.swift; sourceTree = "<group>"; };
 		E10100082F00000000000005 /* Views/PDF/PDFTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFTabBar.swift; sourceTree = "<group>"; };
 		E101000A2F00000000000006 /* Services/FormDataPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/FormDataPersistenceService.swift; sourceTree = "<group>"; };
-		D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/AnnotationListView.swift; sourceTree = "<group>"; };
-		0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/EmptyStateView.swift; sourceTree = "<group>"; };
-		E00100002F00000000000001 /* Models/ToastMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/ToastMessage.swift; sourceTree = "<group>"; };
+		E20100002F00000000000001 /* Models/SignatureItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/SignatureItem.swift; sourceTree = "<group>"; };
+		E20100022F00000000000002 /* Services/SignaturePersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SignaturePersistenceService.swift; sourceTree = "<group>"; };
+		E20100042F00000000000003 /* ViewModels/SignatureStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SignatureStore.swift; sourceTree = "<group>"; };
+		E20100062F00000000000004 /* Views/PDF/SignaturePadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/SignaturePadView.swift; sourceTree = "<group>"; };
+		E20100082F00000000000005 /* Views/PDF/SignatureChooserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/SignatureChooserView.swift; sourceTree = "<group>"; };
+		E201000A2F00000000000006 /* ViewModels/SignatureAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SignatureAnnotation.swift; sourceTree = "<group>"; };
 		EB9A968A45CC4B96ABFB0385 /* Utils/DebouncedPersister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/DebouncedPersister.swift; sourceTree = "<group>"; };
 		F00100002F00000000000001 /* Views/Notes/TagManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Notes/TagManagementView.swift; sourceTree = "<group>"; };
 		F00100022F00000000000002 /* Views/Library/LibrarySearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Library/LibrarySearchView.swift; sourceTree = "<group>"; };
@@ -202,12 +207,7 @@
 		F001000A2F00000000000006 /* Services/SpotlightService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SpotlightService.swift; sourceTree = "<group>"; };
 		F001000C2F00000000000007 /* Views/Settings/CodeSandboxSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Settings/CodeSandboxSettingsView.swift; sourceTree = "<group>"; };
 		F001000E2F00000000000008 /* App/AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppDelegate.swift; sourceTree = "<group>"; };
-		E20100002F00000000000001 /* Models/SignatureItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/SignatureItem.swift; sourceTree = "<group>"; };
-		E20100022F00000000000002 /* Services/SignaturePersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/SignaturePersistenceService.swift; sourceTree = "<group>"; };
-		E20100042F00000000000003 /* ViewModels/SignatureStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SignatureStore.swift; sourceTree = "<group>"; };
-		E20100062F00000000000004 /* Views/PDF/SignaturePadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/SignaturePadView.swift; sourceTree = "<group>"; };
-		E20100082F00000000000005 /* Views/PDF/SignatureChooserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/SignatureChooserView.swift; sourceTree = "<group>"; };
-		E201000A2F00000000000006 /* ViewModels/SignatureAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SignatureAnnotation.swift; sourceTree = "<group>"; };
+		F10100002F00000000000001 /* Utils/DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/DesignSystem.swift; sourceTree = "<group>"; };
 		F20100002F00000000000001 /* Views/PDF/PDFSelectionToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFSelectionToolbar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
