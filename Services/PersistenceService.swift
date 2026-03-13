@@ -117,6 +117,12 @@ nonisolated enum PersistenceService {
         } else if key.hasPrefix("DevReader.Session.v1.") {
             let hash = String(key.dropFirst("DevReader.Session.v1.".count))
             return JSONStorageService.dataDirectory.appendingPathComponent("session_\(hash).json")
+        } else if key.hasPrefix("DevReader.MaxPageReached.v1.") {
+            let hash = String(key.dropFirst("DevReader.MaxPageReached.v1.".count))
+            return JSONStorageService.dataDirectory.appendingPathComponent("maxpage_\(hash).json")
+        } else if key.hasPrefix("DevReader.TotalPages.v1.") {
+            let hash = String(key.dropFirst("DevReader.TotalPages.v1.".count))
+            return JSONStorageService.dataDirectory.appendingPathComponent("totalpages_\(hash).json")
         } else if key.hasPrefix("DevReader.Bookmarks.v1.") {
             let hash = String(key.dropFirst("DevReader.Bookmarks.v1.".count))
             return JSONStorageService.dataDirectory.appendingPathComponent("bookmarks_\(hash).json")

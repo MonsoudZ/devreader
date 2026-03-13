@@ -111,6 +111,11 @@ final class PDFAnnotationManager: ObservableObject {
 		}
 	}
 
+	/// Returns a snapshot of all current annotation records (e.g. for export).
+	func currentAnnotations() -> [PDFAnnotationData] {
+		annotations
+	}
+
 	func clearAnnotations() {
 		annotations.removeAll()
 		persister = nil

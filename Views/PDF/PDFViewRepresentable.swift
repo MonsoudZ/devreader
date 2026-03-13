@@ -206,6 +206,14 @@ struct PDFViewRepresentable: NSViewRepresentable {
 			}
 		}
 
+		func pdfViewWillClick(onLink sender: PDFView, with url: URL) {
+			// Internal PDF links use the "page" scheme or are handled via PDFDestination.
+			// PDFKit resolves internal links automatically, but we intercept to push history.
+			guard let doc = sender.document, let currentPage = sender.currentPage else { return }
+			let currentIdx = doc.index(for: currentPage)
+			parent.pdf.pushHistory(currentIdx)
+		}
+
 		deinit {
 			if let observer = scaleObserver {
 				NotificationCenter.default.removeObserver(observer)

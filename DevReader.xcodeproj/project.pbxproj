@@ -70,6 +70,11 @@
 		D001000B2F00000000000006 /* Views/Code/WebViewHTML.swift in Sources */ = {isa = PBXBuildFile; fileRef = D001000A2F00000000000006 /* Views/Code/WebViewHTML.swift */; };
 		D00100112F00000000000009 /* Models/PDFAnnotationData.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100102F00000000000009 /* Models/PDFAnnotationData.swift */; };
 		D00100132F00000000000010 /* Services/AnnotationPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */; };
+		E10100012F00000000000001 /* Services/AnnotationExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100002F00000000000001 /* Services/AnnotationExportService.swift */; };
+		E10100032F00000000000002 /* Utils/LanguageDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100022F00000000000002 /* Utils/LanguageDetector.swift */; };
+		E10100052F00000000000003 /* Views/PDF/PDFComparisonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100042F00000000000003 /* Views/PDF/PDFComparisonView.swift */; };
+		E10100072F00000000000004 /* ViewModels/TabManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100062F00000000000004 /* ViewModels/TabManager.swift */; };
+		E10100092F00000000000005 /* Views/PDF/PDFTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10100082F00000000000005 /* Views/PDF/PDFTabBar.swift */; };
 		D82366A624D349A181E3B701 /* Views/PDF/AnnotationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */; };
 		C6870594E0CBABF7E8AEF467 /* Views/EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */; };
 		E00100012F00000000000001 /* Models/ToastMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00100002F00000000000001 /* Models/ToastMessage.swift */; };
@@ -169,6 +174,11 @@
 		D001000A2F00000000000006 /* Views/Code/WebViewHTML.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/Code/WebViewHTML.swift; sourceTree = "<group>"; };
 		D00100102F00000000000009 /* Models/PDFAnnotationData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/PDFAnnotationData.swift; sourceTree = "<group>"; };
 		D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnnotationPersistenceService.swift; sourceTree = "<group>"; };
+		E10100002F00000000000001 /* Services/AnnotationExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Services/AnnotationExportService.swift; sourceTree = "<group>"; };
+		E10100022F00000000000002 /* Utils/LanguageDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils/LanguageDetector.swift; sourceTree = "<group>"; };
+		E10100042F00000000000003 /* Views/PDF/PDFComparisonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFComparisonView.swift; sourceTree = "<group>"; };
+		E10100062F00000000000004 /* ViewModels/TabManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/TabManager.swift; sourceTree = "<group>"; };
+		E10100082F00000000000005 /* Views/PDF/PDFTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFTabBar.swift; sourceTree = "<group>"; };
 		D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/AnnotationListView.swift; sourceTree = "<group>"; };
 		0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/EmptyStateView.swift; sourceTree = "<group>"; };
 		E00100002F00000000000001 /* Models/ToastMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models/ToastMessage.swift; sourceTree = "<group>"; };
@@ -290,6 +300,9 @@
 				C82366A624D349A181E3B604 /* Views/PDF/PDFSplitView.swift */,
 				C82366A624D349A181E3B606 /* Views/PDF/PDFFormView.swift */,
 				D82366A624D349A181E3B702 /* Views/PDF/AnnotationListView.swift */,
+				E10100042F00000000000003 /* Views/PDF/PDFComparisonView.swift */,
+				E10100062F00000000000004 /* ViewModels/TabManager.swift */,
+				E10100082F00000000000005 /* Views/PDF/PDFTabBar.swift */,
 				0A98E2EAD5ABED42AAC5330E /* Views/EmptyStateView.swift */,
 				A00100312F00000000000001 /* Views/PDF/OutlinePane.swift */,
 				A00100142F00000000000001 /* Views/Library/LibraryPane.swift */,
@@ -311,6 +324,8 @@
 				C001000E2F00000000000008 /* ViewModels/MonacoEditorViewModel.swift */,
 				D00100102F00000000000009 /* Models/PDFAnnotationData.swift */,
 				D00100122F00000000000010 /* Services/AnnotationPersistenceService.swift */,
+				E10100002F00000000000001 /* Services/AnnotationExportService.swift */,
+				E10100022F00000000000002 /* Utils/LanguageDetector.swift */,
 				A00100362F00000000000001 /* DevReader.entitlements */,
 				9932A80B2E823C66001C0FFE /* DevReader */,
 				9932A8192E823C67001C0FFE /* DevReaderTests */,
@@ -550,6 +565,11 @@
 				C001000F2F00000000000008 /* ViewModels/MonacoEditorViewModel.swift in Sources */,
 				D00100112F00000000000009 /* Models/PDFAnnotationData.swift in Sources */,
 				D00100132F00000000000010 /* Services/AnnotationPersistenceService.swift in Sources */,
+				E10100012F00000000000001 /* Services/AnnotationExportService.swift in Sources */,
+				E10100032F00000000000002 /* Utils/LanguageDetector.swift in Sources */,
+				E10100052F00000000000003 /* Views/PDF/PDFComparisonView.swift in Sources */,
+				E10100072F00000000000004 /* ViewModels/TabManager.swift in Sources */,
+				E10100092F00000000000005 /* Views/PDF/PDFTabBar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

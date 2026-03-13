@@ -61,6 +61,26 @@ struct PDFToolbar: View {
 	private var pageNavigation: some View {
 		HStack(spacing: 4) {
 			Button {
+				pdf.goBack()
+			} label: {
+				Image(systemName: "chevron.left.circle")
+			}
+			.buttonStyle(.borderless)
+			.disabled(!pdf.canGoBack)
+			.help("Back")
+			.accessibilityLabel("Navigate back")
+
+			Button {
+				pdf.goForward()
+			} label: {
+				Image(systemName: "chevron.right.circle")
+			}
+			.buttonStyle(.borderless)
+			.disabled(!pdf.canGoForward)
+			.help("Forward")
+			.accessibilityLabel("Navigate forward")
+
+			Button {
 				pdf.goToFirstPage()
 			} label: {
 				Image(systemName: "backward.end.fill")

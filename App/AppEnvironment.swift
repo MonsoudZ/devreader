@@ -8,12 +8,15 @@ import Combine
 final class AppEnvironment: ObservableObject {
 
     // MARK: - Core Controllers & Stores
-    private(set) var pdfController: PDFController
+    private(set) var tabManager: TabManager
     private(set) var secondaryPDFController: PDFController
     private(set) var libraryStore: LibraryStore
     private(set) var notesStore: NotesStore
     private(set) var sketchStore: SketchStore
     private(set) var ttsService: TextToSpeechService
+
+    /// Backward-compatible accessor: returns the active tab's PDFController.
+    var pdfController: PDFController { tabManager.activeController }
 
     // MARK: - UI Services
     private(set) var enhancedToastCenter: EnhancedToastCenter
@@ -29,6 +32,7 @@ final class AppEnvironment: ObservableObject {
     @Published var isShowingProperties = false
     @Published var isShowingFormFields = false
     @Published var isShowingAnnotations = false
+    @Published var isShowingComparison = false
 
     // MARK: - Init
     init(
@@ -40,11 +44,11 @@ final class AppEnvironment: ObservableObject {
         self.performanceMonitor = performanceMonitor
         self.errorMessageManager = errorMessageManager
 
-        let pdf = PDFController(loadingStateManager: loadingStateManager, performanceMonitor: performanceMonitor)
+        let tabMgr = TabManager(loadingStateManager: loadingStateManager, performanceMonitor: performanceMonitor)
         let library = LibraryStore(loadingStateManager: loadingStateManager)
         let notes = NotesStore()
 
-        self.pdfController = pdf
+        self.tabManager = tabMgr
         self.secondaryPDFController = PDFController(loadingStateManager: loadingStateManager, performanceMonitor: performanceMonitor)
         self.libraryStore = library
         self.notesStore = notes
@@ -52,22 +56,34 @@ final class AppEnvironment: ObservableObject {
         self.ttsService = TextToSpeechService()
         self.enhancedToastCenter = EnhancedToastCenter()
 
-        // Wire PDF changes to notes store
-        pdf.onPDFChanged = { [weak notes] url in
+        // Wire the initial tab's PDF changes to notes store
+        let initialController = tabMgr.activeController
+        initialController.onPDFChanged = { [weak notes] url in
             notes?.setCurrentPDF(url)
         }
 
+        // Re-wire onPDFChanged whenever the active tab changes
+        tabChangeCancellable = tabMgr.activeTabChanged
+            .sink { [weak notes] controller in
+                controller.onPDFChanged = { [weak notes] url in
+                    notes?.setCurrentPDF(url)
+                }
+                // Sync notes to the newly active tab's PDF
+                notes?.setCurrentPDF(controller.currentPDFURL)
+            }
+
         // Restore last-opened PDF after init completes and wiring is in place
-        restoreTask = Task { [weak pdf, weak notes] in
-            pdf?.restoreLastOpenedPDF()
+        restoreTask = Task { [weak tabMgr, weak notes] in
+            tabMgr?.activeController.restoreLastOpenedPDF()
             // Manually sync notes in case the PDF loaded before onPDFChanged could fire
-            if let url = pdf?.currentPDFURL {
+            if let url = tabMgr?.activeController.currentPDFURL {
                 notes?.setCurrentPDF(url)
             }
         }
     }
 
     private var restoreTask: Task<Void, Never>?
+    private var tabChangeCancellable: AnyCancellable?
 
     // MARK: - Auto-Backup
     private var autoBackupCancellable: AnyCancellable?
@@ -118,7 +134,7 @@ final class AppEnvironment: ObservableObject {
     func commandToggleSearch() { NotificationCenter.default.post(name: .commandToggleSearch, object: nil) }
 
     func commandClosePDF() {
-        pdfController.document = nil
+        tabManager.closeActiveTab()
     }
 
     func commandCaptureHighlight() {
@@ -197,6 +213,11 @@ final class AppEnvironment: ObservableObject {
         isShowingAnnotations = true
     }
 
+    func commandCompareDocument() {
+        guard pdfController.document != nil else { return }
+        isShowingComparison = true
+    }
+
     func commandPrintPDF() {
         pdfController.printDocument()
     }
@@ -216,6 +237,18 @@ final class AppEnvironment: ObservableObject {
 
     /// Retains the current sketch window to prevent deallocation.
     private var currentSketchWindow: SketchWindow?
+
+    func commandExportAnnotationsMarkdown() {
+        AnnotationExportService.exportMarkdown(from: pdfController, notesStore: notesStore)
+    }
+
+    func commandGoBack() {
+        pdfController.goBack()
+    }
+
+    func commandGoForward() {
+        pdfController.goForward()
+    }
 
     func commandNewSketchPage() {
         guard let url = pdfController.currentPDFURL else { return }

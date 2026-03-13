@@ -1,5 +1,6 @@
 import SwiftUI
 import PDFKit
+import QuickLook
 import UniformTypeIdentifiers
 
 struct LibraryPane: View {
@@ -14,6 +15,8 @@ struct LibraryPane: View {
     @State private var loadingItemID: UUID?
     @State private var showingLibrarySearch = false
     @State private var cachedSortedFiltered: [LibraryItem] = []
+    @State private var quickLookURL: URL?
+    @State private var isDropTargeted = false
     @AppStorage("library.sortOrder") private var persistedSortOrder: String = "recent"
 	
 	var body: some View {
@@ -99,44 +102,28 @@ struct LibraryPane: View {
             } else {
                 List(selection: $selection) {
                     ForEach(cachedSortedFiltered) { item in
-                        Button(action: {
-                            loadingItemID = item.id
-                            open(item)
-                        }) {
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(item.title)
-                                    Text(item.url.lastPathComponent).font(.caption).foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                if loadingItemID == item.id && !isCurrentPDF(item) {
-                                    ProgressView().controlSize(.small)
-                                } else if isCurrentPDF(item) {
-                                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.blue)
-                                }
-                            }
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("PDF: \(item.title)")
-                        .accessibilityHint("Added on \(DateFormatter.localizedString(from: item.addedAt, dateStyle: .short, timeStyle: .none)). Tap to open this PDF")
-                        .accessibilityAddTraits(isCurrentPDF(item) ? [.isSelected] : [])
-                        .contextMenu {
-                            Button("Reveal in Finder") {
-                                NSWorkspace.shared.activateFileViewerSelecting([item.url])
-                            }
-                            .accessibilityLabel("Reveal in Finder")
-                            .accessibilityHint("Show this PDF file in Finder")
-
-                            Button("Remove from Library") {
-                                library.remove(item)
-                            }
-                            .accessibilityLabel("Remove from Library")
-                            .accessibilityHint("Remove this PDF from your library")
-                        }
-                        .onDrag { NSItemProvider(object: item.url as NSURL) }
+                        LibraryItemRow(
+                            item: item,
+                            pdf: pdf,
+                            isLoading: loadingItemID == item.id && !isCurrentPDF(item),
+                            isCurrent: isCurrentPDF(item),
+                            onOpen: {
+                                loadingItemID = item.id
+                                open(item)
+                            },
+                            onRemove: { library.remove(item) }
+                        )
                     }
                 }
-                .onDrop(of: [.fileURL], isTargeted: nil) { providers in loadDropped(providers: providers) }
+                .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in loadDropped(providers: providers) }
+                .overlay {
+                    if isDropTargeted {
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(Color.accentColor, lineWidth: 3)
+                            .background(Color.accentColor.opacity(0.05))
+                            .allowsHitTesting(false)
+                    }
+                }
                 .onKeyPress(.return) {
                     guard let firstID = selection.first,
                           let item = cachedSortedFiltered.first(where: { $0.id == firstID }) else {
@@ -155,6 +142,15 @@ struct LibraryPane: View {
 			}
 		} message: {
 			Text("Are you sure you want to remove \(selection.count) item\(selection.count == 1 ? "" : "s") from your library? This action cannot be undone.")
+		}
+		.quickLookPreview($quickLookURL)
+		.onKeyPress(.space) {
+			guard let firstID = selection.first,
+				  let item = cachedSortedFiltered.first(where: { $0.id == firstID }) else {
+				return .ignored
+			}
+			quickLookURL = item.resolveURLFromBookmark() ?? item.url
+			return .handled
 		}
 		.sheet(isPresented: $showingLibrarySearch) {
 			LibrarySearchView(library: library) { item, pageIndex in
@@ -314,5 +310,86 @@ enum SortOption: String, CaseIterable {
     /// Resilient initializer for persisted values; defaults to `.recent` for unknown strings.
     init(fromStored rawValue: String) {
         self = SortOption(rawValue: rawValue) ?? .recent
+    }
+}
+
+// MARK: - Reading Progress Bar
+
+/// A thin linear progress bar showing how far a PDF has been read.
+/// Extracted row view for each library item to reduce body type-check complexity.
+private struct LibraryItemRow: View {
+    let item: LibraryItem
+    @ObservedObject var pdf: PDFController
+    let isLoading: Bool
+    let isCurrent: Bool
+    let onOpen: () -> Void
+    let onRemove: () -> Void
+
+    var body: some View {
+        Button(action: onOpen) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.title)
+                    Text(item.url.lastPathComponent).font(.caption).foregroundStyle(.secondary)
+                    ReadingProgressBar(item: item, pdf: pdf)
+                }
+                Spacer()
+                if isLoading {
+                    ProgressView().controlSize(.small)
+                } else if isCurrent {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.blue)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("PDF: \(item.title)")
+        .accessibilityHint("Added on \(DateFormatter.localizedString(from: item.addedAt, dateStyle: .short, timeStyle: .none)). Tap to open this PDF")
+        .accessibilityAddTraits(isCurrent ? [.isSelected] : [])
+        .contextMenu {
+            Button("Reveal in Finder") {
+                NSWorkspace.shared.activateFileViewerSelecting([item.url])
+            }
+            .accessibilityLabel("Reveal in Finder")
+            .accessibilityHint("Show this PDF file in Finder")
+
+            Button("Remove from Library") {
+                onRemove()
+            }
+            .accessibilityLabel("Remove from Library")
+            .accessibilityHint("Remove this PDF from your library")
+        }
+        .onDrag { NSItemProvider(object: item.url as NSURL) }
+    }
+}
+
+/// Uses live progress from PDFController for the currently open PDF,
+/// and falls back to persisted maxPageReached data for other items.
+private struct ReadingProgressBar: View {
+    let item: LibraryItem
+    @ObservedObject var pdf: PDFController
+
+    private var isCurrentPDF: Bool {
+        pdf.document?.documentURL == item.url
+    }
+
+    private var progress: Double? {
+        if isCurrentPDF {
+            return pdf.readingProgress
+        }
+        // Load persisted progress for non-active PDFs using stored maxPage and totalPages
+        let maxKey = PersistenceService.key("DevReader.MaxPageReached.v1", for: item.url)
+        guard let savedMax = PersistenceService.loadInt(forKey: maxKey) else { return nil }
+        let pagesKey = PersistenceService.key("DevReader.TotalPages.v1", for: item.url)
+        guard let totalPages = PersistenceService.loadInt(forKey: pagesKey), totalPages > 0 else { return nil }
+        return min(1.0, Double(savedMax + 1) / Double(totalPages))
+    }
+
+    var body: some View {
+        if let progress, progress > 0 {
+            ProgressView(value: progress)
+                .tint(progress >= 1.0 ? .green : .accentColor)
+                .scaleEffect(y: 0.5, anchor: .center)
+                .accessibilityLabel("Reading progress: \(Int(progress * 100))%")
+        }
     }
 }

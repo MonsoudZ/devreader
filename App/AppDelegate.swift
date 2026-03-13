@@ -1,18 +1,8 @@
 import AppKit
-import Combine
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-	private var recentsSubscription: AnyCancellable?
-
 	func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
 		let menu = NSMenu()
-
-		Task { @MainActor in
-			// This runs synchronously enough for the menu since we're already on main
-		}
-
-		// Build menu synchronously on main thread using the shared bookmark manager
-		// We access the bookmark manager via the app environment stored in the first window's root view
 		let recentURLs = loadRecentURLs()
 
 		if recentURLs.isEmpty {

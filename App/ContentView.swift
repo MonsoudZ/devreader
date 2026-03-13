@@ -57,12 +57,17 @@ struct ContentView: View {
                     pdf: appEnvironment.pdfController,
                     toastCenter: appEnvironment.enhancedToastCenter,
                     open: { item in
-                        appEnvironment.pdfController.load(libraryItem: item)
+                        appEnvironment.tabManager.openInTab(libraryItem: item)
                     }
                 )
                 .navigationSplitViewColumnWidth(min: 220, ideal: 280, max: 360)
             } detail: {
-                // Center: PDF viewer with optional thumbnail pane
+                // Center: Tab bar + PDF viewer with optional thumbnail pane
+                VStack(spacing: 0) {
+                if appEnvironment.tabManager.showTabBar {
+                    PDFTabBar(tabManager: appEnvironment.tabManager)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
                 HStack(spacing: 0) {
                     if showingThumbnails, appEnvironment.pdfController.document != nil {
                         PDFThumbnailPane(pdf: appEnvironment.pdfController)
@@ -124,6 +129,8 @@ struct ContentView: View {
                 .animation(.easeInOut(duration: 0.2), value: appEnvironment.pdfController.document != nil)
                 }
                 .animation(.easeInOut(duration: 0.2), value: showingThumbnails)
+                }
+                .animation(.easeInOut(duration: 0.15), value: appEnvironment.tabManager.showTabBar)
                     .navigationTitle(documentTitle)
                     .navigationSubtitle(pageInfo)
                     // Right: Tools inspector
@@ -255,7 +262,7 @@ struct ContentView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .openRecentFromDock)) { notification in
             if let url = notification.object as? URL {
-                appEnvironment.pdfController.open(url: url)
+                appEnvironment.tabManager.openInTab(url: url)
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .clearRecentsFromDock)) { _ in
@@ -366,7 +373,7 @@ struct ContentView: View {
         panel.begin { resp in
             DispatchQueue.main.async {
                 guard resp == .OK, let url = panel.url else { return }
-                appEnvironment.pdfController.open(url: url)
+                appEnvironment.tabManager.openInTab(url: url)
                 appEnvironment.libraryStore.add(urls: [url])
             }
         }
@@ -404,7 +411,7 @@ struct ContentView: View {
                     let url = URL(dataRepresentation: data, relativeTo: nil)
                 else { return }
                 DispatchQueue.main.async {
-                    appEnvironment.pdfController.open(url: url)
+                    appEnvironment.tabManager.openInTab(url: url)
                     appEnvironment.libraryStore.add(urls: [url])
                 }
             }

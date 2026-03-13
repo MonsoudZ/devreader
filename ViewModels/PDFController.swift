@@ -32,10 +32,22 @@ final class PDFController: ObservableObject {
 	@Published var document: PDFDocument?
 	@Published var currentPageIndex: Int = 0
 	@Published private(set) var currentPDFURL: URL?
+
+	// MARK: - Navigation History
+	@Published var navigationHistory: [Int] = []
+	@Published var historyIndex: Int = -1
+
+	var canGoBack: Bool {
+		historyIndex > 0
+	}
+
+	var canGoForward: Bool {
+		historyIndex < navigationHistory.count - 1
+	}
     // Loading state (not @Published — views use loadingStateManager; kept for tests)
     var isLoadingPDF: Bool = false
-    // Reading progress (not @Published — only used internally/tests, avoids needless redraws)
-    var readingProgress: Double = 0.0
+    @Published var readingProgress: Double = 0.0
+    @Published var maxPageReached: Int = 0
     // Large PDF optimizations
     var isLargePDF: Bool = false
     var estimatedLoadTime: String = ""
@@ -69,6 +81,8 @@ final class PDFController: ObservableObject {
 
     private var activeSecurityScope: URL?
     private let sessionKey = "DevReader.Session.v1"
+	private let maxPageReachedKey = "DevReader.MaxPageReached.v1"
+	private let totalPagesKey = "DevReader.TotalPages.v1"
 	private var loadingTask: Task<Void, Never>?
 	private var outlineTask: Task<Void, Never>?
 	private var isHandlingMemoryPressure = false
@@ -136,6 +150,8 @@ final class PDFController: ObservableObject {
 		currentPDFURL = nil
 		currentPageIndex = 0
 		readingProgress = 0.0
+		maxPageReached = 0
+		clearHistory()
 		searchManager.clearSearch()
 		outlineManager.clear()
 		loadingTask?.cancel()
@@ -264,7 +280,9 @@ final class PDFController: ObservableObject {
 
 	func goToPage(_ pageIndex: Int) {
 		guard let doc = document, pageIndex >= 0, pageIndex < doc.pageCount else { return }
+		pushHistory(currentPageIndex)
 		currentPageIndex = pageIndex
+		maxPageReached = max(maxPageReached, pageIndex)
 		updateReadingProgress()
 		schedulePersistPage()
 	}
@@ -274,7 +292,7 @@ final class PDFController: ObservableObject {
 			readingProgress = 0.0
 			return
 		}
-		readingProgress = Double(currentPageIndex + 1) / Double(doc.pageCount)
+		readingProgress = min(1.0, Double(maxPageReached + 1) / Double(doc.pageCount))
 	}
 
 	// MARK: - Print
@@ -321,6 +339,44 @@ final class PDFController: ObservableObject {
 		if let pdfView = selectionBridge.pdfView {
 			scaleFactor = pdfView.scaleFactor
 		}
+	}
+
+	// MARK: - Navigation History Methods
+
+	func pushHistory(_ pageIndex: Int) {
+		// Trim any forward history beyond the current position
+		if historyIndex < navigationHistory.count - 1 {
+			navigationHistory = Array(navigationHistory.prefix(historyIndex + 1))
+		}
+		navigationHistory.append(pageIndex)
+		historyIndex = navigationHistory.count - 1
+	}
+
+	func goBack() {
+		guard canGoBack else { return }
+		historyIndex -= 1
+		let targetPage = navigationHistory[historyIndex]
+		navigateWithoutHistory(to: targetPage)
+	}
+
+	func goForward() {
+		guard canGoForward else { return }
+		historyIndex += 1
+		let targetPage = navigationHistory[historyIndex]
+		navigateWithoutHistory(to: targetPage)
+	}
+
+	func clearHistory() {
+		navigationHistory.removeAll()
+		historyIndex = -1
+	}
+
+	/// Navigate to a page without pushing to history (used by back/forward).
+	private func navigateWithoutHistory(to pageIndex: Int) {
+		guard let doc = document, pageIndex >= 0, pageIndex < doc.pageCount else { return }
+		currentPageIndex = pageIndex
+		updateReadingProgress()
+		schedulePersistPage()
 	}
 
 	// MARK: - Page Navigation
@@ -421,6 +477,7 @@ final class PDFController: ObservableObject {
 	func didScrollToPage(_ index: Int) {
 		guard let doc = document, index >= 0, index < doc.pageCount else { return }
 		currentPageIndex = index
+		maxPageReached = max(maxPageReached, index)
 		updateReadingProgress()
 		schedulePersistPage()
 	}
@@ -442,8 +499,14 @@ final class PDFController: ObservableObject {
 
     func savePageForPDF(_ url: URL) {
         let pageKey = PersistenceService.key(sessionKey, for: url)
+        let progressKey = PersistenceService.key(maxPageReachedKey, for: url)
+        let pagesKey = PersistenceService.key(totalPagesKey, for: url)
         do {
             try PersistenceService.saveInt(currentPageIndex, forKey: pageKey)
+            try PersistenceService.saveInt(maxPageReached, forKey: progressKey)
+            if let pageCount = document?.pageCount, pageCount > 0 {
+                try PersistenceService.saveInt(pageCount, forKey: pagesKey)
+            }
         } catch {
             logError(AppLog.persistence, "Failed to save page position: \(error.localizedDescription)")
         }
@@ -455,14 +518,27 @@ final class PDFController: ObservableObject {
         let pageKey = PersistenceService.key(sessionKey, for: url)
         let legacyPageKey = PersistenceService.legacyKey(sessionKey, for: url)
         let savedPage = PersistenceService.loadCodableWithMigration(Int.self, forKey: pageKey, legacyKey: legacyPageKey) ?? 0
+        let progressKey = PersistenceService.key(maxPageReachedKey, for: url)
+        let savedMaxPage = PersistenceService.loadInt(forKey: progressKey) ?? 0
 		if savedPage > 0 {
 			let lastIndex = max(0, (document?.pageCount ?? 1) - 1)
 			currentPageIndex = min(savedPage, lastIndex)
 		} else {
 			currentPageIndex = 0
 		}
+		maxPageReached = max(savedMaxPage, currentPageIndex)
 		updateReadingProgress()
 	}
+
+    /// Load the persisted reading progress for a given PDF URL without opening the document.
+    /// Returns a value between 0 and 1, or nil if no progress data is stored.
+    static func readingProgress(for url: URL) -> Double? {
+        let maxKey = PersistenceService.key("DevReader.MaxPageReached.v1", for: url)
+        guard let savedMax = PersistenceService.loadInt(forKey: maxKey) else { return nil }
+        let pagesKey = PersistenceService.key("DevReader.TotalPages.v1", for: url)
+        guard let totalPages = PersistenceService.loadInt(forKey: pagesKey), totalPages > 0 else { return nil }
+        return min(1.0, Double(savedMax + 1) / Double(totalPages))
+    }
 
 	private func setupMemoryPressureHandler() {
 		memoryPressureTask = Task { [weak self] in

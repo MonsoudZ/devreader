@@ -94,6 +94,11 @@ struct DevReaderApp: App {
                     AnnotationListView(pdf: appEnvironment.pdfController)
                         .frame(minWidth: 350, minHeight: 400)
                 }
+                .sheet(isPresented: $appEnvironment.isShowingComparison) {
+                    PDFComparisonView()
+                        .environmentObject(appEnvironment)
+                        .frame(minWidth: 900, minHeight: 600)
+                }
 
                 // Hard fail alert (only for init-time persistence failure)
                 .alert("Initialization Error", isPresented: $showingErrorAlert) {
@@ -129,10 +134,25 @@ struct DevReaderApp: App {
 
                 Divider()
 
+                Button("New Tab") { appEnvironment.tabManager.addTab() }
+                    .keyboardShortcut("t", modifiers: [.command])
+                    .accessibilityLabel("New Tab")
+
+                Button("Close Tab") { appEnvironment.tabManager.closeActiveTab() }
+                    .keyboardShortcut("w", modifiers: [.command])
+                    .accessibilityLabel("Close Tab")
+
+                Divider()
+
                 Button("Export PDF with Annotations…") { appEnvironment.commandExportAnnotatedPDF() }
                     .keyboardShortcut("e", modifiers: [.command, .shift])
                     .accessibilityLabel("Export annotated PDF")
                     .accessibilityHint("Save a copy of the PDF with all annotations embedded")
+
+                Button("Export Annotations as Markdown…") { appEnvironment.commandExportAnnotationsMarkdown() }
+                    .keyboardShortcut("m", modifiers: [.command, .shift])
+                    .accessibilityLabel("Export annotations as Markdown")
+                    .accessibilityHint("Export highlights, notes, and bookmarks to a Markdown file")
 
                 Divider()
 
@@ -204,6 +224,18 @@ struct DevReaderApp: App {
 
                 Divider()
 
+                Button("Back") { appEnvironment.commandGoBack() }
+                    .keyboardShortcut("[", modifiers: [.command])
+                    .disabled(!appEnvironment.pdfController.canGoBack)
+                    .accessibilityLabel("Navigate back")
+
+                Button("Forward") { appEnvironment.commandGoForward() }
+                    .keyboardShortcut("]", modifiers: [.command])
+                    .disabled(!appEnvironment.pdfController.canGoForward)
+                    .accessibilityLabel("Navigate forward")
+
+                Divider()
+
                 Button("Next Page") { appEnvironment.pdfController.goToNextPage() }
                     .keyboardShortcut(.downArrow, modifiers: [.command])
                     .accessibilityLabel("Next page")
@@ -238,6 +270,13 @@ struct DevReaderApp: App {
 
                 Button("Remove Annotations on Page") { appEnvironment.commandRemoveAnnotationsOnPage() }
                     .accessibilityLabel("Remove annotations on current page")
+
+                Divider()
+
+                Button("Compare PDFs\u{2026}") { appEnvironment.commandCompareDocument() }
+                    .keyboardShortcut("d", modifiers: [.command, .shift])
+                    .disabled(appEnvironment.pdfController.document == nil)
+                    .accessibilityLabel("Compare PDFs side by side")
 
                 Divider()
 
@@ -291,12 +330,12 @@ struct DevReaderApp: App {
                 // Index library for Spotlight on first activation
                 SpotlightService.shared.indexLibraryItems(appEnvironment.libraryStore.items)
             case .inactive, .background:
-                // Flush any pending debounced persistence
-                appEnvironment.pdfController.flushPendingPersistence()
-                appEnvironment.pdfController.annotationManager.flushPendingPersistence()
+                // Flush any pending debounced persistence for all tabs
+                appEnvironment.tabManager.flushAllPendingPersistence()
                 appEnvironment.libraryStore.flushPendingPersistence()
                 appEnvironment.notesStore.flushPendingPersistence()
                 appEnvironment.sketchStore.flushPendingPersistence()
+                PerformanceMonitor.shared.stopMonitoring()
             @unknown default:
                 break
             }
@@ -341,11 +380,15 @@ struct DevReaderApp: App {
         guard let identifier = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String else { return }
 
         if let itemID = SpotlightService.libraryItemID(from: identifier) {
-            // Open the PDF from library
+            // Open the PDF from library in a tab
             if let item = appEnvironment.libraryStore.items.first(where: { $0.id == itemID }) {
-                appEnvironment.pdfController.load(libraryItem: item)
+                appEnvironment.tabManager.openInTab(libraryItem: item)
+            }
+        } else if let noteID = SpotlightService.noteID(from: identifier) {
+            // Navigate to the note's page if a matching note is found in the current PDF
+            if let note = appEnvironment.notesStore.items.first(where: { $0.id == noteID }) {
+                appEnvironment.pdfController.goToPage(note.pageIndex)
             }
         }
-        // Note results will open the app; the note is visible in the notes pane
     }
 }

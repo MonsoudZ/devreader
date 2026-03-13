@@ -11,6 +11,7 @@ struct LibrarySearchView: View {
 	@State private var results: [LibrarySearchResult] = []
 	@State private var isSearching = false
 	@State private var searchTask: Task<Void, Never>?
+	@State private var searchProgress: (current: Int, total: Int) = (0, 0)
 
 	var body: some View {
 		VStack(spacing: 0) {
@@ -34,6 +35,12 @@ struct LibrarySearchView: View {
 					.accessibilityLabel("Search all PDFs")
 
 				if isSearching {
+					if searchProgress.total > 0 {
+						Text("\(searchProgress.current)/\(searchProgress.total)")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+							.monospacedDigit()
+					}
 					ProgressView()
 						.controlSize(.small)
 				}
@@ -125,19 +132,24 @@ struct LibrarySearchView: View {
 
 		searchTask = Task {
 			var allResults: [LibrarySearchResult] = []
+			searchProgress = (0, items.count)
 
-			for item in items {
+			for (idx, item) in items.enumerated() {
 				guard !Task.isCancelled else { break }
+				searchProgress = (idx + 1, items.count)
 
 				let matches = await searchPDF(item: item, query: searchQuery)
 				if !matches.isEmpty {
 					allResults.append(LibrarySearchResult(item: item, matches: matches))
+					// Show results incrementally as they're found
+					results = allResults
 				}
 			}
 
 			guard !Task.isCancelled else { return }
 			results = allResults
 			isSearching = false
+			searchProgress = (0, 0)
 		}
 	}
 
