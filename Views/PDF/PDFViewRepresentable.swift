@@ -32,13 +32,46 @@ final class PDFSelectionBridge {
 	}
 }
 
-/// PDFView subclass that posts a notification after the standard copy action.
+/// PDFView subclass that posts a notification after the standard copy action
+/// and shows a selection toolbar when text is selected.
 final class CopyAwarePDFView: PDFView {
 	static let didCopyNotification = Notification.Name("DevReader.PDFView.didCopy")
+	/// Posted when the user selects text (with the selection rect in screen coords).
+	static let selectionPopupNotification = Notification.Name("DevReader.PDFView.selectionPopup")
+	/// Posted when selection is cleared.
+	static let selectionClearedNotification = Notification.Name("DevReader.PDFView.selectionCleared")
 
 	override func copy(_ sender: Any?) {
 		super.copy(sender)
 		NotificationCenter.default.post(name: Self.didCopyNotification, object: self)
+	}
+
+	override func mouseDown(with event: NSEvent) {
+		// Dismiss selection toolbar on any click
+		NotificationCenter.default.post(name: Self.selectionClearedNotification, object: self)
+		super.mouseDown(with: event)
+	}
+
+	override func mouseUp(with event: NSEvent) {
+		super.mouseUp(with: event)
+		// After mouse up, check if there's a text selection and post notification
+		DispatchQueue.main.async { [weak self] in
+			guard let self else { return }
+			if let selection = self.currentSelection,
+			   let text = selection.string, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+			   let page = selection.pages.first {
+				let bounds = selection.bounds(for: page)
+				// Convert from PDF page coords to view coords
+				let viewPoint = self.convert(CGPoint(x: bounds.midX, y: bounds.maxY), from: page)
+				NotificationCenter.default.post(
+					name: Self.selectionPopupNotification,
+					object: self,
+					userInfo: ["point": NSValue(point: viewPoint)]
+				)
+			} else {
+				NotificationCenter.default.post(name: Self.selectionClearedNotification, object: self)
+			}
+		}
 	}
 }
 

@@ -75,6 +75,9 @@ final class AppEnvironment: ObservableObject {
                 notes?.setCurrentPDF(controller.currentPDFURL)
             }
 
+        // Forward tabManager changes so SwiftUI re-renders on tab switch
+        wireTabManagerChanges(tabMgr)
+
         // Restore last-opened PDF after init completes and wiring is in place
         restoreTask = Task { [weak tabMgr, weak notes] in
             tabMgr?.activeController.restoreLastOpenedPDF()
@@ -87,6 +90,17 @@ final class AppEnvironment: ObservableObject {
 
     private var restoreTask: Task<Void, Never>?
     private var tabChangeCancellable: AnyCancellable?
+    private var tabManagerSink: AnyCancellable?
+
+    /// Forward tabManager's objectWillChange so SwiftUI re-renders
+    /// ContentView when the active tab switches.
+    private func wireTabManagerChanges(_ tabMgr: TabManager) {
+        tabManagerSink = tabMgr.objectWillChange
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+    }
 
     // MARK: - Auto-Backup
     private var autoBackupCancellable: AnyCancellable?

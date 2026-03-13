@@ -28,6 +28,10 @@ struct ContentView: View {
     @State private var showingSplitView = false
     @State private var showingFormFields = false
 
+    // Selection toolbar state
+    @State private var selectionToolbarPosition: CGPoint?
+    @State private var showSelectionToolbar = false
+
     // Autosave timer: we recreate it whenever the interval changes
     @State private var autosaveCancellable: AnyCancellable?
 
@@ -77,7 +81,12 @@ struct ContentView: View {
                     }
 
                 ZStack {
-                    if showingSplitView {
+                    if appEnvironment.pdfController.document == nil {
+                        // Empty tab: show drop target / open prompt
+                        emptyTabView
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
+                    } else if showingSplitView {
                         PDFSplitView(
                             primaryPDF: appEnvironment.pdfController,
                             secondaryPDF: appEnvironment.secondaryPDFController,
@@ -88,6 +97,7 @@ struct ContentView: View {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         PDFViewRepresentable(pdf: appEnvironment.pdfController)
+                            .id(appEnvironment.tabManager.activeTabID)
                             .onDrop(of: [.pdf], isTargeted: nil, perform: handlePDFDrop(_:))
                             .background(Color(NSColor.textBackgroundColor))
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -123,10 +133,39 @@ struct ContentView: View {
                         .padding(.horizontal, DS.Spacing.xxl)
                         .padding(.bottom, DS.Spacing.sm)
                     }
+
+                    // Selection annotation toolbar
+                    if showSelectionToolbar, let pos = selectionToolbarPosition {
+                        PDFSelectionToolbar(
+                            onHighlight: {
+                                appEnvironment.pdfController.highlightSelection()
+                                dismissSelectionToolbar()
+                            },
+                            onUnderline: {
+                                appEnvironment.pdfController.underlineSelection()
+                                dismissSelectionToolbar()
+                            },
+                            onStrikethrough: {
+                                appEnvironment.pdfController.strikethroughSelection()
+                                dismissSelectionToolbar()
+                            },
+                            onCopy: {
+                                appEnvironment.pdfController.selectionBridge.pdfView?.copy(nil)
+                                dismissSelectionToolbar()
+                            },
+                            onNote: {
+                                appEnvironment.pdfController.captureHighlightToNotes()
+                                dismissSelectionToolbar()
+                            }
+                        )
+                        .position(x: pos.x, y: pos.y - 40)
+                        .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                    }
                 }
                 .animation(DS.Animation.standard, value: showingSearch)
                 .animation(DS.Animation.standard, value: showingSplitView)
                 .animation(DS.Animation.standard, value: appEnvironment.pdfController.document != nil)
+                .animation(DS.Animation.quick, value: showSelectionToolbar)
                 }
                 .animation(DS.Animation.standard, value: showingThumbnails)
                 }
@@ -260,6 +299,20 @@ struct ContentView: View {
         .onReceive(NotificationCenter.default.publisher(for: CopyAwarePDFView.didCopyNotification)) { _ in
             appEnvironment.enhancedToastCenter.showSuccess("Copied", "Text copied to clipboard")
         }
+        .onReceive(NotificationCenter.default.publisher(for: CopyAwarePDFView.selectionPopupNotification)) { notification in
+            guard let pdfView = notification.object as? NSView,
+                  let pointValue = notification.userInfo?["point"] as? NSValue else { return }
+            let localPoint = pointValue.pointValue
+            // Convert from PDFView's flipped coordinate system to the view's frame
+            let flippedY = pdfView.bounds.height - localPoint.y
+            selectionToolbarPosition = CGPoint(x: localPoint.x, y: flippedY)
+            withAnimation(DS.Animation.quick) {
+                showSelectionToolbar = true
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: CopyAwarePDFView.selectionClearedNotification)) { _ in
+            dismissSelectionToolbar()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .openRecentFromDock)) { notification in
             if let url = notification.object as? URL {
                 appEnvironment.tabManager.openInTab(url: url)
@@ -341,6 +394,49 @@ struct ContentView: View {
                 .monospacedDigit()
         }
         .floatingToolbarStyle()
+    }
+
+    // MARK: - Selection Toolbar
+    private func dismissSelectionToolbar() {
+        withAnimation(DS.Animation.quick) {
+            showSelectionToolbar = false
+        }
+        selectionToolbarPosition = nil
+        // Clear the PDFView selection
+        appEnvironment.pdfController.selectionBridge.pdfView?.clearSelection()
+    }
+
+    // MARK: - Empty Tab View
+    private var emptyTabView: some View {
+        VStack(spacing: DS.Spacing.lg) {
+            Spacer()
+
+            Image(systemName: "doc.richtext")
+                .font(.system(size: 56, weight: .thin))
+                .foregroundStyle(DS.Colors.tertiary)
+
+            Text("No PDF Open")
+                .font(DS.Typography.title)
+                .foregroundStyle(DS.Colors.secondary)
+
+            Text("Drag & drop a PDF here, or open one from the library")
+                .font(DS.Typography.callout)
+                .foregroundStyle(DS.Colors.tertiary)
+                .multilineTextAlignment(.center)
+
+            HStack(spacing: DS.Spacing.md) {
+                Button("Open PDF…") { openPDF() }
+                    .buttonStyle(DSPrimaryButtonStyle())
+                    .accessibilityIdentifier("emptyTabOpenButton")
+
+                Button("Import PDFs…") { importPDFs() }
+                    .buttonStyle(DSSecondaryButtonStyle())
+                    .accessibilityIdentifier("emptyTabImportButton")
+            }
+
+            Spacer()
+        }
+        .background(DS.Colors.contentSurface)
     }
 
     // MARK: - Autosave

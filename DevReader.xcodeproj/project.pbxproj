@@ -95,6 +95,7 @@
 		E20100072F00000000000004 /* Views/PDF/SignaturePadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100062F00000000000004 /* Views/PDF/SignaturePadView.swift */; };
 		E20100092F00000000000005 /* Views/PDF/SignatureChooserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20100082F00000000000005 /* Views/PDF/SignatureChooserView.swift */; };
 		E201000B2F00000000000006 /* ViewModels/SignatureAnnotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E201000A2F00000000000006 /* ViewModels/SignatureAnnotation.swift */; };
+		F20100012F00000000000001 /* Views/PDF/PDFSelectionToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20100002F00000000000001 /* Views/PDF/PDFSelectionToolbar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -207,6 +208,7 @@
 		E20100062F00000000000004 /* Views/PDF/SignaturePadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/SignaturePadView.swift; sourceTree = "<group>"; };
 		E20100082F00000000000005 /* Views/PDF/SignatureChooserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/SignatureChooserView.swift; sourceTree = "<group>"; };
 		E201000A2F00000000000006 /* ViewModels/SignatureAnnotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/SignatureAnnotation.swift; sourceTree = "<group>"; };
+		F20100002F00000000000001 /* Views/PDF/PDFSelectionToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views/PDF/PDFSelectionToolbar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -350,6 +352,7 @@
 				E20100062F00000000000004 /* Views/PDF/SignaturePadView.swift */,
 				E20100082F00000000000005 /* Views/PDF/SignatureChooserView.swift */,
 				E201000A2F00000000000006 /* ViewModels/SignatureAnnotation.swift */,
+				F20100002F00000000000001 /* Views/PDF/PDFSelectionToolbar.swift */,
 				A00100362F00000000000001 /* DevReader.entitlements */,
 				9932A80B2E823C66001C0FFE /* DevReader */,
 				9932A8192E823C67001C0FFE /* DevReaderTests */,
@@ -602,6 +605,7 @@
 				E20100072F00000000000004 /* Views/PDF/SignaturePadView.swift in Sources */,
 				E20100092F00000000000005 /* Views/PDF/SignatureChooserView.swift in Sources */,
 				E201000B2F00000000000006 /* ViewModels/SignatureAnnotation.swift in Sources */,
+				F20100012F00000000000001 /* Views/PDF/PDFSelectionToolbar.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
